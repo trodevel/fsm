@@ -19,21 +19,21 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9952 $ $Date:: 2018-11-12 #$ $Author: serge $
+// $Revision: 9966 $ $Date:: 2018-11-13 #$ $Author: serge $
 
 #ifndef LIB_FSM__ELEMENTS_H
 #define LIB_FSM__ELEMENTS_H
 
 #include <cstdint>              // uint32_t
-#include <map>                  // std::map
-#include <vector>               // std::vector
+#include <string>               // std::string
 
 namespace fsm {
 
+typedef unsigned element_id_t;
 typedef unsigned state_id_t;
 typedef unsigned action_id_t;
 
-class Element
+struct Element
 {
     virtual ~Element() {}
 };
@@ -64,7 +64,8 @@ struct Value
 enum class argument_type_e
 {
     VALUE = 0,
-    VARIABLE,
+    VARIABLE_IN,
+    VARIABLE_OUT,
 };
 
 struct Argument
@@ -91,36 +92,6 @@ struct Expression
     comparison_type_e   type;
     Argument            lhs;
     Argument            rhs;
-};
-
-class SendSignal: public Element
-{
-    SendSignal( const std::string & name, const std::vector<Argument> & arguments );
-};
-
-class SetTimer: public Element
-{
-    SetTimer( const std::string & name, const Argument & delay );
-};
-
-class FunctionCall: public Element
-{
-    FunctionCall( const std::string & name, const std::vector<Argument> & arguments );
-};
-
-class If: public Element
-{
-    If( const Expression & expr, action_id_t true_id, action_id_t false_id  );
-};
-
-class NextState: public Element
-{
-    NextState( const std::string & name );
-};
-
-class Exit: public Element
-{
-    Exit( const std::vector<Argument> & arguments );
 };
 
 } // namespace fsm
