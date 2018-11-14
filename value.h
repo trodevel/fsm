@@ -1,6 +1,6 @@
 /*
 
-FSM signal handler.
+FSM objects.
 
 Copyright (C) 2018 Sergey Kolevatov
 
@@ -19,24 +19,29 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9968 $ $Date:: 2018-11-14 #$ $Author: serge $
+// $Revision: 9978 $ $Date:: 2018-11-14 #$ $Author: serge $
 
-#ifndef LIB_FSM__I_SIGNAL_HANDLER_H
-#define LIB_FSM__I_SIGNAL_HANDLER_H
+#ifndef LIB_FSM__VALUE_H
+#define LIB_FSM__VALUE_H
 
-#include <vector>               // std::vector
-
-#include "elements.h"           // Argument
+#include "elements.h"           // Element
 
 namespace fsm {
 
-struct ISignalHandler
+struct Value
 {
-    virtual ~ISignalHandler() {}
+    data_type_e     type;
 
-    virtual void handle_signal( element_id_t signal_id, const std::vector<intern::Argument> & arguments )   = 0;
+    bool            arg_b;
+    int             arg_i;
+    double          arg_d;
+    std::string     arg_s;
 };
+
+void harmonize( Value * v );
+
+void assign( Value * lhs, const Value & rhs );
 
 } // namespace fsm
 
-#endif // LIB_FSM__I_SIGNAL_HANDLER_H
+#endif // LIB_FSM__VALUE_H

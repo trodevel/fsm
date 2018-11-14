@@ -1,6 +1,6 @@
 /*
 
-FSM signal handler.
+FSM constant.
 
 Copyright (C) 2018 Sergey Kolevatov
 
@@ -19,24 +19,32 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9968 $ $Date:: 2018-11-14 #$ $Author: serge $
+// $Revision: 9979 $ $Date:: 2018-11-14 #$ $Author: serge $
 
-#ifndef LIB_FSM__I_SIGNAL_HANDLER_H
-#define LIB_FSM__I_SIGNAL_HANDLER_H
+#include "constant.h"           // self
 
-#include <vector>               // std::vector
+#include <cassert>              // assert
 
-#include "elements.h"           // Argument
+#include "utils/dummy_logger.h"     // dummy_log_debug
 
 namespace fsm {
 
-struct ISignalHandler
+Constant::Constant( uint32_t log_id, element_id_t id, const std::string & name, data_type_e type, const Value & value ):
+        log_id_( log_id ),
+        id_( id ),
+        name_( name ),
+        type_( type )
 {
-    virtual ~ISignalHandler() {}
+    assert( id );
 
-    virtual void handle_signal( element_id_t signal_id, const std::vector<intern::Argument> & arguments )   = 0;
-};
+    value_.type = type;
+
+    assign( & value_, value );
+}
+
+const Value & Constant::get() const
+{
+    return value_;
+}
 
 } // namespace fsm
-
-#endif // LIB_FSM__I_SIGNAL_HANDLER_H

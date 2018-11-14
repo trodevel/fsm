@@ -19,14 +19,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9954 $ $Date:: 2018-11-13 #$ $Author: serge $
+// $Revision: 9975 $ $Date:: 2018-11-14 #$ $Author: serge $
 
 #ifndef LIB_FSM__ACTIONS_INTERN_H
 #define LIB_FSM__ACTIONS_INTERN_H
 
 #include <vector>               // std::vector
 
-#include "elements.h"           // Element
+#include "expression.h"         // Element
 
 namespace fsm {
 

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9966 $ $Date:: 2018-11-13 #$ $Author: serge $
+// $Revision: 9969 $ $Date:: 2018-11-14 #$ $Author: serge $
 
 #ifndef LIB_FSM__ELEMENTS_H
 #define LIB_FSM__ELEMENTS_H
@@ -51,28 +51,11 @@ enum class data_type_e
     STRING,
 };
 
-struct Value
-{
-    data_type_e     type;
-
-    bool            arg_b;
-    int             arg_i;
-    double          arg_d;
-    std::string     arg_s;
-};
-
 enum class argument_type_e
 {
     VALUE = 0,
     VARIABLE_IN,
     VARIABLE_OUT,
-};
-
-struct Argument
-{
-    argument_type_e type;
-    std::string     variable_name;
-    Value           value;
 };
 
 enum class comparison_type_e
@@ -84,14 +67,6 @@ enum class comparison_type_e
     GT,
     GE,
     NOT
-};
-
-struct Expression
-{
-    bool                is_unary;
-    comparison_type_e   type;
-    Argument            lhs;
-    Argument            rhs;
 };
 
 } // namespace fsm

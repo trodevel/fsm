@@ -1,6 +1,6 @@
 /*
 
-FSM state.
+FSM Variable.
 
 Copyright (C) 2018 Sergey Kolevatov
 
@@ -19,43 +19,36 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9970 $ $Date:: 2018-11-14 #$ $Author: serge $
+// $Revision: 9980 $ $Date:: 2018-11-14 #$ $Author: serge $
 
-#ifndef LIB_FSM__STATE_H
-#define LIB_FSM__STATE_H
+#ifndef LIB_FSM__VARIABLE_H
+#define LIB_FSM__VARIABLE_H
 
-#include <map>                  // std::map
-
-#include "argument.h"           // Argument
-#include "actions_intern.h"     // Actions
-#include "i_signal_handler.h"   // ISignalHandler
+#include "value.h"      // Value
 
 namespace fsm {
 
-class State: public Element
+class Variable: public Element
 {
 public:
-    State( uint32_t log_id, element_id_t id, const std::string & name, ISignalHandler * handler );
+    Variable( uint32_t log_id, element_id_t id, const std::string & name, data_type_e type, const Value & value );
 
-    void add_signal_handler( element_id_t id, const std::string & name );
-
-    void handle_signal( const std::string & name, const std::vector<intern::Argument> & arguments );
-
-private:
-    State( const State & )              = delete;
-    State & operator=( const State & )  = delete;
+    const Value & get() const;
+    void set( const Value & v);
 
 private:
+    Variable( const Variable & )              = delete;
+    Variable & operator=( const Variable & )  = delete;
+
+protected:
 
     uint32_t                                log_id_;
     element_id_t                            id_;
     std::string                             name_;
-
-    ISignalHandler                          * handler_;
-
-    std::map<std::string,element_id_t>      map_signal_name_to_signal_id_;
+    data_type_e                             type_;
+    Value                                   value_;
 };
 
 } // namespace fsm
 
-#endif // LIB_FSM__STATE_H
+#endif // LIB_FSM__VARIABLE_H
