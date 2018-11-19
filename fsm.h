@@ -1,6 +1,6 @@
 /*
 
-FSM state.
+FSM.
 
 Copyright (C) 2018 Sergey Kolevatov
 
@@ -19,43 +19,47 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9985 $ $Date:: 2018-11-19 #$ $Author: serge $
+// $Revision: 9991 $ $Date:: 2018-11-19 #$ $Author: serge $
 
-#ifndef LIB_FSM__STATE_H
-#define LIB_FSM__STATE_H
+#ifndef LIB_FSM__FSM_H
+#define LIB_FSM__FSM_H
 
 #include <map>                  // std::map
 
 #include "argument.h"           // Argument
 #include "actions.h"            // Actions
+#include "state.h"              // State
+#include "signal_handler.h"     // SignalHandler
+#include "action_connector.h"   // ActionConnector
 #include "i_signal_handler.h"   // ISignalHandler
 
 namespace fsm {
 
-class State: public Element
+class Fsm: public ISignalHandler
 {
 public:
-    State( uint32_t log_id, element_id_t id, const std::string & name, ISignalHandler * handler );
+    Fsm( uint32_t log_id );
 
-    void add_signal_handler( element_id_t id, const std::string & name );
-
-    void handle_signal( const std::string & name, const std::vector<Argument> & arguments );
+    void handle_signal( element_id_t signal_id, const std::vector<Argument> & arguments ) override;
 
 private:
-    State( const State & )              = delete;
-    State & operator=( const State & )  = delete;
+    typedef std::map<element_id_t,State>            MapIdToState;
+    typedef std::map<element_id_t,SignalHandler>    MapIdToSignalHandler;
+    typedef std::map<element_id_t,ActionConnector>  MapIdToActionConnector;
+
+private:
+    Fsm( const Fsm & )              = delete;
+    Fsm & operator=( const Fsm & )  = delete;
 
 private:
 
-    uint32_t                                log_id_;
-    element_id_t                            id_;
-    std::string                             name_;
+    uint32_t                    log_id_;
 
-    ISignalHandler                          * handler_;
+    MapIdToState                map_id_to_state_;
+    MapIdToSignalHandler        map_id_to_signal_handler_;
 
-    std::map<std::string,element_id_t>      map_signal_name_to_signal_id_;
 };
 
 } // namespace fsm
 
-#endif // LIB_FSM__STATE_H
+#endif // LIB_FSM__FSM_H

@@ -1,6 +1,6 @@
 /*
 
-FSM objects.
+FSM action connectors.
 
 Copyright (C) 2018 Sergey Kolevatov
 
@@ -19,23 +19,26 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9984 $ $Date:: 2018-11-19 #$ $Author: serge $
+// $Revision: 9987 $ $Date:: 2018-11-19 #$ $Author: serge $
 
-#ifndef LIB_FSM__EXPRESSION_H
-#define LIB_FSM__EXPRESSION_H
+#ifndef LIB_FSM__ACTION_CONNECTOR_H
+#define LIB_FSM__ACTION_CONNECTOR_H
 
-#include "argument.h"           // Argument
+#include <vector>               // std::vector
+
+#include "actions.h"            // Action
 
 namespace fsm {
 
-struct Expression
+struct ActionConnector
 {
-    bool                is_unary;
-    comparison_type_e   type;
-    Argument            lhs;
-    Argument            rhs;
+    uint32_t    id_;
+    uint32_t    next_id_;
+    uint32_t    alt_next_id_;
+
+    Action      * action_;
 };
 
 } // namespace fsm
 
-#endif // LIB_FSM__EXPRESSION_H
+#endif // LIB_FSM__ACTION_CONNECTOR_H

@@ -1,6 +1,6 @@
 /*
 
-FSM objects.
+FSM.
 
 Copyright (C) 2018 Sergey Kolevatov
 
@@ -19,23 +19,23 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9984 $ $Date:: 2018-11-19 #$ $Author: serge $
+// $Revision: 9991 $ $Date:: 2018-11-19 #$ $Author: serge $
 
-#ifndef LIB_FSM__EXPRESSION_H
-#define LIB_FSM__EXPRESSION_H
+#include "fsm.h"                // self
 
-#include "argument.h"           // Argument
+#include <cassert>              // assert
+
+#include "utils/dummy_logger.h"     // dummy_log_debug
 
 namespace fsm {
 
-struct Expression
+Fsm::Fsm( uint32_t log_id ):
+        log_id_( log_id )
 {
-    bool                is_unary;
-    comparison_type_e   type;
-    Argument            lhs;
-    Argument            rhs;
-};
+}
+
+void Fsm::handle_signal( element_id_t signal_id, const std::vector<Argument> & arguments )
+{
+}
 
 } // namespace fsm
-
-#endif // LIB_FSM__EXPRESSION_H

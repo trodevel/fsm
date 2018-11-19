@@ -19,43 +19,43 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9953 $ $Date:: 2018-11-13 #$ $Author: serge $
+// $Revision: 9986 $ $Date:: 2018-11-19 #$ $Author: serge $
 
 #ifndef LIB_FSM__ACTIONS_H
 #define LIB_FSM__ACTIONS_H
 
 #include <vector>               // std::vector
 
-#include "elements.h"           // Element
+#include "expression.h"         // Expression, Action
 
 namespace fsm {
 
-class SendSignal: public Element
+class SendSignal: public Action
 {
     SendSignal( const std::string & name, const std::vector<Argument> & arguments );
 };
 
-class SetTimer: public Element
+class SetTimer: public Action
 {
-    SetTimer( const std::string & name, const Argument & delay );
+    SetTimer( element_id_t id, const Argument & delay );
 };
 
-class FunctionCall: public Element
+class FunctionCall: public Action
 {
     FunctionCall( const std::string & name, const std::vector<Argument> & arguments );
 };
 
-class If: public Element
+class If: public Action
 {
     If( const Expression & expr, action_id_t true_id, action_id_t false_id  );
 };
 
-class NextState: public Element
+class NextState: public Action
 {
-    NextState( const std::string & name );
+    NextState( element_id_t id );
 };
 
-class Exit: public Element
+class Exit: public Action
 {
     Exit( const std::vector<Argument> & arguments );
 };

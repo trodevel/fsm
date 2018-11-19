@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9968 $ $Date:: 2018-11-14 #$ $Author: serge $
+// $Revision: 9984 $ $Date:: 2018-11-19 #$ $Author: serge $
 
 #ifndef LIB_FSM__I_SIGNAL_HANDLER_H
 #define LIB_FSM__I_SIGNAL_HANDLER_H
@@ -34,7 +34,7 @@ struct ISignalHandler
 {
     virtual ~ISignalHandler() {}
 
-    virtual void handle_signal( element_id_t signal_id, const std::vector<intern::Argument> & arguments )   = 0;
+    virtual void handle_signal( element_id_t signal_id, const std::vector<Argument> & arguments )   = 0;
 };
 
 } // namespace fsm

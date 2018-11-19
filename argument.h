@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9969 $ $Date:: 2018-11-14 #$ $Author: serge $
+// $Revision: 9984 $ $Date:: 2018-11-19 #$ $Author: serge $
 
 #ifndef LIB_FSM__ARGUMENT_H
 #define LIB_FSM__ARGUMENT_H
@@ -31,20 +31,9 @@ namespace fsm {
 struct Argument
 {
     argument_type_e type;
-    std::string     variable_name;
-    Value           value;
-};
-
-namespace intern {
-
-struct Argument
-{
-    argument_type_e type;
     element_id_t    variable_id;
     Value           value;
 };
-
-} // namespace intern
 
 } // namespace fsm
 

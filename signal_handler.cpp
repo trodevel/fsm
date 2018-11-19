@@ -1,6 +1,6 @@
 /*
 
-FSM objects.
+FSM signal handler.
 
 Copyright (C) 2018 Sergey Kolevatov
 
@@ -19,23 +19,32 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9984 $ $Date:: 2018-11-19 #$ $Author: serge $
+// $Revision: 9988 $ $Date:: 2018-11-19 #$ $Author: serge $
 
-#ifndef LIB_FSM__EXPRESSION_H
-#define LIB_FSM__EXPRESSION_H
+#include "signal_handler.h"         // self
 
-#include "argument.h"           // Argument
+#include <cassert>                  // assert
+
+#include "utils/dummy_logger.h"     // dummy_log_debug
 
 namespace fsm {
 
-struct Expression
+SignalHandler::SignalHandler( uint32_t log_id, element_id_t id, const std::string & name ):
+        log_id_( log_id ),
+        id_( id ),
+        name_( name ),
+        first_action_id_( 0 )
 {
-    bool                is_unary;
-    comparison_type_e   type;
-    Argument            lhs;
-    Argument            rhs;
-};
+    assert( id );
+}
+
+void SignalHandler::set_first_action_id( element_id_t id )
+{
+    dummy_log_trace( log_id_, "set_first_action_id: id %u", id );
+
+    assert( id );
+
+    first_action_id_    = id;
+}
 
 } // namespace fsm
-
-#endif // LIB_FSM__EXPRESSION_H
