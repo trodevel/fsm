@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9991 $ $Date:: 2018-11-19 #$ $Author: serge $
+// $Revision: 9996 $ $Date:: 2018-11-20 #$ $Author: serge $
 
 #ifndef LIB_FSM__FSM_H
 #define LIB_FSM__FSM_H
@@ -32,6 +32,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include "signal_handler.h"     // SignalHandler
 #include "action_connector.h"   // ActionConnector
 #include "i_signal_handler.h"   // ISignalHandler
+#include "utils/request_id_gen.h"   // utils::RequestIdGen
 
 namespace fsm {
 
@@ -39,17 +40,26 @@ class Fsm: public ISignalHandler
 {
 public:
     Fsm( uint32_t log_id );
+    ~Fsm();
 
     void handle_signal( element_id_t signal_id, const std::vector<Argument> & arguments ) override;
 
+    element_id_t create_state( const std::string & name );
+
 private:
-    typedef std::map<element_id_t,State>            MapIdToState;
-    typedef std::map<element_id_t,SignalHandler>    MapIdToSignalHandler;
-    typedef std::map<element_id_t,ActionConnector>  MapIdToActionConnector;
+    typedef std::map<element_id_t,State*>           MapIdToState;
+    typedef std::map<element_id_t,SignalHandler*>   MapIdToSignalHandler;
+    typedef std::map<element_id_t,ActionConnector*> MapIdToActionConnector;
+    typedef std::map<element_id_t,std::string>      MapIdToString;
 
 private:
     Fsm( const Fsm & )              = delete;
     Fsm & operator=( const Fsm & )  = delete;
+
+    void add_name( element_id_t id, const std::string & name );
+    const std::string & find_name( element_id_t id );
+
+    element_id_t get_next_id();
 
 private:
 
@@ -57,7 +67,10 @@ private:
 
     MapIdToState                map_id_to_state_;
     MapIdToSignalHandler        map_id_to_signal_handler_;
+    MapIdToActionConnector      map_id_to_action_connector_;
+    MapIdToString               map_id_to_name_;
 
+    utils::RequestIdGen         req_id_gen_;
 };
 
 } // namespace fsm
