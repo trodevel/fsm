@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9996 $ $Date:: 2018-11-20 #$ $Author: serge $
+// $Revision: 9997 $ $Date:: 2018-11-22 #$ $Author: serge $
 
 #include "fsm.h"                // self
 
@@ -58,6 +58,34 @@ element_id_t Fsm::create_state( const std::string & name )
     assert( b );
 
     dummy_log_debug( log_id_, "create_state: %s (%u)", name.c_str(), id );
+
+    add_name( id, name );
+
+    return id;
+}
+
+element_id_t Fsm::create_add_signal_handler( element_id_t state_id, const std::string & name )
+{
+    dummy_log_trace( log_id_, "create_add_signal_handler: state id %u, signal handler %s", state_id, name.c_str() );
+
+    auto it = map_id_to_state_.find( state_id );
+
+    if( it == map_id_to_state_.end() )
+    {
+        dummy_log_fatal( log_id_, "create_add_signal_handler: cannot find state id %u", state_id );
+        throw std::runtime_error( "state id " + std::to_string( state_id ) + " not found" );
+        return 0;
+    }
+
+    auto id = get_next_id();
+
+    auto signal_handler = new SignalHandler( log_id_, id, name );
+
+    auto b = map_id_to_signal_handler_.insert( std::make_pair( id, signal_handler ) ).second;
+
+    assert( b );
+
+    dummy_log_debug( log_id_, "create_add_signal_handler: created signal handler %s (%u)", name.c_str(), id );
 
     add_name( id, name );
 
