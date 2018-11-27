@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10011 $ $Date:: 2018-11-23 #$ $Author: serge $
+// $Revision: 10012 $ $Date:: 2018-11-26 #$ $Author: serge $
 
 #ifndef LIB_FSM__FSM_H
 #define LIB_FSM__FSM_H
@@ -64,6 +64,8 @@ private:
 
     void add_name( element_id_t id, const std::string & name );
     const std::string & find_name( element_id_t id );
+
+    void execute_action_flow( element_id_t action_connector_id );
 
     element_id_t get_next_id();
 
