@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9997 $ $Date:: 2018-11-22 #$ $Author: serge $
+// $Revision: 10011 $ $Date:: 2018-11-23 #$ $Author: serge $
 
 #include "fsm.h"                // self
 
@@ -77,6 +77,56 @@ element_id_t Fsm::create_add_signal_handler( element_id_t state_id, const std::s
         return 0;
     }
 
+    auto id = create_signal_handler( name );
+
+    it->second->add_signal_handler( id );
+
+    return id;
+}
+
+element_id_t Fsm::create_add_first_action_connector( element_id_t signal_handler_id, Action * action )
+{
+    dummy_log_trace( log_id_, "create_add_first_action_connector: signal handler id %u", signal_handler_id );
+
+    auto it = map_id_to_signal_handler_.find( signal_handler_id );
+
+    if( it == map_id_to_signal_handler_.end() )
+    {
+        dummy_log_fatal( log_id_, "create_add_first_action_connector: cannot find signal handler id %u", signal_handler_id );
+        throw std::runtime_error( "signal handler id " + std::to_string( signal_handler_id ) + " not found" );
+        return 0;
+    }
+
+    auto id = create_action_connector( action );
+
+    it->second->set_first_action_id( id );
+
+    return id;
+}
+
+element_id_t Fsm::create_add_next_action_connector( element_id_t action_connector_id, Action * action )
+{
+    dummy_log_trace( log_id_, "create_add_next_action_connector: action_connector_id %u", action_connector_id );
+
+    auto it = map_id_to_action_connector_.find( action_connector_id );
+
+    if( it == map_id_to_action_connector_.end() )
+    {
+        dummy_log_fatal( log_id_, "create_add_next_action_connector: cannot find action_connector_id %u", action_connector_id );
+        assert( 0 );
+        throw std::runtime_error( "signal handler id " + std::to_string( action_connector_id ) + " not found" );
+        return 0;
+    }
+
+    auto id = create_action_connector( action );
+
+    it->second->set_next_id( id );
+
+    return id;
+}
+
+element_id_t Fsm::create_signal_handler( const std::string & name )
+{
     auto id = get_next_id();
 
     auto signal_handler = new SignalHandler( log_id_, id, name );
@@ -85,9 +135,24 @@ element_id_t Fsm::create_add_signal_handler( element_id_t state_id, const std::s
 
     assert( b );
 
-    dummy_log_debug( log_id_, "create_add_signal_handler: created signal handler %s (%u)", name.c_str(), id );
+    dummy_log_debug( log_id_, "create_signal_handler: created signal handler %s (%u)", name.c_str(), id );
 
     add_name( id, name );
+
+    return id;
+}
+
+element_id_t Fsm::create_action_connector( Action * action )
+{
+    auto id = get_next_id();
+
+    auto obj = new ActionConnector( log_id_, id, action );
+
+    auto b = map_id_to_action_connector_.insert( std::make_pair( id, obj ) ).second;
+
+    assert( b );
+
+    dummy_log_debug( log_id_, "create_action_connector: created action connector %u", id );
 
     return id;
 }

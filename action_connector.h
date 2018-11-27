@@ -19,24 +19,39 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9987 $ $Date:: 2018-11-19 #$ $Author: serge $
+// $Revision: 10010 $ $Date:: 2018-11-23 #$ $Author: serge $
 
 #ifndef LIB_FSM__ACTION_CONNECTOR_H
 #define LIB_FSM__ACTION_CONNECTOR_H
 
-#include <vector>               // std::vector
+#include <memory>               // std::unique_ptr
 
 #include "actions.h"            // Action
 
 namespace fsm {
 
-struct ActionConnector
+class ActionConnector: public Element
 {
+public:
+    ActionConnector( uint32_t log_id, element_id_t id, Action * action );
+
+    void set_next_id( element_id_t id );
+    void set_alt_next_id( element_id_t id );
+
+    element_id_t get_next_id( element_id_t id ) const;
+    element_id_t get_alt_next_id( element_id_t id ) const;
+
+private:
+    ActionConnector( const ActionConnector & )              = delete;
+    ActionConnector & operator=( const ActionConnector & )  = delete;
+
+private:
+
     uint32_t    id_;
     uint32_t    next_id_;
     uint32_t    alt_next_id_;
 
-    Action      * action_;
+    std::unique_ptr<Action> action_;
 };
 
 } // namespace fsm

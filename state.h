@@ -19,12 +19,12 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9985 $ $Date:: 2018-11-19 #$ $Author: serge $
+// $Revision: 10004 $ $Date:: 2018-11-23 #$ $Author: serge $
 
 #ifndef LIB_FSM__STATE_H
 #define LIB_FSM__STATE_H
 
-#include <map>                  // std::map
+#include <set>                  // std::set
 
 #include "argument.h"           // Argument
 #include "actions.h"            // Actions
@@ -37,9 +37,9 @@ class State: public Element
 public:
     State( uint32_t log_id, element_id_t id, const std::string & name, ISignalHandler * handler );
 
-    void add_signal_handler( element_id_t id, const std::string & name );
+    void add_signal_handler( element_id_t signal_id );
 
-    void handle_signal( const std::string & name, const std::vector<Argument> & arguments );
+    void handle_signal( element_id_t signal_id, const std::vector<Argument> & arguments );
 
 private:
     State( const State & )              = delete;
@@ -53,7 +53,7 @@ private:
 
     ISignalHandler                          * handler_;
 
-    std::map<std::string,element_id_t>      map_signal_name_to_signal_id_;
+    std::set<element_id_t>                  set_signal_ids_;
 };
 
 } // namespace fsm

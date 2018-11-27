@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9985 $ $Date:: 2018-11-19 #$ $Author: serge $
+// $Revision: 10006 $ $Date:: 2018-11-23 #$ $Author: serge $
 
 #include "state.h"              // self
 
@@ -39,40 +39,38 @@ State::State( uint32_t log_id, element_id_t id, const std::string & name, ISigna
     assert( handler );
 }
 
-void State::add_signal_handler( element_id_t id, const std::string & name )
+void State::add_signal_handler( element_id_t signal_id )
 {
-    dummy_log_trace( log_id_, "add_signal_handler: id %u, %s", id, name.c_str() );
+    dummy_log_trace( log_id_, "add_signal_handler: id %u, %s", signal_id );
 
-    auto b = map_signal_name_to_signal_id_.insert( std::make_pair( name, id ) ).second;
+    auto b = set_signal_ids_.insert( signal_id ).second;
 
     if( b )
     {
-        dummy_log_debug( log_id_, "added signal handler: state %s (%u), signal %s (%u)", id_, name_.c_str(), id, name.c_str() );
+        dummy_log_debug( log_id_, "added signal handler: state %s (%u), signal %u", id_, name_.c_str(), signal_id );
     }
     else
     {
-        dummy_log_error( log_id_, "signal handler already exists: state %s (%u), signal %s (%u)", id_, name_.c_str(), id, name.c_str() );
+        dummy_log_error( log_id_, "signal handler already exists: state %s (%u), %u", id_, name_.c_str(), signal_id );
         assert( b );
     }
 }
 
-void State::handle_signal( const std::string & name, const std::vector<Argument> & arguments )
+void State::handle_signal( element_id_t signal_id, const std::vector<Argument> & arguments )
 {
-    auto it = map_signal_name_to_signal_id_.find( name );
+    auto it = set_signal_ids_.find( signal_id );
 
-    if( it != map_signal_name_to_signal_id_.end() )
+    if( it != set_signal_ids_.end() )
     {
-        auto id = it->second;
+        dummy_log_debug( log_id_, "handler_signal: state %s (%u), signal %u", id_, name_.c_str(), signal_id );
 
-        dummy_log_debug( log_id_, "handler_signal: state %s (%u), signal %s (%u)", id_, name_.c_str(), id, name.c_str() );
-
-        handler_->handle_signal( id, arguments );
+        handler_->handle_signal( signal_id, arguments );
     }
     else
     {
         // signal not found
 
-        dummy_log_info( log_id_, "handler_signal: state %s (%u), signal %s - not handled", id_, name_.c_str(), name.c_str() );
+        dummy_log_info( log_id_, "handler_signal: state %s (%u), signal %u - not handled", id_, name_.c_str(), signal_id );
     }
 }
 
