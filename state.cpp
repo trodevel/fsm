@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10013 $ $Date:: 2018-11-26 #$ $Author: serge $
+// $Revision: 10015 $ $Date:: 2018-12-02 #$ $Author: serge $
 
 #include "state.h"              // self
 
@@ -56,21 +56,23 @@ void State::add_signal_handler( const std::string & signal_name, element_id_t si
     }
 }
 
-void State::handle_signal( element_id_t signal_id, const std::vector<Argument> & arguments )
+void State::handle_signal( const std::string & signal_name, const std::vector<Argument> & arguments )
 {
-    auto it = map_signal_name_to_signal_handler_ids_.find( signal_id );
+    auto it = map_signal_name_to_signal_handler_ids_.find( signal_name );
 
     if( it != map_signal_name_to_signal_handler_ids_.end() )
     {
-        dummy_log_debug( log_id_, "handler_signal: state %s (%u), signal %u", id_, name_.c_str(), signal_id );
+        auto signal_handler_id = it->second;
 
-        handler_->handle_signal( signal_id, arguments );
+        dummy_log_debug( log_id_, "handler_signal: state %s (%u), signal %s (%u)", id_, name_.c_str(), siganl_name.c_str(), signal_handler_id );
+
+        handler_->handle_signal_handler( signal_handler_id, arguments );
     }
     else
     {
         // signal not found
 
-        dummy_log_info( log_id_, "handler_signal: state %s (%u), signal %u - not handled", id_, name_.c_str(), signal_id );
+        dummy_log_info( log_id_, "handler_signal: state %s (%u), signal %s - not handled", id_, name_.c_str(), signal_name.c_str() );
     }
 }
 

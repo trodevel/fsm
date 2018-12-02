@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10012 $ $Date:: 2018-11-26 #$ $Author: serge $
+// $Revision: 10016 $ $Date:: 2018-12-02 #$ $Author: serge $
 
 #include "fsm.h"                // self
 
@@ -43,22 +43,22 @@ Fsm::~Fsm()
     }
 }
 
-void Fsm::handle_signal( element_id_t signal_id, const std::vector<Argument> & arguments )
+void Fsm::handle_signal_handler( element_id_t signal_handler_id, const std::vector<Argument> & arguments )
 {
-    dummy_log_trace( log_id_, "handle_signal: signal id %u", signal_id );
+    dummy_log_trace( log_id_, "handle_signal_handler: signal handler id %u", signal_handler_id );
 
-    auto it = map_id_to_signal_handler_.find( signal_id );
+    auto it = map_id_to_signal_handler_.find( signal_handler_id );
 
     if( it == map_id_to_signal_handler_.end() )
     {
-        dummy_log_fatal( log_id_, "handle_signal: cannot find signal handler for signal id %u", signal_id );
-        throw std::runtime_error( "signal handler for signal id " + std::to_string( signal_id ) + " not found" );
+        dummy_log_fatal( log_id_, "handle_signal_handler: cannot find signal handler id %u", signal_handler_id );
+        throw std::runtime_error( "signal handler id " + std::to_string( signal_handler_id ) + " not found" );
         return;
     }
 
     auto & h = it->second;
 
-    dummy_log_debug( log_id_, "handle_signal: signal id %u, first action id %u", signal_id, h->first_action_id_ );
+    dummy_log_debug( log_id_, "handle_signal_handler: signal handler id %u, first action id %u", signal_handler_id, h->first_action_id_ );
 
     if( h->first_action_id_ )
     {

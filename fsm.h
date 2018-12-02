@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10012 $ $Date:: 2018-11-26 #$ $Author: serge $
+// $Revision: 10016 $ $Date:: 2018-12-02 #$ $Author: serge $
 
 #ifndef LIB_FSM__FSM_H
 #define LIB_FSM__FSM_H
@@ -42,7 +42,7 @@ public:
     Fsm( uint32_t log_id );
     ~Fsm();
 
-    void handle_signal( element_id_t signal_id, const std::vector<Argument> & arguments ) override;
+    void handle_signal_handler( element_id_t signal_handler_id, const std::vector<Argument> & arguments ) override;
 
     element_id_t create_state( const std::string & name );
     element_id_t create_add_signal_handler( element_id_t state_id, const std::string & name );
