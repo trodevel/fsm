@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10015 $ $Date:: 2018-12-02 #$ $Author: serge $
+// $Revision: 10019 $ $Date:: 2018-12-03 #$ $Author: serge $
 
 #include "state.h"              // self
 
@@ -64,7 +64,7 @@ void State::handle_signal( const std::string & signal_name, const std::vector<Ar
     {
         auto signal_handler_id = it->second;
 
-        dummy_log_debug( log_id_, "handler_signal: state %s (%u), signal %s (%u)", id_, name_.c_str(), siganl_name.c_str(), signal_handler_id );
+        dummy_log_debug( log_id_, "handler_signal: state %s (%u), signal %s (%u)", id_, name_.c_str(), signal_name.c_str(), signal_handler_id );
 
         handler_->handle_signal_handler( signal_handler_id, arguments );
     }
@@ -74,6 +74,11 @@ void State::handle_signal( const std::string & signal_name, const std::vector<Ar
 
         dummy_log_info( log_id_, "handler_signal: state %s (%u), signal %s - not handled", id_, name_.c_str(), signal_name.c_str() );
     }
+}
+
+const std::string & State::get_name() const
+{
+    return name_;
 }
 
 } // namespace fsm

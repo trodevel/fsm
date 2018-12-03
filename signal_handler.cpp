@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10001 $ $Date:: 2018-11-23 #$ $Author: serge $
+// $Revision: 10017 $ $Date:: 2018-12-03 #$ $Author: serge $
 
 #include "signal_handler.h"         // self
 
@@ -47,6 +47,11 @@ void SignalHandler::set_first_action_id( element_id_t id )
     first_action_id_    = id;
 
     dummy_log_trace( log_id_, "set_first_action_id: set first action connector id %u, for signal handler %s (%u)", id, name_.c_str(), id_ );
+}
+
+element_id_t SignalHandler::get_first_action_id() const
+{
+    return first_action_id_;
 }
 
 const std::string & SignalHandler::get_name() const

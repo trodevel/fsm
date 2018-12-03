@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10016 $ $Date:: 2018-12-02 #$ $Author: serge $
+// $Revision: 10020 $ $Date:: 2018-12-03 #$ $Author: serge $
 
 #include "fsm.h"                // self
 
@@ -58,11 +58,13 @@ void Fsm::handle_signal_handler( element_id_t signal_handler_id, const std::vect
 
     auto & h = it->second;
 
-    dummy_log_debug( log_id_, "handle_signal_handler: signal handler id %u, first action id %u", signal_handler_id, h->first_action_id_ );
+    auto first_action_id = h->get_first_action_id();
 
-    if( h->first_action_id_ )
+    dummy_log_debug( log_id_, "handle_signal_handler: signal handler id %u, first action id %u", signal_handler_id, first_action_id );
+
+    if( first_action_id )
     {
-        execute_action_flow( h->first_action_id_ );
+        execute_action_flow( first_action_id );
     }
 }
 
@@ -83,9 +85,9 @@ element_id_t Fsm::create_state( const std::string & name )
     return id;
 }
 
-element_id_t Fsm::create_add_signal_handler( element_id_t state_id, const std::string & name )
+element_id_t Fsm::create_add_signal_handler( element_id_t state_id, const std::string & signal_name )
 {
-    dummy_log_trace( log_id_, "create_add_signal_handler: state id %u, signal handler %s", state_id, name.c_str() );
+    dummy_log_trace( log_id_, "create_add_signal_handler: state id %u, signal name %s", state_id, signal_name.c_str() );
 
     auto it = map_id_to_state_.find( state_id );
 
@@ -96,9 +98,11 @@ element_id_t Fsm::create_add_signal_handler( element_id_t state_id, const std::s
         return 0;
     }
 
+    auto name = signal_name + " in " + it->second->get_name();
+
     auto id = create_signal_handler( name );
 
-    it->second->add_signal_handler( id );
+    it->second->add_signal_handler( signal_name, id );
 
     return id;
 }

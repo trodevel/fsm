@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10000 $ $Date:: 2018-11-23 #$ $Author: serge $
+// $Revision: 10017 $ $Date:: 2018-12-03 #$ $Author: serge $
 
 #ifndef LIB_FSM__SIGNAL_HANDLER_H
 #define LIB_FSM__SIGNAL_HANDLER_H
@@ -34,6 +34,7 @@ public:
     SignalHandler( uint32_t log_id, element_id_t id, const std::string & name );
 
     void set_first_action_id( element_id_t id );
+    element_id_t get_first_action_id() const;
 
     const std::string & get_name() const;
 
