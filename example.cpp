@@ -2,16 +2,23 @@
 #include <memory>
 #include <sstream>          // stringstream
 
-
 #include "utils/dummy_logger.h"         // dummy_logger::set_log_level
 
 #include "fsm.h"            // Fsm
 
-class Callback//: virtual public fsm::ICallback
+class Callback: virtual public fsm::ICallback
 {
 public:
     Callback( fsm::IFsm * dummy ):
         fsm_( dummy )
+    {
+    }
+
+    void handle_send_signal( const std::string & name, const std::vector<fsm::outer::Argument> & arguments ) override
+    {
+    }
+
+    void handle_function_call( const std::string & name, const std::vector<fsm::outer::FunctionArgument> & arguments ) override
     {
     }
 
@@ -87,6 +94,8 @@ int main()
     std::unique_ptr<fsm::Fsm> fsm( new fsm::Fsm( log_id ) );
 
     Callback test( fsm.get() );
+
+    fsm->init( & test );
 
     std::string error_msg;
 

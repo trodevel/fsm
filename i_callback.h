@@ -19,25 +19,25 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9959 $ $Date:: 2018-11-13 #$ $Author: serge $
+// $Revision: 10038 $ $Date:: 2018-12-04 #$ $Author: serge $
 
-#ifndef LIB_FSM__I_HANDLER_H
-#define LIB_FSM__I_HANDLER_H
+#ifndef LIB_FSM__I_CALLBACK_H
+#define LIB_FSM__I_CALLBACK_H
 
 #include <vector>               // std::vector
 
-#include "elements.h"           // Argument
+#include "outer_argument.h"     // SignalArgument
 
 namespace fsm {
 
-struct IHandler
+struct ICallback
 {
-    virtual ~IHandler() {}
+    virtual ~ICallback() {}
 
-    virtual void handle_send_signal( const std::string & name, const std::vector<Argument> & arguments )    = 0;
-    virtual void handle_function_call( const std::string & name, const std::vector<Argument> & arguments )  = 0;
+    virtual void handle_send_signal( const std::string & name, const std::vector<outer::Argument> & arguments )       = 0;
+    virtual void handle_function_call( const std::string & name, const std::vector<outer::FunctionArgument> & arguments )   = 0;
 };
 
 } // namespace fsm
 
-#endif // LIB_FSM__I_HANDLER_H
+#endif // LIB_FSM__I_CALLBACK_H

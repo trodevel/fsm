@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10028 $ $Date:: 2018-12-04 #$ $Author: serge $
+// $Revision: 10040 $ $Date:: 2018-12-04 #$ $Author: serge $
 
 #include "fsm.h"                // self
 
@@ -31,7 +31,8 @@ namespace fsm {
 
 Fsm::Fsm( uint32_t log_id ):
         WorkerBase( this ),
-        log_id_( log_id )
+        log_id_( log_id ),
+        callback_( nullptr )
 {
     req_id_gen_.init( 1, 1 );
 }
@@ -42,6 +43,16 @@ Fsm::~Fsm()
     {
         delete e.second;
     }
+}
+
+bool Fsm::init(
+        ICallback * callback )
+{
+    assert( callback );
+
+    callback_   = callback;
+
+    return true;
 }
 
 void Fsm::consume( const Signal * req )

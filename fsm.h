@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10027 $ $Date:: 2018-12-04 #$ $Author: serge $
+// $Revision: 10040 $ $Date:: 2018-12-04 #$ $Author: serge $
 
 #ifndef LIB_FSM__FSM_H
 #define LIB_FSM__FSM_H
@@ -37,6 +37,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include "i_signal_handler.h"   // ISignalHandler
 #include "signal.h"             // Signal
 #include "i_fsm.h"              // IFsm
+#include "i_callback.h"         // ICallback
 
 namespace fsm {
 
@@ -54,6 +55,9 @@ class Fsm:
 public:
     Fsm( uint32_t log_id );
     ~Fsm();
+
+    bool init(
+            ICallback * callback );
 
     void consume( const Signal * req ) override;
 
@@ -93,6 +97,7 @@ private:
 private:
 
     uint32_t                    log_id_;
+    ICallback                   * callback_;
 
     MapIdToState                map_id_to_state_;
     MapIdToSignalHandler        map_id_to_signal_handler_;
