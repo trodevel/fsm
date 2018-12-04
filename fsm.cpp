@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10020 $ $Date:: 2018-12-03 #$ $Author: serge $
+// $Revision: 10028 $ $Date:: 2018-12-04 #$ $Author: serge $
 
 #include "fsm.h"                // self
 
@@ -30,6 +30,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 namespace fsm {
 
 Fsm::Fsm( uint32_t log_id ):
+        WorkerBase( this ),
         log_id_( log_id )
 {
     req_id_gen_.init( 1, 1 );
@@ -41,6 +42,21 @@ Fsm::~Fsm()
     {
         delete e.second;
     }
+}
+
+void Fsm::consume( const Signal * req )
+{
+    WorkerBase::consume( req );
+}
+
+void Fsm::start()
+{
+    WorkerBase::start();
+}
+
+void Fsm::shutdown()
+{
+    WorkerBase::shutdown();
 }
 
 void Fsm::handle_signal_handler( element_id_t signal_handler_id, const std::vector<Argument> & arguments )
@@ -180,6 +196,13 @@ element_id_t Fsm::create_action_connector( Action * action )
     return id;
 }
 
+void Fsm::handle( const Signal * req )
+{
+    dummy_log_trace( log_id_, "handle: %s", typeid( *req ).name() );
+
+    delete req;
+}
+
 void Fsm::add_name( element_id_t id, const std::string & name )
 {
     map_id_to_name_.insert( std::make_pair( id, name ) );
@@ -195,6 +218,11 @@ const std::string & Fsm::find_name( element_id_t id )
         return it->second;
 
     return unk;
+}
+
+void Fsm::execute_action_flow( element_id_t action_connector_id )
+{
+    dummy_log_trace( log_id_, "execute_action_flow: action_connector_id %u", action_connector_id );
 }
 
 element_id_t Fsm::get_next_id()

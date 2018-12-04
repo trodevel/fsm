@@ -19,12 +19,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10020 $ $Date:: 2018-12-03 #$ $Author: serge $
+// $Revision: 10027 $ $Date:: 2018-12-04 #$ $Author: serge $
 
 #ifndef LIB_FSM__FSM_H
 #define LIB_FSM__FSM_H
 
 #include <map>                  // std::map
+
+#include "workt/worker_t.h"         // WorkerT
+#include "utils/request_id_gen.h"   // utils::RequestIdGen
 
 #include "argument.h"           // Argument
 #include "actions.h"            // Actions
@@ -32,15 +35,31 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include "signal_handler.h"     // SignalHandler
 #include "action_connector.h"   // ActionConnector
 #include "i_signal_handler.h"   // ISignalHandler
-#include "utils/request_id_gen.h"   // utils::RequestIdGen
+#include "signal.h"             // Signal
+#include "i_fsm.h"              // IFsm
 
 namespace fsm {
 
-class Fsm: public ISignalHandler
+class Fsm;
+
+typedef workt::WorkerT< const Signal *, Fsm> WorkerBase;
+
+class Fsm:
+        public WorkerBase,
+        public IFsm,
+        public ISignalHandler
 {
+    friend WorkerBase;
+
 public:
     Fsm( uint32_t log_id );
     ~Fsm();
+
+    void consume( const Signal * req ) override;
+
+    void start();
+
+    void shutdown();
 
     void handle_signal_handler( element_id_t signal_handler_id, const std::vector<Argument> & arguments ) override;
 
@@ -61,6 +80,8 @@ private:
 private:
     Fsm( const Fsm & )              = delete;
     Fsm & operator=( const Fsm & )  = delete;
+
+    void handle( const Signal * req );
 
     void add_name( element_id_t id, const std::string & name );
     const std::string & find_name( element_id_t id );
