@@ -63,7 +63,13 @@ private:
                 std::string name;
                 stream >> name;
 
-                std::vector<fsm::Argument> arguments;
+                if( name.empty() )
+                {
+                    std::cout << "ERROR: signal name is empty" << std::endl;
+                    return true;
+                }
+
+                std::vector<fsm::outer::Argument> arguments;
 
                 fsm_->consume( new fsm::Signal( name, arguments ) );
             }

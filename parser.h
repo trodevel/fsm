@@ -1,6 +1,6 @@
 /*
 
-Signal.
+Parser.
 
 Copyright (C) 2018 Sergey Kolevatov
 
@@ -19,29 +19,20 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10042 $ $Date:: 2018-12-05 #$ $Author: serge $
+// $Revision: 10048 $ $Date:: 2018-12-05 #$ $Author: serge $
 
-#ifndef LIB_FSM__SIGNAL_H
-#define LIB_FSM__SIGNAL_H
+#include "value.h"      // Value...
 
-#include <vector>               // std::vector
-
-#include "outer_argument.h"     // outer::Argument
-
-namespace fsm {
-
-struct Signal
+namespace fsm
 {
-    Signal( const std::string & name, const std::vector<outer::Argument> & arguments ):
-        name( name ),
-        arguments( arguments )
-    {
-    }
 
-    std::string                     name;
-    std::vector<outer::Argument>    arguments;
+class Parser
+{
+public:
+
+    static data_type_e to_data_type( const std::string & s, bool throw_on_error = true );
+    static data_type_e to_data_type_short( const std::string & s, bool throw_on_error = true );
+    static bool to_value( Value * res, const std::string & type, const std::string value_raw, bool throw_on_error = true );
 };
 
 } // namespace fsm
-
-#endif // LIB_FSM__SIGNAL_H
