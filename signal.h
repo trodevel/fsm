@@ -19,27 +19,27 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10042 $ $Date:: 2018-12-05 #$ $Author: serge $
+// $Revision: 10050 $ $Date:: 2018-12-05 #$ $Author: serge $
 
 #ifndef LIB_FSM__SIGNAL_H
 #define LIB_FSM__SIGNAL_H
 
 #include <vector>               // std::vector
 
-#include "outer_argument.h"     // outer::Argument
+#include "value.h"              // Value
 
 namespace fsm {
 
 struct Signal
 {
-    Signal( const std::string & name, const std::vector<outer::Argument> & arguments ):
+    Signal( const std::string & name, const std::vector<Value> & arguments ):
         name( name ),
         arguments( arguments )
     {
     }
 
     std::string                     name;
-    std::vector<outer::Argument>    arguments;
+    std::vector<Value>              arguments;
 };
 
 } // namespace fsm

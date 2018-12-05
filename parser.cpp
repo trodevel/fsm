@@ -19,12 +19,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10048 $ $Date:: 2018-12-05 #$ $Author: serge $
+// $Revision: 10051 $ $Date:: 2018-12-05 #$ $Author: serge $
 
 #include "parser.h"             // self
 
 #include <map>                  // std::map
 #include <stdexcept>            // std::invalid_argument
+
+#include "utils/to_value.h"     // to_value
 
 namespace fsm
 {
@@ -92,8 +94,52 @@ data_type_e Parser::to_data_type_short( const std::string & s, bool throw_on_err
     return it->second;
 }
 
-bool Parser::to_value( Value * res, const std::string & type, const std::string value_raw, bool throw_on_error )
+bool Parser::to_value( Value * res, const std::string & type_raw, const std::string & value_raw, bool throw_on_error )
 {
+    auto data_type  = to_data_type_short( type_raw, throw_on_error );
+
+    if( data_type == data_type_e::UNDEF )
+        return false;
+
+    auto b = to_typed_value( res, data_type, value_raw, throw_on_error );
+
+    return b;
+}
+
+bool Parser::to_typed_value( Value * res, data_type_e data_type, const std::string & value_raw, bool throw_on_error )
+{
+    if( data_type == data_type_e::UNDEF )
+    {
+        if( throw_on_error )
+            throw std::invalid_argument( "to_typed_value: undefined data type" );
+        else
+            return false;
+    }
+
+    res->type   = data_type;
+
+    switch( data_type )
+    {
+    case data_type_e::BOOL:
+        utils::to_value( & res->arg_b, value_raw );
+        break;
+    case data_type_e::INT:
+        utils::to_value( & res->arg_i, value_raw );
+        break;
+    case data_type_e::DOUBLE:
+        utils::to_value( & res->arg_d, value_raw );
+        break;
+    case data_type_e::STRING:
+        res->arg_s  = value_raw;
+        break;
+    default:
+        throw std::invalid_argument( "to_typed_value: should not happen" );
+        break;
+    }
+
+    harmonize( res );
+
+    return true;
 }
 
 } // namespace fsm

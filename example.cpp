@@ -5,6 +5,7 @@
 #include "utils/dummy_logger.h"         // dummy_logger::set_log_level
 
 #include "fsm.h"            // Fsm
+#include "parser.h"         // Parser
 
 class Callback: virtual public fsm::ICallback
 {
@@ -14,11 +15,11 @@ public:
     {
     }
 
-    void handle_send_signal( const std::string & name, const std::vector<fsm::outer::Argument> & arguments ) override
+    void handle_send_signal( const std::string & name, const std::vector<fsm::Value> & arguments ) override
     {
     }
 
-    void handle_function_call( const std::string & name, const std::vector<fsm::outer::FunctionArgument> & arguments ) override
+    void handle_function_call( const std::string & name, const std::vector<fsm::Value*> & arguments ) override
     {
     }
 
@@ -69,7 +70,28 @@ private:
                     return true;
                 }
 
-                std::vector<fsm::outer::Argument> arguments;
+                std::vector<fsm::Value> arguments;
+
+                while( true )
+                {
+                    std::string t;
+                    std::string v;
+
+                    bool read = ( stream >> t );
+                    if( !read )
+                        break;
+                    read = ( stream >> v );
+                    if( !read )
+                        break;
+
+                    std::cout << "t " << t << " v " << v << std::endl;
+
+                    fsm::Value val;
+
+                    fsm::Parser::to_value( & val, t, v );
+
+                    arguments.push_back( val );
+                }
 
                 fsm_->consume( new fsm::Signal( name, arguments ) );
             }

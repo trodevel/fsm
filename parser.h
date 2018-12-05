@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10048 $ $Date:: 2018-12-05 #$ $Author: serge $
+// $Revision: 10051 $ $Date:: 2018-12-05 #$ $Author: serge $
 
 #include "value.h"      // Value...
 
@@ -32,7 +32,11 @@ public:
 
     static data_type_e to_data_type( const std::string & s, bool throw_on_error = true );
     static data_type_e to_data_type_short( const std::string & s, bool throw_on_error = true );
-    static bool to_value( Value * res, const std::string & type, const std::string value_raw, bool throw_on_error = true );
+    static bool to_value( Value * res, const std::string & type, const std::string & value_raw, bool throw_on_error = true );
+
+private:
+
+    static bool to_typed_value( Value * res, data_type_e data_type, const std::string & value_raw, bool throw_on_error = true );
 };
 
 } // namespace fsm
