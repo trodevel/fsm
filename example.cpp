@@ -15,11 +15,11 @@ public:
     {
     }
 
-    void handle_send_signal( const std::string & name, const std::vector<fsm::Value> & arguments ) override
+    void handle_send_signal( uint32_t fsm_id, const std::string & name, const std::vector<fsm::Value> & arguments ) override
     {
     }
 
-    void handle_function_call( const std::string & name, const std::vector<fsm::Value*> & arguments ) override
+    void handle_function_call( uint32_t fsm_id, const std::string & name, const std::vector<fsm::Value*> & arguments ) override
     {
     }
 
@@ -77,20 +77,27 @@ private:
                     std::string t;
                     std::string v;
 
-                    bool read = ( stream >> t );
+                    auto read = static_cast<bool>( stream >> t );
                     if( !read )
                         break;
-                    read = ( stream >> v );
+                    read = static_cast<bool>( stream >> v );
                     if( !read )
                         break;
 
-                    std::cout << "t " << t << " v " << v << std::endl;
+                    //std::cout << "t " << t << " v " << v << std::endl;
 
                     fsm::Value val;
 
-                    fsm::Parser::to_value( & val, t, v );
+                    auto b = fsm::Parser::to_value( & val, t, v, false );
 
-                    arguments.push_back( val );
+                    if( b )
+                    {
+                        arguments.push_back( val );
+                    }
+                    else
+                    {
+                        std::cout << "ERROR: invalid arguments: t " << t << " v " << v << std::endl;
+                    }
                 }
 
                 fsm_->consume( new fsm::Signal( name, arguments ) );

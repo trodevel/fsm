@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10051 $ $Date:: 2018-12-05 #$ $Author: serge $
+// $Revision: 10054 $ $Date:: 2018-12-06 #$ $Author: serge $
 
 #include "parser.h"             // self
 
@@ -74,11 +74,11 @@ data_type_e Parser::to_data_type_short( const std::string & s, bool throw_on_err
     typedef std::map< std::string, Type > Map;
     static const Map m =
     {
-            { "U", Type:: UNDEF  },
-            { "B", Type:: BOOL  },
-            { "I", Type:: INT  },
-            { "F", Type:: DOUBLE  },
-            { "S", Type:: STRING  },
+            { "u", Type:: UNDEF  },
+            { "b", Type:: BOOL  },
+            { "i", Type:: INT  },
+            { "f", Type:: DOUBLE  },
+            { "s", Type:: STRING  },
     };
 
     auto it = m.find( s );

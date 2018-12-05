@@ -1,6 +1,6 @@
 /*
 
-FSM.
+FSM manager.
 
 Copyright (C) 2018 Sergey Kolevatov
 
@@ -19,10 +19,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10058 $ $Date:: 2018-12-06 #$ $Author: serge $
+// $Revision: 10059 $ $Date:: 2018-12-06 #$ $Author: serge $
 
-#ifndef LIB_FSM__FSM_H
-#define LIB_FSM__FSM_H
+#ifndef LIB_FSM__FSM_MANAGER_H
+#define LIB_FSM__FSM_MANAGER_H
 
 #include <map>                  // std::map
 
@@ -41,19 +41,29 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 namespace fsm {
 
-class Fsm:
+class FsmManager;
+
+typedef workt::WorkerT< const Signal *, FsmManager> WorkerBase;
+
+class FsmManager:
+        public WorkerBase,
+        public IFsm,
         public ISignalHandler
 {
+    friend WorkerBase;
+
 public:
-    Fsm( uint32_t log_id );
-    ~Fsm();
+    FsmManager( uint32_t log_id );
+    ~FsmManager();
 
     bool init(
             ICallback * callback );
 
-    void handle( const Signal * req );
+    void consume( uint32_t fsm_id, const Signal * req ) override;
 
-    void handle_signal_handler( element_id_t signal_handler_id, const std::vector<Argument> & arguments ) override;
+    void start();
+
+    void shutdown();
 
     element_id_t create_state( const std::string & name );
     element_id_t create_add_signal_handler( element_id_t state_id, const std::string & signal_name );
@@ -64,19 +74,12 @@ public:
     element_id_t create_action_connector( Action * action );
 
 private:
-    typedef std::map<element_id_t,State*>           MapIdToState;
-    typedef std::map<element_id_t,SignalHandler*>   MapIdToSignalHandler;
-    typedef std::map<element_id_t,ActionConnector*> MapIdToActionConnector;
-    typedef std::map<element_id_t,std::string>      MapIdToString;
 
 private:
-    Fsm( const Fsm & )              = delete;
-    Fsm & operator=( const Fsm & )  = delete;
+    FsmManager( const FsmManager & )              = delete;
+    FsmManager & operator=( const FsmManager & )  = delete;
 
-    void add_name( element_id_t id, const std::string & name );
-    const std::string & find_name( element_id_t id );
-
-    void execute_action_flow( element_id_t action_connector_id );
+    void handle( const Signal * req );
 
     element_id_t get_next_id();
 
@@ -85,14 +88,9 @@ private:
     uint32_t                    log_id_;
     ICallback                   * callback_;
 
-    MapIdToState                map_id_to_state_;
-    MapIdToSignalHandler        map_id_to_signal_handler_;
-    MapIdToActionConnector      map_id_to_action_connector_;
-    MapIdToString               map_id_to_name_;
-
     utils::RequestIdGen         req_id_gen_;
 };
 
 } // namespace fsm
 
-#endif // LIB_FSM__FSM_H
+#endif // LIB_FSM__FSM_MANAGER_H

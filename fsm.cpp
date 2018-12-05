@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10040 $ $Date:: 2018-12-04 #$ $Author: serge $
+// $Revision: 10058 $ $Date:: 2018-12-06 #$ $Author: serge $
 
 #include "fsm.h"                // self
 
@@ -30,7 +30,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 namespace fsm {
 
 Fsm::Fsm( uint32_t log_id ):
-        WorkerBase( this ),
         log_id_( log_id ),
         callback_( nullptr )
 {
@@ -53,21 +52,6 @@ bool Fsm::init(
     callback_   = callback;
 
     return true;
-}
-
-void Fsm::consume( const Signal * req )
-{
-    WorkerBase::consume( req );
-}
-
-void Fsm::start()
-{
-    WorkerBase::start();
-}
-
-void Fsm::shutdown()
-{
-    WorkerBase::shutdown();
 }
 
 void Fsm::handle_signal_handler( element_id_t signal_handler_id, const std::vector<Argument> & arguments )

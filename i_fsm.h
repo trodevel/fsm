@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10026 $ $Date:: 2018-12-04 #$ $Author: serge $
+// $Revision: 10057 $ $Date:: 2018-12-06 #$ $Author: serge $
 
 #ifndef LIB_FSM__I_FSM_H
 #define LIB_FSM__I_FSM_H
@@ -33,7 +33,7 @@ class IFsm
 public:
     virtual ~IFsm() {};
 
-    virtual void consume( const Signal * req ) = 0;
+    virtual void consume( uint32_t fsm_id, const Signal * req ) = 0;
 };
 
 } // namespace fsm
