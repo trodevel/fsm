@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10050 $ $Date:: 2018-12-05 #$ $Author: serge $
+// $Revision: 10060 $ $Date:: 2018-12-07 #$ $Author: serge $
 
 #ifndef LIB_FSM__SIGNAL_H
 #define LIB_FSM__SIGNAL_H
@@ -32,12 +32,14 @@ namespace fsm {
 
 struct Signal
 {
-    Signal( const std::string & name, const std::vector<Value> & arguments ):
+    Signal( uint32_t fsm_id, const std::string & name, const std::vector<Value> & arguments ):
+        fsm_id( fsm_id ),
         name( name ),
         arguments( arguments )
     {
     }
 
+    uint32_t                        fsm_id;
     std::string                     name;
     std::vector<Value>              arguments;
 };

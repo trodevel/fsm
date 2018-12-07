@@ -19,39 +19,60 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10059 $ $Date:: 2018-12-06 #$ $Author: serge $
+// $Revision: 10080 $ $Date:: 2018-12-07 #$ $Author: serge $
 
 #include "fsm_manager.h"        // self
 
 #include <cassert>              // assert
 
 #include "utils/dummy_logger.h"     // dummy_log_debug
+#include "utils/mutex_helper.h"     // MUTEX_SCOPE_LOCK
 
 namespace fsm {
 
-FsmManager::FsmManager( uint32_t log_id ):
+FsmManager::FsmManager():
         WorkerBase( this ),
-        log_id_( log_id ),
-        callback_( nullptr )
+        log_id_( 0 ),
+        log_id_fsm_( 0 ),
+        callback_( nullptr ),
+        scheduler_( nullptr )
 {
     req_id_gen_.init( 1, 1 );
 }
 
 FsmManager::~FsmManager()
 {
+    for( auto & e : map_id_to_fsm_ )
+    {
+        delete e.second;
+    }
+
+    dummy_log_info( log_id_, "destructed" );
 }
 
 bool FsmManager::init(
-        ICallback * callback )
+        uint32_t                            log_id,
+        uint32_t                            log_id_fsm,
+        ICallback                           * callback,
+        scheduler::IScheduler               * scheduler,
+        std::string                         * error_msg )
 {
-    assert( callback );
+    * error_msg   = "FsmManager";
 
+    assert( callback );
+    assert( scheduler );
+
+    log_id_     = log_id;
+    log_id_fsm_ = log_id_fsm;
     callback_   = callback;
+    scheduler_  = scheduler;
+
+    dummy_log_info( log_id_, "init OK" );
 
     return true;
 }
 
-void FsmManager::consume( uint32_t fsm_id, const Signal * req )
+void FsmManager::consume( const Signal * req )
 {
     WorkerBase::consume( req );
 }
@@ -66,32 +87,80 @@ void FsmManager::shutdown()
     WorkerBase::shutdown();
 }
 
-element_id_t FsmManager::create_state( const std::string & name )
+element_id_t FsmManager::create_fsm()
 {
+    MUTEX_SCOPE_LOCK( mutex_ );
+
+    auto id = req_id_gen_.get_next_request_id();
+
+    auto fsm = new Fsm( id, log_id_fsm_, this, callback_, scheduler_, & req_id_gen_ );
+
+    dummy_log_info( log_id_, "new fsm %u", id );
+
+    auto b = map_id_to_fsm_.insert( std::make_pair( id, fsm ) ).second;
+
+    assert( b );(void)b;
+
+    return id;
 }
 
-element_id_t FsmManager::create_add_signal_handler( element_id_t state_id, const std::string & signal_name )
+// must be called in the locked state
+Fsm* FsmManager::find_fsm( element_id fsm_id )
 {
+    auto it = map_id_to_fsm_.find( fsm_id );
+
+    if( it != map_id_to_fsm_.end() )
+    {
+        return it->second;
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
-element_id_t FsmManager::create_add_first_action_connector( element_id_t signal_handler_id, Action * action )
+std::mutex & FsmManager::get_mutex() const
 {
-}
-
-element_id_t FsmManager::create_add_next_action_connector( element_id_t action_connector_id, Action * action )
-{
-}
-
-element_id_t FsmManager::create_signal_handler( const std::string & name )
-{
-}
-
-element_id_t FsmManager::create_action_connector( Action * action )
-{
+    return mutex_;
 }
 
 void FsmManager::handle( const Signal * req )
 {
+    {
+        MUTEX_SCOPE_LOCK( mutex_ );
+
+        auto fsm_id = req->fsm_id;
+
+        auto it = map_id_to_fsm_.find( fsm_id );
+
+        if( it != map_id_to_fsm_.end() )
+        {
+            it->second->handle( req );
+
+            check_fsm_end( it );
+        }
+        else
+        {
+            dummy_log_error( log_id_, "fsm id %u: wrong fsm id or fsm ended", fsm_id );
+        }
+    }
+
+    release( req );
+}
+
+void FsmManager::release( const Signal * req ) const
+{
+    delete req;
+}
+
+void FsmManager::check_fsm_end( MapIdToFsm::iterator it )
+{
+    if( it->second->is_ended() )
+    {
+        delete it->second;
+
+        map_id_to_call_.erase( it );
+    }
 }
 
 element_id_t FsmManager::get_next_id()

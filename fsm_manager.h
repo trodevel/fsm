@@ -19,15 +19,17 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10059 $ $Date:: 2018-12-06 #$ $Author: serge $
+// $Revision: 10078 $ $Date:: 2018-12-07 #$ $Author: serge $
 
 #ifndef LIB_FSM__FSM_MANAGER_H
 #define LIB_FSM__FSM_MANAGER_H
 
 #include <map>                  // std::map
+#include <mutex>                // std::mutex
 
 #include "workt/worker_t.h"         // WorkerT
 #include "utils/request_id_gen.h"   // utils::RequestIdGen
+#include "scheduler/i_scheduler.h"  // IScheduler
 
 #include "argument.h"           // Argument
 #include "actions.h"            // Actions
@@ -38,6 +40,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include "signal.h"             // Signal
 #include "i_fsm.h"              // IFsm
 #include "i_callback.h"         // ICallback
+#include "fsm.h"                // Fsm
 
 namespace fsm {
 
@@ -53,40 +56,55 @@ class FsmManager:
     friend WorkerBase;
 
 public:
-    FsmManager( uint32_t log_id );
+    FsmManager();
     ~FsmManager();
 
     bool init(
-            ICallback * callback );
+            unsigned int                        log_id,
+            unsigned int                        log_id_fsm,
+            ICallback                           * callback,
+            scheduler::IScheduler               * scheduler,
+            std::string                         * error_msg );
 
-    void consume( uint32_t fsm_id, const Signal * req ) override;
+    void consume( const Signal * req ) override;
 
     void start();
 
     void shutdown();
 
-    element_id_t create_state( const std::string & name );
-    element_id_t create_add_signal_handler( element_id_t state_id, const std::string & signal_name );
-    element_id_t create_add_first_action_connector( element_id_t signal_handler_id, Action * action );
-    element_id_t create_add_next_action_connector( element_id_t action_connector_id, Action * action );
+    element_id_t create_fsm();
 
-    element_id_t create_signal_handler( const std::string & name );
-    element_id_t create_action_connector( Action * action );
+    // must be called in the locked state
+    Fsm* find_fsm( element_id fsm_id );
+
+    std::mutex      & get_mutex() const;
 
 private:
+
+    typedef std::map<uint32_t,Fsm*>    MapIdToFsm;
 
 private:
     FsmManager( const FsmManager & )              = delete;
     FsmManager & operator=( const FsmManager & )  = delete;
 
     void handle( const Signal * req );
+    void release( const Signal * req ) const;
 
     element_id_t get_next_id();
 
+    void check_fsm_end( MapIdToFsm::iterator it );
+
 private:
 
+    mutable std::mutex          mutex_;
+
     uint32_t                    log_id_;
+    uint32_t                    log_id_fsm_;
     ICallback                   * callback_;
+    scheduler::IScheduler       * scheduler_;
+
+
+    MapIdToFsm                  map_id_to_fsm_;
 
     utils::RequestIdGen         req_id_gen_;
 };

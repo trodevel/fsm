@@ -19,21 +19,33 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10058 $ $Date:: 2018-12-06 #$ $Author: serge $
+// $Revision: 10081 $ $Date:: 2018-12-07 #$ $Author: serge $
 
 #include "fsm.h"                // self
 
 #include <cassert>              // assert
 
 #include "utils/dummy_logger.h"     // dummy_log_debug
+#include "scheduler/timeout_job_aux.h"      // create_and_insert_timeout_job
 
 namespace fsm {
 
-Fsm::Fsm( uint32_t log_id ):
+Fsm::Fsm(
+        uint32_t                id,
+        uint32_t                log_id,
+        IFsm                    * parent,
+        ICallback               * callback,
+        scheduler::IScheduler   * scheduler,
+        utils::IRequestIdGen    * req_id_gen ):
+        id_( id ),
         log_id_( log_id ),
-        callback_( nullptr )
+        parent_( parent ),
+        callback_( callback ),
+        scheduler_( scheduler ),
+        req_id_gen_( req_id_gen )
+
 {
-    req_id_gen_.init( 1, 1 );
+    dummy_logi_info( log_id_, id_, "created" );
 }
 
 Fsm::~Fsm()
@@ -42,27 +54,19 @@ Fsm::~Fsm()
     {
         delete e.second;
     }
-}
 
-bool Fsm::init(
-        ICallback * callback )
-{
-    assert( callback );
-
-    callback_   = callback;
-
-    return true;
+    dummy_logi_info( log_id_, id_, "destructed" );
 }
 
 void Fsm::handle_signal_handler( element_id_t signal_handler_id, const std::vector<Argument> & arguments )
 {
-    dummy_log_trace( log_id_, "handle_signal_handler: signal handler id %u", signal_handler_id );
+    dummy_log_trace( log_id_, id_, "handle_signal_handler: signal handler id %u", signal_handler_id );
 
     auto it = map_id_to_signal_handler_.find( signal_handler_id );
 
     if( it == map_id_to_signal_handler_.end() )
     {
-        dummy_log_fatal( log_id_, "handle_signal_handler: cannot find signal handler id %u", signal_handler_id );
+        dummy_log_fatal( log_id_, id_, "handle_signal_handler: cannot find signal handler id %u", signal_handler_id );
         throw std::runtime_error( "signal handler id " + std::to_string( signal_handler_id ) + " not found" );
         return;
     }
@@ -71,7 +75,7 @@ void Fsm::handle_signal_handler( element_id_t signal_handler_id, const std::vect
 
     auto first_action_id = h->get_first_action_id();
 
-    dummy_log_debug( log_id_, "handle_signal_handler: signal handler id %u, first action id %u", signal_handler_id, first_action_id );
+    dummy_log_debug( log_id_, id_, "handle_signal_handler: signal handler id %u, first action id %u", signal_handler_id, first_action_id );
 
     if( first_action_id )
     {
@@ -89,7 +93,7 @@ element_id_t Fsm::create_state( const std::string & name )
 
     assert( b );
 
-    dummy_log_debug( log_id_, "create_state: %s (%u)", name.c_str(), id );
+    dummy_log_debug( log_id_, id_, "create_state: %s (%u)", name.c_str(), id );
 
     add_name( id, name );
 
@@ -98,13 +102,13 @@ element_id_t Fsm::create_state( const std::string & name )
 
 element_id_t Fsm::create_add_signal_handler( element_id_t state_id, const std::string & signal_name )
 {
-    dummy_log_trace( log_id_, "create_add_signal_handler: state id %u, signal name %s", state_id, signal_name.c_str() );
+    dummy_log_trace( log_id_, id_, "create_add_signal_handler: state id %u, signal name %s", state_id, signal_name.c_str() );
 
     auto it = map_id_to_state_.find( state_id );
 
     if( it == map_id_to_state_.end() )
     {
-        dummy_log_fatal( log_id_, "create_add_signal_handler: cannot find state id %u", state_id );
+        dummy_log_fatal( log_id_, id_, "create_add_signal_handler: cannot find state id %u", state_id );
         throw std::runtime_error( "state id " + std::to_string( state_id ) + " not found" );
         return 0;
     }
@@ -120,13 +124,13 @@ element_id_t Fsm::create_add_signal_handler( element_id_t state_id, const std::s
 
 element_id_t Fsm::create_add_first_action_connector( element_id_t signal_handler_id, Action * action )
 {
-    dummy_log_trace( log_id_, "create_add_first_action_connector: signal handler id %u", signal_handler_id );
+    dummy_log_trace( log_id_, id_, "create_add_first_action_connector: signal handler id %u", signal_handler_id );
 
     auto it = map_id_to_signal_handler_.find( signal_handler_id );
 
     if( it == map_id_to_signal_handler_.end() )
     {
-        dummy_log_fatal( log_id_, "create_add_first_action_connector: cannot find signal handler id %u", signal_handler_id );
+        dummy_log_fatal( log_id_, id_, "create_add_first_action_connector: cannot find signal handler id %u", signal_handler_id );
         throw std::runtime_error( "signal handler id " + std::to_string( signal_handler_id ) + " not found" );
         return 0;
     }
@@ -140,13 +144,13 @@ element_id_t Fsm::create_add_first_action_connector( element_id_t signal_handler
 
 element_id_t Fsm::create_add_next_action_connector( element_id_t action_connector_id, Action * action )
 {
-    dummy_log_trace( log_id_, "create_add_next_action_connector: action_connector_id %u", action_connector_id );
+    dummy_log_trace( log_id_, id_, "create_add_next_action_connector: action_connector_id %u", action_connector_id );
 
     auto it = map_id_to_action_connector_.find( action_connector_id );
 
     if( it == map_id_to_action_connector_.end() )
     {
-        dummy_log_fatal( log_id_, "create_add_next_action_connector: cannot find action_connector_id %u", action_connector_id );
+        dummy_log_fatal( log_id_, id_, "create_add_next_action_connector: cannot find action_connector_id %u", action_connector_id );
         assert( 0 );
         throw std::runtime_error( "signal handler id " + std::to_string( action_connector_id ) + " not found" );
         return 0;
@@ -169,7 +173,7 @@ element_id_t Fsm::create_signal_handler( const std::string & name )
 
     assert( b );
 
-    dummy_log_debug( log_id_, "create_signal_handler: created signal handler %s (%u)", name.c_str(), id );
+    dummy_log_debug( log_id_, id_, "create_signal_handler: created signal handler %s (%u)", name.c_str(), id );
 
     add_name( id, name );
 
@@ -186,14 +190,14 @@ element_id_t Fsm::create_action_connector( Action * action )
 
     assert( b );
 
-    dummy_log_debug( log_id_, "create_action_connector: created action connector %u", id );
+    dummy_log_debug( log_id_, id_, "create_action_connector: created action connector %u", id );
 
     return id;
 }
 
 void Fsm::handle( const Signal * req )
 {
-    dummy_log_trace( log_id_, "handle: %s", typeid( *req ).name() );
+    dummy_log_trace( log_id_, id_, "handle: %s", typeid( *req ).name() );
 
     delete req;
 }
@@ -215,14 +219,40 @@ const std::string & Fsm::find_name( element_id_t id )
     return unk;
 }
 
+void Fsm::schedule_signal( const Signal * s, double duration )
+{
+    dummy_logi_trace( log_id_, id_, "schedule_signal: %.2f sec, %s", duration, s->name.c_str() );
+
+    std::string error_msg;
+
+    scheduler::job_id_t sched_job_id;
+
+    auto b = scheduler::create_and_insert_timeout_job(
+            & sched_job_id,
+            & error_msg,
+            * scheduler_,
+            "timer_job",
+            scheduler::Duration( duration ),
+            std::bind( static_cast<void (IFsm::*)(const Signal * )>(&IFsm::consume), parent_, s ) );
+
+    if( b == false )
+    {
+        dummy_logi_error( log_id_, id_, "cannot set timer: %s", error_msg.c_str() );
+    }
+    else
+    {
+        dummy_logi_debug( log_id_, id_, "scheduled execution in: %.2f sec", duration );
+    }
+}
+
 void Fsm::execute_action_flow( element_id_t action_connector_id )
 {
-    dummy_log_trace( log_id_, "execute_action_flow: action_connector_id %u", action_connector_id );
+    dummy_log_trace( log_id_, id_, "execute_action_flow: action_connector_id %u", action_connector_id );
 }
 
 element_id_t Fsm::get_next_id()
 {
-    return req_id_gen_.get_next_request_id();
+    return req_id_gen_->get_next_request_id();
 }
 
 } // namespace fsm

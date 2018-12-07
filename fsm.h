@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10058 $ $Date:: 2018-12-06 #$ $Author: serge $
+// $Revision: 10081 $ $Date:: 2018-12-07 #$ $Author: serge $
 
 #ifndef LIB_FSM__FSM_H
 #define LIB_FSM__FSM_H
@@ -28,6 +28,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #include "workt/worker_t.h"         // WorkerT
 #include "utils/request_id_gen.h"   // utils::RequestIdGen
+#include "scheduler/i_scheduler.h"  // IScheduler
 
 #include "argument.h"           // Argument
 #include "actions.h"            // Actions
@@ -45,11 +46,13 @@ class Fsm:
         public ISignalHandler
 {
 public:
-    Fsm( uint32_t log_id );
+    Fsm(    uint32_t                id,
+            uint32_t                log_id,
+            IFsm                    * parent,
+            ICallback               * callback,
+            scheduler::IScheduler   * scheduler,
+            utils::IRequestIdGen    * req_id_gen );
     ~Fsm();
-
-    bool init(
-            ICallback * callback );
 
     void handle( const Signal * req );
 
@@ -76,21 +79,25 @@ private:
     void add_name( element_id_t id, const std::string & name );
     const std::string & find_name( element_id_t id );
 
+    void schedule_signal( const Signal * s, double duration );
+
     void execute_action_flow( element_id_t action_connector_id );
 
     element_id_t get_next_id();
 
 private:
 
+    uint32_t                    id_;
     uint32_t                    log_id_;
+    IFsm                        * parent_;
     ICallback                   * callback_;
+    scheduler::IScheduler       * scheduler_;
+    utils::IRequestIdGen        * req_id_gen_;
 
     MapIdToState                map_id_to_state_;
     MapIdToSignalHandler        map_id_to_signal_handler_;
     MapIdToActionConnector      map_id_to_action_connector_;
     MapIdToString               map_id_to_name_;
-
-    utils::RequestIdGen         req_id_gen_;
 };
 
 } // namespace fsm
