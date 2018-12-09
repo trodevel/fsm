@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10093 $ $Date:: 2018-12-07 #$ $Author: serge $
+// $Revision: 10097 $ $Date:: 2018-12-09 #$ $Author: serge $
 
 #ifndef LIB_FSM__STATE_H
 #define LIB_FSM__STATE_H
@@ -39,7 +39,7 @@ public:
 
     void add_signal_handler( const std::string & signal_name, element_id_t signal_handler_id );
 
-    void handle_signal( const std::string & signal_name );
+    void handle_signal( const std::string & signal_name, const std::vector<element_id_t> & arguments );
 
     const std::string & get_name() const;
 

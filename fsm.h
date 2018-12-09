@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10095 $ $Date:: 2018-12-07 #$ $Author: serge $
+// $Revision: 10107 $ $Date:: 2018-12-09 #$ $Author: serge $
 
 #ifndef LIB_FSM__FSM_H
 #define LIB_FSM__FSM_H
@@ -58,7 +58,7 @@ public:
 
     void handle( const Signal * req );
 
-    void handle_signal_handler( element_id_t signal_handler_id ) override;
+    void handle_signal_handler( element_id_t signal_handler_id, const std::vector<element_id_t> & arguments ) override;
 
     element_id_t create_state( const std::string & name );
     element_id_t create_add_signal_handler( element_id_t state_id, const std::string & signal_name );
@@ -85,18 +85,36 @@ private:
     typedef std::map<element_id_t,std::string>      MapIdToString;
     typedef std::map<std::string,element_id_t>      MapStringToId;
 
+    enum class flow_control_e
+    {
+        STOP,
+        NEXT,
+        ALT_NEXT
+    };
+
 private:
     Fsm( const Fsm & )              = delete;
     Fsm & operator=( const Fsm & )  = delete;
 
     void add_name( element_id_t id, const std::string & name );
     const std::string & get_name( element_id_t id );
+    bool delete_name( element_id_t id );
 
     void schedule_signal( const Signal * s, double duration );
 
-    void init_temp_variables_from_signal( const Signal & s );
+    void clear_temp_variables();
+    void init_temp_variables_from_signal( const Signal & s, std::vector<element_id_t> * arguments );
 
-    void execute_action_flow( element_id_t action_connector_id );
+    void execute_action_connector_id( element_id_t action_connector_id );
+    void execute_action_connector( const ActionConnector & action_connector );
+
+    flow_control_e handle_action( const Action & a );
+    flow_control_e handle_SendSignal( const Action & a );
+    flow_control_e handle_SetTimer( const Action & a );
+    flow_control_e handle_FunctionCall( const Action & a );
+    flow_control_e handle_If( const Action & a );
+    flow_control_e handle_NextState( const Action & a );
+    flow_control_e handle_Exit( const Action & a );
 
     element_id_t get_next_id();
 

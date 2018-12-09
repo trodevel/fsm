@@ -19,11 +19,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10095 $ $Date:: 2018-12-07 #$ $Author: serge $
+// $Revision: 10107 $ $Date:: 2018-12-09 #$ $Author: serge $
 
 #include "fsm.h"                // self
 
 #include <cassert>              // assert
+#include <typeindex>            // std::type_index
+#include <typeinfo>
+#include <unordered_map>
 
 #include "utils/dummy_logger.h"     // dummy_log_debug
 #include "scheduler/timeout_job_aux.h"      // create_and_insert_timeout_job
@@ -60,7 +63,7 @@ Fsm::~Fsm()
     dummy_logi_info( log_id_, id_, "destructed" );
 }
 
-void Fsm::handle_signal_handler( element_id_t signal_handler_id )
+void Fsm::handle_signal_handler( element_id_t signal_handler_id, const std::vector<element_id_t> & arguments )
 {
     dummy_log_trace( log_id_, id_, "handle_signal_handler: signal handler id %u", signal_handler_id );
 
@@ -81,7 +84,7 @@ void Fsm::handle_signal_handler( element_id_t signal_handler_id )
 
     if( first_action_id )
     {
-        execute_action_flow( first_action_id );
+        execute_action_connector_id( first_action_id );
     }
 }
 
@@ -264,9 +267,11 @@ void Fsm::handle( const Signal * req )
 
     auto state = it->second;
 
-    init_temp_variables_from_signal( * req );
+    std::vector<element_id_t> arguments;
 
-    state->handle_signal( req->name );
+    init_temp_variables_from_signal( * req, & arguments );
+
+    state->handle_signal( req->name, arguments );
 
     delete req;
 }
@@ -297,6 +302,22 @@ const std::string & Fsm::get_name( element_id_t id )
     return unk;
 }
 
+bool Fsm::delete_name( element_id_t id )
+{
+    auto it = map_id_to_name_.find( id );
+
+    if( it == map_id_to_name_.end() )
+        return false;
+
+    auto & name = it->second;
+
+    map_name_to_id_.erase( name );
+
+    map_id_to_name_.erase( it );
+
+    return true;
+}
+
 void Fsm::schedule_signal( const Signal * s, double duration )
 {
     dummy_logi_trace( log_id_, id_, "schedule_signal: %.2f sec, %s", duration, s->name.c_str() );
@@ -323,14 +344,137 @@ void Fsm::schedule_signal( const Signal * s, double duration )
     }
 }
 
-void Fsm::init_temp_variables_from_signal( const Signal & s )
+void Fsm::clear_temp_variables()
 {
+    for( auto e : map_id_to_temp_variable_ )
+    {
+        auto id = e.first;
+        auto b = delete_name( id );
 
+        assert( b ); (void)b;
+    }
+
+    dummy_logi_debug( log_id_, id_, "clear_temp_variables: %u variables deleted", map_id_to_temp_variable_.size() );
+
+    map_id_to_temp_variable_.clear();
 }
 
-void Fsm::execute_action_flow( element_id_t action_connector_id )
+void Fsm::init_temp_variables_from_signal( const Signal & s, std::vector<element_id_t> * arguments )
 {
-    dummy_log_trace( log_id_, id_, "execute_action_flow: action_connector_id %u", action_connector_id );
+    clear_temp_variables();
+}
+
+void Fsm::execute_action_connector_id( element_id_t action_connector_id )
+{
+    dummy_log_trace( log_id_, id_, "execute_action_connector_id: action_connector_id %u", action_connector_id );
+
+    auto it = map_id_to_action_connector_.find( action_connector_id );
+
+    if( it == map_id_to_action_connector_.end() )
+    {
+        dummy_logi_fatal( log_id_, id_, "cannot find action connector %u", action_connector_id );
+        assert( 0 );
+        throw std::runtime_error( "cannot find action connector " + std::to_string( action_connector_id ) );
+    }
+
+    auto action_connector = it->second;
+
+    execute_action_connector( * action_connector );
+}
+
+void Fsm::execute_action_connector( const ActionConnector & action_connector )
+{
+    auto & action = * action_connector.action_;
+
+    auto flow_control = handle_action( action );
+
+    if( flow_control == flow_control_e::NEXT )
+    {
+        execute_action_connector_id( action_connector.next_id_ );
+    }
+    else if( flow_control == flow_control_e::ALT_NEXT )
+    {
+        execute_action_connector_id( action_connector.alt_next_id_ );
+    }
+    else // if( flow_control == flow_control_e::STOP )
+    {
+        // do nothing, just exit
+    }
+}
+
+Fsm::flow_control_e Fsm::handle_action( const Action & action )
+{
+    typedef Fsm Type;
+
+    typedef void (Type::*PPMF)( const Action & r );
+
+#define MAP_ENTRY(_v)       { typeid( _v ),        & Type::handle_##_v }
+
+    static const std::unordered_map<std::type_index, PPMF> funcs =
+    {
+        MAP_ENTRY( SendSignal ),
+        MAP_ENTRY( SetTimer ),
+        MAP_ENTRY( FunctionCall ),
+        MAP_ENTRY( If ),
+        MAP_ENTRY( NextState ),
+        MAP_ENTRY( Exit ),
+    };
+
+#undef MAP_ENTRY
+#undef MAP_ENTRY_WEB
+#undef MAP_ENTRY_LEAD_REG
+
+    auto it = funcs.find( typeid( action ) );
+
+    if( it == funcs.end() )
+    {
+        dummy_logi_fatal( log_id_, id_, "unsupported action type %s", typeid( action ).name() );
+        assert( 0 );
+        throw std::runtime_error( "unsupported action type " + std::string( typeid( action ).name() ) );
+    }
+
+    auto handler = this->*it->second;
+
+    auto flow_control = handler( action );
+
+    return flow_control;
+}
+
+Fsm::flow_control_e Fsm::handle_SendSignal( const Action & aa )
+{
+    auto & a = dynamic_cast< const SendSignal &>( aa );
+
+    return flow_control_e::NEXT;
+}
+Fsm::flow_control_e Fsm::handle_SetTimer( const Action & aa )
+{
+    auto & a = dynamic_cast< const SetTimer &>( aa );
+
+    return flow_control_e::NEXT;
+}
+Fsm::flow_control_e Fsm::handle_FunctionCall( const Action & aa )
+{
+    auto & a = dynamic_cast< const FunctionCall &>( aa );
+
+    return flow_control_e::NEXT;
+}
+Fsm::flow_control_e Fsm::handle_If( const Action & aa )
+{
+    auto & a = dynamic_cast< const If &>( aa );
+
+    return flow_control_e::NEXT;
+}
+Fsm::flow_control_e Fsm::handle_NextState( const Action & aa )
+{
+    auto & a = dynamic_cast< const NextState &>( aa );
+
+    return flow_control_e::STOP;
+}
+Fsm::flow_control_e Fsm::handle_Exit( const Action & aa )
+{
+    auto & a = dynamic_cast< const Exit &>( aa );
+
+    return flow_control_e::STOP;
 }
 
 element_id_t Fsm::get_next_id()

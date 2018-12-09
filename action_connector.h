@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10010 $ $Date:: 2018-11-23 #$ $Author: serge $
+// $Revision: 10108 $ $Date:: 2018-12-09 #$ $Author: serge $
 
 #ifndef LIB_FSM__ACTION_CONNECTOR_H
 #define LIB_FSM__ACTION_CONNECTOR_H
@@ -47,9 +47,9 @@ private:
 
 private:
 
-    uint32_t    id_;
-    uint32_t    next_id_;
-    uint32_t    alt_next_id_;
+    element_id_t    id_;
+    element_id_t    next_id_;
+    element_id_t    alt_next_id_;
 
     std::unique_ptr<Action> action_;
 };
