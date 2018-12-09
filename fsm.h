@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10081 $ $Date:: 2018-12-07 #$ $Author: serge $
+// $Revision: 10095 $ $Date:: 2018-12-07 #$ $Author: serge $
 
 #ifndef LIB_FSM__FSM_H
 #define LIB_FSM__FSM_H
@@ -35,6 +35,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include "state.h"              // State
 #include "signal_handler.h"     // SignalHandler
 #include "action_connector.h"   // ActionConnector
+#include "variable.h"           // Variable
+#include "constant.h"           // Constant
 #include "i_signal_handler.h"   // ISignalHandler
 #include "signal.h"             // Signal
 #include "i_fsm.h"              // IFsm
@@ -56,7 +58,7 @@ public:
 
     void handle( const Signal * req );
 
-    void handle_signal_handler( element_id_t signal_handler_id, const std::vector<Argument> & arguments ) override;
+    void handle_signal_handler( element_id_t signal_handler_id ) override;
 
     element_id_t create_state( const std::string & name );
     element_id_t create_add_signal_handler( element_id_t state_id, const std::string & signal_name );
@@ -66,20 +68,33 @@ public:
     element_id_t create_signal_handler( const std::string & name );
     element_id_t create_action_connector( Action * action );
 
+    element_id_t create_add_variable( const std::string & name, data_type_e type );
+    element_id_t create_add_variable( const std::string & name, data_type_e type, const Value & value );
+    element_id_t create_add_constant( const std::string & name, data_type_e type, const Value & value );
+
+    void set_initial_state( element_id_t state_id );
+
+    bool is_ended() const;
+
 private:
     typedef std::map<element_id_t,State*>           MapIdToState;
     typedef std::map<element_id_t,SignalHandler*>   MapIdToSignalHandler;
     typedef std::map<element_id_t,ActionConnector*> MapIdToActionConnector;
+    typedef std::map<element_id_t,Variable*>        MapIdToVariable;
+    typedef std::map<element_id_t,Constant*>        MapIdToConstant;
     typedef std::map<element_id_t,std::string>      MapIdToString;
+    typedef std::map<std::string,element_id_t>      MapStringToId;
 
 private:
     Fsm( const Fsm & )              = delete;
     Fsm & operator=( const Fsm & )  = delete;
 
     void add_name( element_id_t id, const std::string & name );
-    const std::string & find_name( element_id_t id );
+    const std::string & get_name( element_id_t id );
 
     void schedule_signal( const Signal * s, double duration );
+
+    void init_temp_variables_from_signal( const Signal & s );
 
     void execute_action_flow( element_id_t action_connector_id );
 
@@ -94,10 +109,17 @@ private:
     scheduler::IScheduler       * scheduler_;
     utils::IRequestIdGen        * req_id_gen_;
 
+    bool                        id_ended_;
+    element_id_t                current_state_;
+
     MapIdToState                map_id_to_state_;
     MapIdToSignalHandler        map_id_to_signal_handler_;
     MapIdToActionConnector      map_id_to_action_connector_;
+    MapIdToVariable             map_id_to_variable_;
+    MapIdToVariable             map_id_to_temp_variable_;
+    MapIdToConstant             map_id_to_constant_;
     MapIdToString               map_id_to_name_;
+    MapStringToId               map_name_to_id_;
 };
 
 } // namespace fsm

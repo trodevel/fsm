@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10081 $ $Date:: 2018-12-07 #$ $Author: serge $
+// $Revision: 10095 $ $Date:: 2018-12-07 #$ $Author: serge $
 
 #include "fsm.h"                // self
 
@@ -42,7 +42,9 @@ Fsm::Fsm(
         parent_( parent ),
         callback_( callback ),
         scheduler_( scheduler ),
-        req_id_gen_( req_id_gen )
+        req_id_gen_( req_id_gen ),
+        id_ended_( false ),
+        current_state_( 0 )
 
 {
     dummy_logi_info( log_id_, id_, "created" );
@@ -58,7 +60,7 @@ Fsm::~Fsm()
     dummy_logi_info( log_id_, id_, "destructed" );
 }
 
-void Fsm::handle_signal_handler( element_id_t signal_handler_id, const std::vector<Argument> & arguments )
+void Fsm::handle_signal_handler( element_id_t signal_handler_id )
 {
     dummy_log_trace( log_id_, id_, "handle_signal_handler: signal handler id %u", signal_handler_id );
 
@@ -81,6 +83,11 @@ void Fsm::handle_signal_handler( element_id_t signal_handler_id, const std::vect
     {
         execute_action_flow( first_action_id );
     }
+}
+
+bool Fsm::is_ended() const
+{
+    return id_ended_;
 }
 
 element_id_t Fsm::create_state( const std::string & name )
@@ -195,9 +202,71 @@ element_id_t Fsm::create_action_connector( Action * action )
     return id;
 }
 
+element_id_t Fsm::create_add_variable( const std::string & name, data_type_e type )
+{
+    Value dummy;
+
+    dummy.type  = type;
+
+    return create_add_variable( name, type, dummy );
+}
+
+element_id_t Fsm::create_add_variable( const std::string & name, data_type_e type, const Value & value )
+{
+    auto id = get_next_id();
+
+    auto obj = new Variable( log_id_, id, name, type, value );
+
+    auto b = map_id_to_variable_.insert( std::make_pair( id, obj ) ).second;
+
+    assert( b );
+
+    dummy_log_debug( log_id_, id_, "create_add_variable: created variable %u", id );
+
+    add_name( id, name );
+
+    return id;
+}
+
+element_id_t Fsm::create_add_constant( const std::string & name, data_type_e type, const Value & value )
+{
+    auto id = get_next_id();
+
+    auto obj = new Constant( log_id_, id, name, type, value );
+
+    auto b = map_id_to_constant_.insert( std::make_pair( id, obj ) ).second;
+
+    assert( b );
+
+    dummy_log_debug( log_id_, id_, "create_add_constant: created constant %u", id );
+
+    add_name( id, name );
+
+    return id;
+}
+
+void Fsm::set_initial_state( element_id_t state_id )
+{
+    dummy_log_trace( log_id_, id_, "set_initial_state: %u", state_id );
+
+    assert( current_state_ == 0 );
+
+    current_state_  = state_id;
+}
+
 void Fsm::handle( const Signal * req )
 {
     dummy_log_trace( log_id_, id_, "handle: %s", typeid( *req ).name() );
+
+    auto it = map_id_to_state_.find( current_state_ );
+
+    assert( it != map_id_to_state_.end() );
+
+    auto state = it->second;
+
+    init_temp_variables_from_signal( * req );
+
+    state->handle_signal( req->name );
 
     delete req;
 }
@@ -205,9 +274,18 @@ void Fsm::handle( const Signal * req )
 void Fsm::add_name( element_id_t id, const std::string & name )
 {
     map_id_to_name_.insert( std::make_pair( id, name ) );
+
+    auto p = map_name_to_id_.insert( std::make_pair( name, id ) );
+
+    if( p.second == false )
+    {
+        dummy_log_fatal( log_id_, id_, "add_name: cannot add element %s (%u), another element exists %s (%u)", name.c_str(), id, name.c_str(), p.first->second );
+        assert( 0 );
+        throw std::runtime_error( "cannot add element " + name + " " + std::to_string( id ) );
+    }
 }
 
-const std::string & Fsm::find_name( element_id_t id )
+const std::string & Fsm::get_name( element_id_t id )
 {
     static const std::string unk( "?" );
 
@@ -243,6 +321,11 @@ void Fsm::schedule_signal( const Signal * s, double duration )
     {
         dummy_logi_debug( log_id_, id_, "scheduled execution in: %.2f sec", duration );
     }
+}
+
+void Fsm::init_temp_variables_from_signal( const Signal & s )
+{
+
 }
 
 void Fsm::execute_action_flow( element_id_t action_connector_id )

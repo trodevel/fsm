@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10019 $ $Date:: 2018-12-03 #$ $Author: serge $
+// $Revision: 10093 $ $Date:: 2018-12-07 #$ $Author: serge $
 
 #include "state.h"              // self
 
@@ -56,7 +56,7 @@ void State::add_signal_handler( const std::string & signal_name, element_id_t si
     }
 }
 
-void State::handle_signal( const std::string & signal_name, const std::vector<Argument> & arguments )
+void State::handle_signal( const std::string & signal_name )
 {
     auto it = map_signal_name_to_signal_handler_ids_.find( signal_name );
 
@@ -66,7 +66,7 @@ void State::handle_signal( const std::string & signal_name, const std::vector<Ar
 
         dummy_log_debug( log_id_, "handler_signal: state %s (%u), signal %s (%u)", id_, name_.c_str(), signal_name.c_str(), signal_handler_id );
 
-        handler_->handle_signal_handler( signal_handler_id, arguments );
+        handler_->handle_signal_handler( signal_handler_id );
     }
     else
     {
