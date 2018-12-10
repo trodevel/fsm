@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10118 $ $Date:: 2018-12-10 #$ $Author: serge $
+// $Revision: 10119 $ $Date:: 2018-12-10 #$ $Author: serge $
 
 #include "fsm.h"                // self
 
@@ -457,8 +457,6 @@ Fsm::flow_control_e Fsm::handle_action( const Action & action )
     };
 
 #undef MAP_ENTRY
-#undef MAP_ENTRY_WEB
-#undef MAP_ENTRY_LEAD_REG
 
     auto it = funcs.find( typeid( action ) );
 
