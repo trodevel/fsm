@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10107 $ $Date:: 2018-12-09 #$ $Author: serge $
+// $Revision: 10118 $ $Date:: 2018-12-10 #$ $Author: serge $
 
 #include "fsm.h"                // self
 
@@ -362,6 +362,42 @@ void Fsm::clear_temp_variables()
 void Fsm::init_temp_variables_from_signal( const Signal & s, std::vector<element_id_t> * arguments )
 {
     clear_temp_variables();
+
+    auto i = 0;
+
+    for( auto v : s.arguments )
+    {
+        ++i;
+
+        auto id = create_temp_variable( v, i );
+
+        arguments->push_back( id );
+    }
+
+    dummy_logi_debug( log_id_, id_, "created %u temp variables", i );
+}
+
+element_id_t Fsm::create_temp_variable( const Value & v, unsigned n )
+{
+    auto id = get_next_id();
+
+    auto name = "$" + std::to_string( n );
+
+    auto obj = new Variable( log_id_, id, name, v.type, v );
+
+    auto b = map_id_to_temp_variable_.insert( std::make_pair( id, obj ) ).second;
+
+    assert( b );
+
+    dummy_log_debug( log_id_, id_, "create_temp_variable: created variable %u", id );
+
+    add_name( id, name );
+
+    return id;
+}
+
+void Fsm::convert_arguments_to_values( std::vector<Value> * values, const std::vector<Argument> & arguments )
+{
 }
 
 void Fsm::execute_action_connector_id( element_id_t action_connector_id )
@@ -443,6 +479,12 @@ Fsm::flow_control_e Fsm::handle_action( const Action & action )
 Fsm::flow_control_e Fsm::handle_SendSignal( const Action & aa )
 {
     auto & a = dynamic_cast< const SendSignal &>( aa );
+
+    std::vector<Value> values;
+
+    convert_arguments_to_values( & values, a.arguments );
+
+    callback_->handle_send_signal( id_, a.name, values );
 
     return flow_control_e::NEXT;
 }

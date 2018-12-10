@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9986 $ $Date:: 2018-11-19 #$ $Author: serge $
+// $Revision: 10116 $ $Date:: 2018-12-10 #$ $Author: serge $
 
 #ifndef LIB_FSM__ACTIONS_H
 #define LIB_FSM__ACTIONS_H
@@ -30,34 +30,51 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 namespace fsm {
 
-class SendSignal: public Action
+struct SendSignal: public Action
 {
-    SendSignal( const std::string & name, const std::vector<Argument> & arguments );
+    SendSignal( const std::string & name, const std::vector<Argument> & arguments ):
+        name( name ),
+        arguments( arguments )
+    {
+    }
+
+    std::string             name;
+    std::vector<Argument>   arguments;
 };
 
 class SetTimer: public Action
 {
-    SetTimer( element_id_t id, const Argument & delay );
+    SetTimer( element_id_t id, const Argument & delay )
+    {
+    }
 };
 
 class FunctionCall: public Action
 {
-    FunctionCall( const std::string & name, const std::vector<Argument> & arguments );
+    FunctionCall( const std::string & name, const std::vector<Argument> & arguments )
+    {
+    }
 };
 
 class If: public Action
 {
-    If( const Expression & expr, action_id_t true_id, action_id_t false_id  );
+    If( const Expression & expr, action_id_t true_id, action_id_t false_id  )
+    {
+    }
 };
 
 class NextState: public Action
 {
-    NextState( element_id_t id );
+    NextState( element_id_t id )
+    {
+    }
 };
 
 class Exit: public Action
 {
-    Exit( const std::vector<Argument> & arguments );
+    Exit( const std::vector<Argument> & arguments )
+    {
+    }
 };
 
 } // namespace fsm

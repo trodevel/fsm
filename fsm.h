@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10107 $ $Date:: 2018-12-09 #$ $Author: serge $
+// $Revision: 10118 $ $Date:: 2018-12-10 #$ $Author: serge $
 
 #ifndef LIB_FSM__FSM_H
 #define LIB_FSM__FSM_H
@@ -104,6 +104,9 @@ private:
 
     void clear_temp_variables();
     void init_temp_variables_from_signal( const Signal & s, std::vector<element_id_t> * arguments );
+    element_id_t create_temp_variable( const Value & v, unsigned n );
+
+    void convert_arguments_to_values( std::vector<Value> * values, const std::vector<Argument> & arguments );
 
     void execute_action_connector_id( element_id_t action_connector_id );
     void execute_action_connector( const ActionConnector & action_connector );

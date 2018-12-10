@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9984 $ $Date:: 2018-11-19 #$ $Author: serge $
+// $Revision: 10114 $ $Date:: 2018-12-10 #$ $Author: serge $
 
 #ifndef LIB_FSM__ARGUMENT_H
 #define LIB_FSM__ARGUMENT_H
@@ -32,6 +32,7 @@ struct Argument
 {
     argument_type_e type;
     element_id_t    variable_id;
+    std::string     variable_name;  // alternative variable name, variable_id must be 0
     Value           value;
 };
 
