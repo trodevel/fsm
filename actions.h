@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10116 $ $Date:: 2018-12-10 #$ $Author: serge $
+// $Revision: 10124 $ $Date:: 2018-12-11 #$ $Author: serge $
 
 #ifndef LIB_FSM__ACTIONS_H
 #define LIB_FSM__ACTIONS_H
@@ -42,11 +42,16 @@ struct SendSignal: public Action
     std::vector<Argument>   arguments;
 };
 
-class SetTimer: public Action
+struct SetTimer: public Action
 {
-    SetTimer( element_id_t id, const Argument & delay )
+    SetTimer( element_id_t timer_id, const Argument & delay ):
+        timer_id( timer_id ),
+        delay( delay )
     {
     }
+
+    element_id_t            timer_id;
+    Argument                delay;
 };
 
 class FunctionCall: public Action

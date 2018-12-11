@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10119 $ $Date:: 2018-12-10 #$ $Author: serge $
+// $Revision: 10123 $ $Date:: 2018-12-11 #$ $Author: serge $
 
 #include "fsm.h"                // self
 
@@ -302,6 +302,16 @@ const std::string & Fsm::get_name( element_id_t id )
     return unk;
 }
 
+element_id_t Fsm::find_element( const std::string & name ) const
+{
+    auto it = map_name_to_id_.find( name );
+
+    if( it == map_id_to_name_.end() )
+        return 0;
+
+    return it->second;
+}
+
 bool Fsm::delete_name( element_id_t id )
 {
     auto it = map_id_to_name_.find( id );
@@ -398,6 +408,82 @@ element_id_t Fsm::create_temp_variable( const Value & v, unsigned n )
 
 void Fsm::convert_arguments_to_values( std::vector<Value> * values, const std::vector<Argument> & arguments )
 {
+    dummy_log_trace( log_id_, id_, "convert_arguments_to_values: convert %u arguments", arguments.size() );
+
+    for( auto & e : arguments )
+    {
+        Value v;
+
+        convert_argument_to_value( & v, e );
+
+        values->push_back( v );
+    }
+}
+
+void Fsm::convert_argument_to_value( Value * value, const Argument & argument )
+{
+    if( argument.type == argument_type_e::VALUE )
+    {
+        assign( value, argument.value );
+    }
+    else // if( argument.type == argument_type_e::VARIABLE_IN ) // or VARIABLE_OUT
+    {
+        if( argument.variable_id != 0 && argument.variable_name.empty() )
+        {
+            convert_variable_to_value( value, argument.variable_id );
+        }
+        else if( argument.variable_id == 0 && argument.variable_name.empty() == false )
+        {
+            auto variable_id = find_element( argument.variable_name );
+
+            assert( variable_id );
+
+            convert_variable_to_value( value, argument.variable_id );
+        }
+        else
+        {
+            dummy_log_fatal( log_id_, id_, "convert_argument_to_value: illegal combination: variable_id %u, variable_name '%s'", argument.variable_id, argument.variable_name.c_str() );
+            assert( 0 );
+            throw std::runtime_error( "convert_argument_to_value: illegal combination" );
+        }
+    }
+}
+
+void Fsm::convert_variable_to_value( Value * value, element_id_t variable_id )
+{
+    {
+        auto it = map_id_to_variable_.find( variable_id );
+
+        if( it != map_id_to_variable_.end() )
+        {
+            assign( value, it->second->get() );
+            return;
+        }
+    }
+
+    {
+        auto it = map_id_to_temp_variable_.find( variable_id );
+
+        if( it != map_id_to_temp_variable_.end() )
+        {
+            assign( value, it->second->get() );
+            return;
+        }
+    }
+
+    {
+        auto it = map_id_to_constant_.find( variable_id );
+
+        if( it != map_id_to_constant_.end() )
+        {
+            assign( value, it->second->get() );
+            return;
+        }
+    }
+
+    dummy_log_fatal( log_id_, id_, "convert_variable_to_value: variable_id %u not found in the list of variables, temp variables, and constants", variable_id );
+    assert( 0 );
+    throw std::runtime_error( "convert_variable_to_value: variable_id " + std::to_string( variable_id ) + " not found in the list of variables, temp variables, and constants" );
 }
 
 void Fsm::execute_action_connector_id( element_id_t action_connector_id )

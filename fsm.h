@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10118 $ $Date:: 2018-12-10 #$ $Author: serge $
+// $Revision: 10121 $ $Date:: 2018-12-11 #$ $Author: serge $
 
 #ifndef LIB_FSM__FSM_H
 #define LIB_FSM__FSM_H
@@ -98,6 +98,7 @@ private:
 
     void add_name( element_id_t id, const std::string & name );
     const std::string & get_name( element_id_t id );
+    element_id_t find_element( const std::string & name ) const;
     bool delete_name( element_id_t id );
 
     void schedule_signal( const Signal * s, double duration );
@@ -107,6 +108,8 @@ private:
     element_id_t create_temp_variable( const Value & v, unsigned n );
 
     void convert_arguments_to_values( std::vector<Value> * values, const std::vector<Argument> & arguments );
+    void convert_argument_to_value( Value * value, const Argument & argument );
+    void convert_variable_to_value( Value * value, element_id_t variable_id );
 
     void execute_action_connector_id( element_id_t action_connector_id );
     void execute_action_connector( const ActionConnector & action_connector );
