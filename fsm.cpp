@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10123 $ $Date:: 2018-12-11 #$ $Author: serge $
+// $Revision: 10134 $ $Date:: 2018-12-12 #$ $Author: serge $
 
 #include "fsm.h"                // self
 
@@ -169,6 +169,23 @@ element_id_t Fsm::create_add_next_action_connector( element_id_t action_connecto
     auto id = create_action_connector( action );
 
     it->second->set_next_id( id );
+
+    return id;
+}
+
+element_id_t Fsm::create_add_timer( const std::string & name )
+{
+    auto id = get_next_id();
+
+    auto timer = new Timer( log_id_, id, name );
+
+    auto b = map_id_to_timer_.insert( std::make_pair( id, timer ) ).second;
+
+    assert( b );
+
+    dummy_log_debug( log_id_, id_, "create_add_timer: created timer %s (%u)", name.c_str(), id );
+
+    add_name( id, name );
 
     return id;
 }
@@ -328,32 +345,6 @@ bool Fsm::delete_name( element_id_t id )
     return true;
 }
 
-void Fsm::schedule_signal( const Signal * s, double duration )
-{
-    dummy_logi_trace( log_id_, id_, "schedule_signal: %.2f sec, %s", duration, s->name.c_str() );
-
-    std::string error_msg;
-
-    scheduler::job_id_t sched_job_id;
-
-    auto b = scheduler::create_and_insert_timeout_job(
-            & sched_job_id,
-            & error_msg,
-            * scheduler_,
-            "timer_job",
-            scheduler::Duration( duration ),
-            std::bind( static_cast<void (IFsm::*)(const Signal * )>(&IFsm::consume), parent_, s ) );
-
-    if( b == false )
-    {
-        dummy_logi_error( log_id_, id_, "cannot set timer: %s", error_msg.c_str() );
-    }
-    else
-    {
-        dummy_logi_debug( log_id_, id_, "scheduled execution in: %.2f sec", duration );
-    }
-}
-
 void Fsm::clear_temp_variables()
 {
     for( auto e : map_id_to_temp_variable_ )
@@ -486,6 +477,47 @@ void Fsm::convert_variable_to_value( Value * value, element_id_t variable_id )
     throw std::runtime_error( "convert_variable_to_value: variable_id " + std::to_string( variable_id ) + " not found in the list of variables, temp variables, and constants" );
 }
 
+void Fsm::set_timer( Timer * timer, const Value & delay )
+{
+    dummy_log_trace( log_id_, id_, "set_timer: timer %s (%u), %.2f sec", timer->get_name().c_str(), timer->get_id(), delay.arg_d );
+
+    auto d = delay.arg_d;
+
+    auto & name = timer->get_name();
+
+    std::vector<Argument> dummy;
+
+    auto signal = new Signal( id_, name, dummy );
+
+    std::string error_msg;
+
+    scheduler::job_id_t sched_job_id;
+
+    auto b = scheduler::create_and_insert_timeout_job(
+            & sched_job_id,
+            & error_msg,
+            * scheduler_,
+            "timer_job",
+            scheduler::Duration( delay.arg_d ),
+            std::bind( static_cast<void (IFsm::*)(const Signal * )>(&IFsm::consume), parent_, signal ) );
+
+    if( b == false )
+    {
+        dummy_logi_error( log_id_, id_, "cannot set timer: %s", error_msg.c_str() );
+
+        timer->set_job_id( 0 );
+
+        delete signal;
+    }
+    else
+    {
+        dummy_logi_debug( log_id_, id_, "timer %s, scheduled execution in: %.2f sec", name.c_str(), delay.arg_d );
+
+        timer->set_job_id( sched_job_id );
+    }
+
+}
+
 void Fsm::execute_action_connector_id( element_id_t action_connector_id )
 {
     dummy_log_trace( log_id_, id_, "execute_action_connector_id: action_connector_id %u", action_connector_id );
@@ -575,6 +607,21 @@ Fsm::flow_control_e Fsm::handle_SendSignal( const Action & aa )
 Fsm::flow_control_e Fsm::handle_SetTimer( const Action & aa )
 {
     auto & a = dynamic_cast< const SetTimer &>( aa );
+
+    auto it = map_id_to_timer_.find( a.timer_id );
+
+    if( it == map_id_to_timer_.end() )
+    {
+        dummy_logi_fatal( log_id_, id_, "cannot find timer %u", a.timer_id );
+        assert( 0 );
+        throw std::runtime_error( "cannot find timer " + std::to_string( a.timer_id ) );
+    }
+
+    Value delay;
+
+    convert_argument_to_value( & delay, a.delay );
+
+    set_timer( it->second, delay );
 
     return flow_control_e::NEXT;
 }

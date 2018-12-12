@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10121 $ $Date:: 2018-12-11 #$ $Author: serge $
+// $Revision: 10134 $ $Date:: 2018-12-12 #$ $Author: serge $
 
 #ifndef LIB_FSM__FSM_H
 #define LIB_FSM__FSM_H
@@ -37,6 +37,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include "action_connector.h"   // ActionConnector
 #include "variable.h"           // Variable
 #include "constant.h"           // Constant
+#include "timer.h"              // Timer
 #include "i_signal_handler.h"   // ISignalHandler
 #include "signal.h"             // Signal
 #include "i_fsm.h"              // IFsm
@@ -64,6 +65,7 @@ public:
     element_id_t create_add_signal_handler( element_id_t state_id, const std::string & signal_name );
     element_id_t create_add_first_action_connector( element_id_t signal_handler_id, Action * action );
     element_id_t create_add_next_action_connector( element_id_t action_connector_id, Action * action );
+    element_id_t create_add_timer( const std::string & name );
 
     element_id_t create_signal_handler( const std::string & name );
     element_id_t create_action_connector( Action * action );
@@ -82,6 +84,7 @@ private:
     typedef std::map<element_id_t,ActionConnector*> MapIdToActionConnector;
     typedef std::map<element_id_t,Variable*>        MapIdToVariable;
     typedef std::map<element_id_t,Constant*>        MapIdToConstant;
+    typedef std::map<element_id_t,Timer*>           MapIdToTimer;
     typedef std::map<element_id_t,std::string>      MapIdToString;
     typedef std::map<std::string,element_id_t>      MapStringToId;
 
@@ -101,8 +104,6 @@ private:
     element_id_t find_element( const std::string & name ) const;
     bool delete_name( element_id_t id );
 
-    void schedule_signal( const Signal * s, double duration );
-
     void clear_temp_variables();
     void init_temp_variables_from_signal( const Signal & s, std::vector<element_id_t> * arguments );
     element_id_t create_temp_variable( const Value & v, unsigned n );
@@ -110,6 +111,8 @@ private:
     void convert_arguments_to_values( std::vector<Value> * values, const std::vector<Argument> & arguments );
     void convert_argument_to_value( Value * value, const Argument & argument );
     void convert_variable_to_value( Value * value, element_id_t variable_id );
+
+    void set_timer( Timer * timer, const Value & delay );
 
     void execute_action_connector_id( element_id_t action_connector_id );
     void execute_action_connector( const ActionConnector & action_connector );
@@ -142,6 +145,7 @@ private:
     MapIdToVariable             map_id_to_variable_;
     MapIdToVariable             map_id_to_temp_variable_;
     MapIdToConstant             map_id_to_constant_;
+    MapIdToTimer                map_id_to_timer_;
     MapIdToString               map_id_to_name_;
     MapStringToId               map_name_to_id_;
 };
