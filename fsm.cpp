@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10134 $ $Date:: 2018-12-12 #$ $Author: serge $
+// $Revision: 10144 $ $Date:: 2018-12-12 #$ $Author: serge $
 
 #include "fsm.h"                // self
 
@@ -397,6 +397,29 @@ element_id_t Fsm::create_temp_variable( const Value & v, unsigned n )
     return id;
 }
 
+Variable* Fsm::find_variable( element_id_t id )
+{
+    {
+        auto it = map_id_to_variable_.find( id );
+
+        if( it != map_id_to_variable_.end() )
+        {
+            return it->second;
+        }
+    }
+
+    {
+        auto it = map_id_to_temp_variable_.find( id );
+
+        if( it != map_id_to_temp_variable_.end() )
+        {
+            return it->second;
+        }
+    }
+
+    return nullptr;
+}
+
 void Fsm::convert_arguments_to_values( std::vector<Value> * values, const std::vector<Argument> & arguments )
 {
     dummy_log_trace( log_id_, id_, "convert_arguments_to_values: convert %u arguments", arguments.size() );
@@ -477,6 +500,40 @@ void Fsm::convert_variable_to_value( Value * value, element_id_t variable_id )
     throw std::runtime_error( "convert_variable_to_value: variable_id " + std::to_string( variable_id ) + " not found in the list of variables, temp variables, and constants" );
 }
 
+void Fsm::convert_values_to_value_pointers( std::vector<Value*> * value_pointers, std::vector<Value> & values )
+{
+    for( auto & e : values )
+    {
+        auto * p = & e;
+
+        value_pointers->push_back( p );
+    }
+}
+
+void Fsm::import_values_into_arguments( const std::vector<Argument> & arguments, const std::vector<Value> & values )
+{
+    dummy_log_trace( log_id_, id_, "import_values_into_arguments: %u arguments", arguments.size() );
+
+    assert( arguments.size() == values.size() );
+
+    unsigned i = 0;
+    unsigned imported = 0;
+
+    for( auto & e : arguments )
+    {
+        // ignore all variables except output variables
+        if( e.type != argument_type_e::VARIABLE_OUT )
+        {
+            ++i;
+            continue;
+        }
+
+        ++imported;
+    }
+
+    dummy_log_trace( log_id_, id_, "import_values_into_arguments: imported %u values", imported );
+}
+
 void Fsm::set_timer( Timer * timer, const Value & delay )
 {
     dummy_log_trace( log_id_, id_, "set_timer: timer %s (%u), %.2f sec", timer->get_name().c_str(), timer->get_id(), delay.arg_d );
@@ -516,6 +573,39 @@ void Fsm::set_timer( Timer * timer, const Value & delay )
         timer->set_job_id( sched_job_id );
     }
 
+}
+
+void Fsm::reset_timer( Timer * timer )
+{
+    dummy_log_trace( log_id_, id_, "reset_timer: timer %s (%u)", timer->get_name().c_str(), timer->get_id() );
+
+    auto & name = timer->get_name();
+
+    auto sched_job_id = timer->get_job_id();
+
+    if( sched_job_id == 0 )
+    {
+        dummy_log_trace( log_id_, id_, "reset_timer: job id is 0" );
+
+        return;
+    }
+
+    std::string error_msg;
+
+    auto b = scheduler_->delete_job( & error_msg, sched_job_id );
+
+    dummy_log_trace( log_id_, id_, "reset_timer: job id %u", sched_job_id );
+
+    if( b == false )
+    {
+        dummy_logi_error( log_id_, id_, "cannot reset timer: %s", error_msg.c_str() );
+    }
+    else
+    {
+        dummy_logi_debug( log_id_, id_, "reset timer %s", name.c_str() );
+    }
+
+    timer->set_job_id( 0 );
 }
 
 void Fsm::execute_action_connector_id( element_id_t action_connector_id )
@@ -568,6 +658,7 @@ Fsm::flow_control_e Fsm::handle_action( const Action & action )
     {
         MAP_ENTRY( SendSignal ),
         MAP_ENTRY( SetTimer ),
+        MAP_ENTRY( ResetTimer ),
         MAP_ENTRY( FunctionCall ),
         MAP_ENTRY( If ),
         MAP_ENTRY( NextState ),
@@ -604,6 +695,7 @@ Fsm::flow_control_e Fsm::handle_SendSignal( const Action & aa )
 
     return flow_control_e::NEXT;
 }
+
 Fsm::flow_control_e Fsm::handle_SetTimer( const Action & aa )
 {
     auto & a = dynamic_cast< const SetTimer &>( aa );
@@ -625,12 +717,44 @@ Fsm::flow_control_e Fsm::handle_SetTimer( const Action & aa )
 
     return flow_control_e::NEXT;
 }
+
+Fsm::flow_control_e Fsm::handle_ResetTimer( const Action & aa )
+{
+    auto & a = dynamic_cast< const ResetTimer &>( aa );
+
+    auto it = map_id_to_timer_.find( a.timer_id );
+
+    if( it == map_id_to_timer_.end() )
+    {
+        dummy_logi_fatal( log_id_, id_, "cannot find timer %u", a.timer_id );
+        assert( 0 );
+        throw std::runtime_error( "cannot find timer " + std::to_string( a.timer_id ) );
+    }
+
+    reset_timer( it->second );
+
+    return flow_control_e::NEXT;
+}
+
 Fsm::flow_control_e Fsm::handle_FunctionCall( const Action & aa )
 {
     auto & a = dynamic_cast< const FunctionCall &>( aa );
 
+    std::vector<Value> values;
+
+    convert_arguments_to_values( & values, a.arguments );
+
+    std::vector<Value*> value_pointers;
+
+    convert_values_to_value_pointers( & value_pointers, values );
+
+    callback_->handle_function_call( id_, a.name, value_pointers );
+
+    import_values_into_arguments( a.arguments, values );
+
     return flow_control_e::NEXT;
 }
+
 Fsm::flow_control_e Fsm::handle_If( const Action & aa )
 {
     auto & a = dynamic_cast< const If &>( aa );
@@ -641,6 +765,17 @@ Fsm::flow_control_e Fsm::handle_NextState( const Action & aa )
 {
     auto & a = dynamic_cast< const NextState &>( aa );
 
+    auto it = map_id_to_timer_.find( a.state_id );
+
+    if( it == map_id_to_timer_.end() )
+    {
+        dummy_logi_fatal( log_id_, id_, "cannot find state %u", a.state_id );
+        assert( 0 );
+        throw std::runtime_error( "cannot find state " + std::to_string( a.state_id ) );
+    }
+
+    next_state( a.state_id );
+
     return flow_control_e::STOP;
 }
 Fsm::flow_control_e Fsm::handle_Exit( const Action & aa )
@@ -648,6 +783,13 @@ Fsm::flow_control_e Fsm::handle_Exit( const Action & aa )
     auto & a = dynamic_cast< const Exit &>( aa );
 
     return flow_control_e::STOP;
+}
+
+void Fsm::next_state( element_id_t state )
+{
+    dummy_logi_debug( log_id_, id_, "switched state %s (%u) --> %s (%u)", get_name( current_state_ ).c_str(), current_state_, get_name( state ).c_str(), state );
+
+    current_state_  = state;
 }
 
 element_id_t Fsm::get_next_id()
