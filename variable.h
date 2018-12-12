@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10084 $ $Date:: 2018-12-07 #$ $Author: serge $
+// $Revision: 10148 $ $Date:: 2018-12-13 #$ $Author: serge $
 
 #ifndef LIB_FSM__VARIABLE_H
 #define LIB_FSM__VARIABLE_H
@@ -35,7 +35,7 @@ public:
     Variable( uint32_t log_id, element_id_t id, const std::string & name, data_type_e type, const Value & value );
 
     const Value & get() const;
-    void set( const Value & v);
+    void set( const Value & v );
 
 private:
     Variable( const Variable & )              = delete;

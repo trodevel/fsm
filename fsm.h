@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10144 $ $Date:: 2018-12-12 #$ $Author: serge $
+// $Revision: 10146 $ $Date:: 2018-12-13 #$ $Author: serge $
 
 #ifndef LIB_FSM__FSM_H
 #define LIB_FSM__FSM_H
@@ -109,6 +109,7 @@ private:
     element_id_t create_temp_variable( const Value & v, unsigned n );
 
     Variable* find_variable( element_id_t id );
+    Variable* find_variable( const std::string & name );
 
     void convert_arguments_to_values( std::vector<Value> * values, const std::vector<Argument> & arguments );
     void convert_argument_to_value( Value * value, const Argument & argument );
@@ -116,6 +117,8 @@ private:
     void convert_values_to_value_pointers( std::vector<Value*> * value_pointers, std::vector<Value> & values );
 
     void import_values_into_arguments( const std::vector<Argument> & arguments, const std::vector<Value> & values );
+    void import_value_into_variable( const std::string & variable_name, const Value & value );
+    void import_value_into_variable( element_id_t variable_id, const Value & value );
 
     void set_timer( Timer * timer, const Value & delay );
     void reset_timer( Timer * timer );

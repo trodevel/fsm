@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10144 $ $Date:: 2018-12-12 #$ $Author: serge $
+// $Revision: 10147 $ $Date:: 2018-12-13 #$ $Author: serge $
 
 #include "fsm.h"                // self
 
@@ -420,6 +420,13 @@ Variable* Fsm::find_variable( element_id_t id )
     return nullptr;
 }
 
+Variable* Fsm::find_variable( const std::string & name )
+{
+    auto id = find_element( name );
+
+    return find_variable( id );
+}
+
 void Fsm::convert_arguments_to_values( std::vector<Value> * values, const std::vector<Argument> & arguments )
 {
     dummy_log_trace( log_id_, id_, "convert_arguments_to_values: convert %u arguments", arguments.size() );
@@ -521,17 +528,54 @@ void Fsm::import_values_into_arguments( const std::vector<Argument> & arguments,
 
     for( auto & e : arguments )
     {
+        ++i;
+
         // ignore all variables except output variables
         if( e.type != argument_type_e::VARIABLE_OUT )
         {
-            ++i;
             continue;
+        }
+
+        if( e.variable_id != 0 )
+        {
+            import_value_into_variable( e.variable_id, values[i] );
+        }
+        else if( e.variable_name.empty() != false )
+        {
+            import_value_into_variable( e.variable_name, values[i] );
+        }
+        else
+        {
+            dummy_log_fatal( log_id_, id_, "import_values_into_arguments: illegal combination: variable_id %u, variable_name '%s'", variable_id, variable_name.c_str() );
+            assert( 0 );
+            throw std::runtime_error( "import_values_into_arguments: illegal combination" );
         }
 
         ++imported;
     }
 
     dummy_log_trace( log_id_, id_, "import_values_into_arguments: imported %u values", imported );
+}
+
+void Fsm::import_value_into_variable( const std::string & variable_name, const Value & value )
+{
+    auto id = find_element( variable_name );
+
+    import_value_into_variable( id, value );
+}
+
+void Fsm::import_value_into_variable( element_id_t variable_id, const std::string & name, const Value & value )
+{
+    auto variable = find_variable( variable_id );
+
+    if( variable == nullptr )
+    {
+        dummy_log_fatal( log_id_, id_, "import_value_into_variable: variable_id %u not found in the list of variables and temp variables", variable_id );
+        assert( 0 );
+        throw std::runtime_error( "import_values_into_arguments: variable_id " + std::to_string( variable_id ) + " not found in the list of variables and temp variables" );
+    }
+
+    variable->set( value );
 }
 
 void Fsm::set_timer( Timer * timer, const Value & delay )
