@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10080 $ $Date:: 2018-12-07 #$ $Author: serge $
+// $Revision: 10158 $ $Date:: 2018-12-13 #$ $Author: serge $
 
 #include "fsm_manager.h"        // self
 
@@ -87,7 +87,7 @@ void FsmManager::shutdown()
     WorkerBase::shutdown();
 }
 
-element_id_t FsmManager::create_fsm()
+uint32_t FsmManager::create_fsm()
 {
     MUTEX_SCOPE_LOCK( mutex_ );
 
@@ -105,7 +105,7 @@ element_id_t FsmManager::create_fsm()
 }
 
 // must be called in the locked state
-Fsm* FsmManager::find_fsm( element_id fsm_id )
+Fsm* FsmManager::find_fsm( uint32_t fsm_id )
 {
     auto it = map_id_to_fsm_.find( fsm_id );
 

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10139 $ $Date:: 2018-12-12 #$ $Author: serge $
+// $Revision: 10154 $ $Date:: 2018-12-13 #$ $Author: serge $
 
 #ifndef LIB_FSM__ACTIONS_H
 #define LIB_FSM__ACTIONS_H
@@ -76,11 +76,14 @@ class FunctionCall: public Action
     std::vector<Argument>   arguments;
 };
 
-class If: public Action
+class Condition: public Action
 {
-    If( const Expression & expr, action_id_t true_id, action_id_t false_id  )
+    Condition( const Expression & expr ):
+        expr( expr )
     {
     }
+
+    Expression  expr;
 };
 
 class NextState: public Action

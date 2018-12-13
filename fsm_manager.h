@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10078 $ $Date:: 2018-12-07 #$ $Author: serge $
+// $Revision: 10160 $ $Date:: 2018-12-13 #$ $Author: serge $
 
 #ifndef LIB_FSM__FSM_MANAGER_H
 #define LIB_FSM__FSM_MANAGER_H
@@ -50,8 +50,7 @@ typedef workt::WorkerT< const Signal *, FsmManager> WorkerBase;
 
 class FsmManager:
         public WorkerBase,
-        public IFsm,
-        public ISignalHandler
+        public IFsm
 {
     friend WorkerBase;
 
@@ -72,10 +71,10 @@ public:
 
     void shutdown();
 
-    element_id_t create_fsm();
+    uint32_t create_fsm();
 
     // must be called in the locked state
-    Fsm* find_fsm( element_id fsm_id );
+    Fsm* find_fsm( uint32_t fsm_id );
 
     std::mutex      & get_mutex() const;
 

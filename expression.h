@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9984 $ $Date:: 2018-11-19 #$ $Author: serge $
+// $Revision: 10153 $ $Date:: 2018-12-13 #$ $Author: serge $
 
 #ifndef LIB_FSM__EXPRESSION_H
 #define LIB_FSM__EXPRESSION_H
@@ -30,7 +30,6 @@ namespace fsm {
 
 struct Expression
 {
-    bool                is_unary;
     comparison_type_e   type;
     Argument            lhs;
     Argument            rhs;

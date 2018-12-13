@@ -2,16 +2,17 @@
 #include <memory>
 #include <sstream>          // stringstream
 
-#include "utils/dummy_logger.h"         // dummy_logger::set_log_level
+#include "utils/dummy_logger.h"     // dummy_logger::set_log_level
+#include "scheduler/scheduler.h"    // Scheduler
 
-#include "fsm.h"            // Fsm
+#include "fsm_manager.h"    // FsmManager
 #include "parser.h"         // Parser
 
 class Callback: virtual public fsm::ICallback
 {
 public:
-    Callback( fsm::IFsm * dummy ):
-        fsm_( dummy )
+    Callback( fsm::IFsm * fsm_man ):
+        fsm_man_( fsm_man )
     {
     }
 
@@ -61,7 +62,16 @@ private:
             }
             else if( cmd == "send" )
             {
+                uint32_t    fsm_id;
                 std::string name;
+
+                stream >> fsm_id;
+                if( fsm_id == 0 )
+                {
+                    std::cout << "ERROR: fsm id is 0" << std::endl;
+                    return true;
+                }
+
                 stream >> name;
 
                 if( name.empty() )
@@ -100,7 +110,7 @@ private:
                     }
                 }
 
-                fsm_->consume( new fsm::Signal( name, arguments ) );
+                fsm_man_->consume( new fsm::Signal( fsm_id, name, arguments ) );
             }
             else
             {
@@ -115,7 +125,7 @@ private:
     }
 
 private:
-    fsm::IFsm                   * fsm_;
+    fsm::IFsm                   * fsm_man_;
 };
 
 int main()
@@ -124,35 +134,41 @@ int main()
 
     dummy_logger::set_log_level( log_levels_log4j::DEBUG );
 
-    auto log_id = dummy_logger::register_module( "fsm" );
+    auto log_id     = dummy_logger::register_module( "fsm_man" );
+    auto log_id_fsm = dummy_logger::register_module( "fsm" );
 
-    std::unique_ptr<fsm::Fsm> fsm( new fsm::Fsm( log_id ) );
+    fsm::FsmManager fsm_man;
 
-    Callback test( fsm.get() );
-
-    fsm->init( & test );
+    Callback test( & fsm_man );
 
     std::string error_msg;
 
-//    scheduler::Scheduler sched( scheduler::Duration( std::chrono::milliseconds( 1 ) ) );
+    scheduler::Scheduler sched( scheduler::Duration( std::chrono::milliseconds( 1 ) ) );
 
     dummy_logger::set_log_level( log_id,        log_levels_log4j::TRACE );
 
-//    sched.run();
-    fsm->start();
+    bool b = fsm_man.init( log_id, log_id_fsm, & test, & sched, & error_msg );
+    if( b == false )
+    {
+        std::cout << "cannot initialize fsm manager: " << error_msg << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    sched.run();
+    fsm_man.start();
 
     std::vector< std::thread > tg;
 
-    tg.push_back( std::thread( std::bind( &Callback::control_thread, &test ) ) );
+    tg.push_back( std::thread( std::bind( & Callback::control_thread, & test ) ) );
 
     for( auto & t : tg )
         t.join();
 
-    fsm->shutdown();
+    fsm_man.shutdown();
 
-//    sched.shutdown();
+    sched.shutdown();
 
     std::cout << "Done! =)" << std::endl;
 
-    return 0;
+    return EXIT_SUCCESS;
 }

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10147 $ $Date:: 2018-12-13 #$ $Author: serge $
+// $Revision: 10157 $ $Date:: 2018-12-13 #$ $Author: serge $
 
 #include "fsm.h"                // self
 
@@ -114,20 +114,20 @@ element_id_t Fsm::create_add_signal_handler( element_id_t state_id, const std::s
 {
     dummy_log_trace( log_id_, id_, "create_add_signal_handler: state id %u, signal name %s", state_id, signal_name.c_str() );
 
-    auto it = map_id_to_state_.find( state_id );
+    auto state = find_state( state_id );
 
-    if( it == map_id_to_state_.end() )
+    if( state == nullptr )
     {
         dummy_log_fatal( log_id_, id_, "create_add_signal_handler: cannot find state id %u", state_id );
         throw std::runtime_error( "state id " + std::to_string( state_id ) + " not found" );
         return 0;
     }
 
-    auto name = signal_name + " in " + it->second->get_name();
+    auto name = signal_name + " in " + state->get_name();
 
     auto id = create_signal_handler( name );
 
-    it->second->add_signal_handler( signal_name, id );
+    state->add_signal_handler( signal_name, id );
 
     return id;
 }
@@ -278,11 +278,9 @@ void Fsm::handle( const Signal * req )
 {
     dummy_log_trace( log_id_, id_, "handle: %s", typeid( *req ).name() );
 
-    auto it = map_id_to_state_.find( current_state_ );
+    auto state = find_state( current_state_ );
 
-    assert( it != map_id_to_state_.end() );
-
-    auto state = it->second;
+    assert( state != nullptr );
 
     std::vector<element_id_t> arguments;
 
@@ -397,6 +395,20 @@ element_id_t Fsm::create_temp_variable( const Value & v, unsigned n )
     return id;
 }
 
+State* Fsm::find_state( element_id_t id )
+{
+    {
+        auto it = map_id_to_state_.find( id );
+
+        if( it != map_id_to_state_.end() )
+        {
+            return it->second;
+        }
+    }
+
+    return nullptr;
+}
+
 Variable* Fsm::find_variable( element_id_t id )
 {
     {
@@ -425,6 +437,20 @@ Variable* Fsm::find_variable( const std::string & name )
     auto id = find_element( name );
 
     return find_variable( id );
+}
+
+Timer* Fsm::find_timer( element_id_t id )
+{
+    {
+        auto it = map_id_to_timer_.find( id );
+
+        if( it != map_id_to_timer_.end() )
+        {
+            return it->second;
+        }
+    }
+
+    return nullptr;
 }
 
 void Fsm::convert_arguments_to_values( std::vector<Value> * values, const std::vector<Argument> & arguments )
@@ -652,6 +678,68 @@ void Fsm::reset_timer( Timer * timer )
     timer->set_job_id( 0 );
 }
 
+template <class T>
+bool Fsm::compare_values_t( comparison_type_e type, const T & lhs, const T & rhs )
+{
+    switch( type )
+    {
+    case comparison_type_e::EQ:
+        return lhs == rhs;
+
+    case comparison_type_e::NEQ:
+        return lhs != rhs;
+
+    case comparison_type_e::LT:
+        return lhs < rhs;
+
+    case comparison_type_e::LE:
+        return lhs <= rhs;
+
+    case comparison_type_e::GT:
+        return lhs > rhs;
+
+    case comparison_type_e::GE:
+        return lhs >= rhs;
+
+    default:
+        break;
+    }
+
+    dummy_logi_fatal( log_id_, id_, "illegal comparison type %u", unsigned( type ) );
+    assert( 0 );
+    throw std::runtime_error( "illegal comparison type  " + std::to_string( unsigned( type ) ) );
+
+    return false;
+}
+
+
+bool Fsm::compare_values( comparison_type_e type, const Value & lhs, const Value & rhs )
+{
+    switch( lhs.type )
+    {
+    case data_type_e::BOOL:
+        return compare_values_t( type, lhs.arg_b, rhs.arg_b );
+
+    case data_type_e::INT:
+        return compare_values_t( type, lhs.arg_i, rhs.arg_i );
+
+    case data_type_e::DOUBLE:
+        return compare_values_t( type, lhs.arg_d, rhs.arg_d );
+
+    case data_type_e::STRING:
+        return compare_values_t( type, lhs.arg_s, rhs.arg_s );
+
+    default:
+        break;
+    }
+
+    dummy_logi_fatal( log_id_, id_, "illegal data type %u", unsigned( lhs.type ) );
+    assert( 0 );
+    throw std::runtime_error( "illegal data type  " + std::to_string( unsigned( lhs.type ) ) );
+
+    return false;
+}
+
 void Fsm::execute_action_connector_id( element_id_t action_connector_id )
 {
     dummy_log_trace( log_id_, id_, "execute_action_connector_id: action_connector_id %u", action_connector_id );
@@ -704,7 +792,7 @@ Fsm::flow_control_e Fsm::handle_action( const Action & action )
         MAP_ENTRY( SetTimer ),
         MAP_ENTRY( ResetTimer ),
         MAP_ENTRY( FunctionCall ),
-        MAP_ENTRY( If ),
+        MAP_ENTRY( Condition ),
         MAP_ENTRY( NextState ),
         MAP_ENTRY( Exit ),
     };
@@ -744,9 +832,9 @@ Fsm::flow_control_e Fsm::handle_SetTimer( const Action & aa )
 {
     auto & a = dynamic_cast< const SetTimer &>( aa );
 
-    auto it = map_id_to_timer_.find( a.timer_id );
+    auto timer = find_timer( a.timer_id );
 
-    if( it == map_id_to_timer_.end() )
+    if( timer == nullptr )
     {
         dummy_logi_fatal( log_id_, id_, "cannot find timer %u", a.timer_id );
         assert( 0 );
@@ -757,7 +845,7 @@ Fsm::flow_control_e Fsm::handle_SetTimer( const Action & aa )
 
     convert_argument_to_value( & delay, a.delay );
 
-    set_timer( it->second, delay );
+    set_timer( timer, delay );
 
     return flow_control_e::NEXT;
 }
@@ -766,16 +854,16 @@ Fsm::flow_control_e Fsm::handle_ResetTimer( const Action & aa )
 {
     auto & a = dynamic_cast< const ResetTimer &>( aa );
 
-    auto it = map_id_to_timer_.find( a.timer_id );
+    auto timer = find_timer( a.timer_id );
 
-    if( it == map_id_to_timer_.end() )
+    if( timer == nullptr )
     {
         dummy_logi_fatal( log_id_, id_, "cannot find timer %u", a.timer_id );
         assert( 0 );
         throw std::runtime_error( "cannot find timer " + std::to_string( a.timer_id ) );
     }
 
-    reset_timer( it->second );
+    reset_timer( timer );
 
     return flow_control_e::NEXT;
 }
@@ -799,19 +887,42 @@ Fsm::flow_control_e Fsm::handle_FunctionCall( const Action & aa )
     return flow_control_e::NEXT;
 }
 
-Fsm::flow_control_e Fsm::handle_If( const Action & aa )
+Fsm::flow_control_e Fsm::handle_Condition( const Action & aa )
 {
-    auto & a = dynamic_cast< const If &>( aa );
+    auto & a = dynamic_cast< const Condition &>( aa );
 
-    return flow_control_e::NEXT;
+    if( a.expr.type == comparison_type_e::NOT )
+    {
+        // unary expression
+
+        Value val;
+
+        convert_argument_to_value( & val, a.expr.lhs );
+
+        if( val.arg_b == false )
+            return flow_control_e::NEXT;
+        else
+            return flow_control_e::ALT_NEXT;
+    }
+
+    Value lhs;
+    convert_argument_to_value( & lhs, a.expr.lhs );
+
+    Value rhs;
+    convert_argument_to_value( & rhs, a.expr.lhs );
+
+    auto b = compare_values( a.expr.type, lhs, rhs );
+
+    return b ? flow_control_e::NEXT : flow_control_e::ALT_NEXT;
 }
+
 Fsm::flow_control_e Fsm::handle_NextState( const Action & aa )
 {
     auto & a = dynamic_cast< const NextState &>( aa );
 
-    auto it = map_id_to_timer_.find( a.state_id );
+    auto state = find_state( a.state_id );
 
-    if( it == map_id_to_timer_.end() )
+    if( state == nullptr )
     {
         dummy_logi_fatal( log_id_, id_, "cannot find state %u", a.state_id );
         assert( 0 );

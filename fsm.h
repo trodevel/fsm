@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10146 $ $Date:: 2018-12-13 #$ $Author: serge $
+// $Revision: 10156 $ $Date:: 2018-12-13 #$ $Author: serge $
 
 #ifndef LIB_FSM__FSM_H
 #define LIB_FSM__FSM_H
@@ -108,8 +108,10 @@ private:
     void init_temp_variables_from_signal( const Signal & s, std::vector<element_id_t> * arguments );
     element_id_t create_temp_variable( const Value & v, unsigned n );
 
+    State* find_state( element_id_t id );
     Variable* find_variable( element_id_t id );
     Variable* find_variable( const std::string & name );
+    Timer* find_timer( element_id_t id );
 
     void convert_arguments_to_values( std::vector<Value> * values, const std::vector<Argument> & arguments );
     void convert_argument_to_value( Value * value, const Argument & argument );
@@ -123,6 +125,10 @@ private:
     void set_timer( Timer * timer, const Value & delay );
     void reset_timer( Timer * timer );
 
+    template <class T>
+    bool compare_values_t( comparison_type_e type, const T & lhs, const T & rhs );
+    bool compare_values( comparison_type_e type, const Value & lhs, const Value & rhs );
+
     void execute_action_connector_id( element_id_t action_connector_id );
     void execute_action_connector( const ActionConnector & action_connector );
 
@@ -131,7 +137,7 @@ private:
     flow_control_e handle_SetTimer( const Action & a );
     flow_control_e handle_ResetTimer( const Action & a );
     flow_control_e handle_FunctionCall( const Action & a );
-    flow_control_e handle_If( const Action & a );
+    flow_control_e handle_Condition( const Action & a );
     flow_control_e handle_NextState( const Action & a );
     flow_control_e handle_Exit( const Action & a );
 
