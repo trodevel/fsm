@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10158 $ $Date:: 2018-12-13 #$ $Author: serge $
+// $Revision: 10178 $ $Date:: 2018-12-14 #$ $Author: serge $
 
 #include "fsm_manager.h"        // self
 
@@ -159,7 +159,7 @@ void FsmManager::check_fsm_end( MapIdToFsm::iterator it )
     {
         delete it->second;
 
-        map_id_to_call_.erase( it );
+        map_id_to_fsm_.erase( it );
     }
 }
 

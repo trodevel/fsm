@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10108 $ $Date:: 2018-12-09 #$ $Author: serge $
+// $Revision: 10171 $ $Date:: 2018-12-14 #$ $Author: serge $
 
 #ifndef LIB_FSM__ACTION_CONNECTOR_H
 #define LIB_FSM__ACTION_CONNECTOR_H
@@ -38,8 +38,10 @@ public:
     void set_next_id( element_id_t id );
     void set_alt_next_id( element_id_t id );
 
-    element_id_t get_next_id( element_id_t id ) const;
-    element_id_t get_alt_next_id( element_id_t id ) const;
+    element_id_t get_next_id() const;
+    element_id_t get_alt_next_id() const;
+
+    const Action* get_action() const;
 
 private:
     ActionConnector( const ActionConnector & )              = delete;

@@ -128,7 +128,17 @@ private:
     fsm::IFsm                   * fsm_man_;
 };
 
-int main()
+void create_fsm_1( fsm::FsmManager * fsm_man )
+{
+
+}
+
+void create_fsm_2( fsm::FsmManager * fsm_man )
+{
+
+}
+
+int main( int argc, char **argv )
 {
     std::cout << "Hello, world" << std::endl;
 
@@ -151,6 +161,24 @@ int main()
     if( b == false )
     {
         std::cout << "cannot initialize fsm manager: " << error_msg << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    if( argc <= 1 )
+    {
+        std::cout << "USAGE: ./example <fsm_num>, where fsm_num is 1 or 2" << std::endl;
+        return EXIT_SUCCESS;
+    }
+
+    std::string param( argv[1] );
+
+    if( param == "1" )
+        create_fsm_1( & fsm_man );
+    else if( param == "2" )
+        create_fsm_1( & fsm_man );
+    else
+    {
+        std::cout << "ERROR: unsupported fsm_num = " << param << std::endl;
         return EXIT_FAILURE;
     }
 

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10154 $ $Date:: 2018-12-13 #$ $Author: serge $
+// $Revision: 10176 $ $Date:: 2018-12-14 #$ $Author: serge $
 
 #ifndef LIB_FSM__ACTIONS_H
 #define LIB_FSM__ACTIONS_H
@@ -64,7 +64,7 @@ struct ResetTimer: public Action
     element_id_t            timer_id;
 };
 
-class FunctionCall: public Action
+struct FunctionCall: public Action
 {
     FunctionCall( const std::string & name, const std::vector<Argument> & arguments ):
         name( name ),
@@ -76,7 +76,7 @@ class FunctionCall: public Action
     std::vector<Argument>   arguments;
 };
 
-class Condition: public Action
+struct Condition: public Action
 {
     Condition( const Expression & expr ):
         expr( expr )
@@ -86,7 +86,7 @@ class Condition: public Action
     Expression  expr;
 };
 
-class NextState: public Action
+struct NextState: public Action
 {
     NextState( element_id_t state_id ):
         state_id( state_id )
@@ -96,7 +96,7 @@ class NextState: public Action
     element_id_t            state_id;
 };
 
-class Exit: public Action
+struct Exit: public Action
 {
     Exit( const std::vector<Argument> & arguments )
     {

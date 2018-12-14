@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10157 $ $Date:: 2018-12-13 #$ $Author: serge $
+// $Revision: 10180 $ $Date:: 2018-12-14 #$ $Author: serge $
 
 #include "fsm.h"                // self
 
@@ -321,7 +321,7 @@ element_id_t Fsm::find_element( const std::string & name ) const
 {
     auto it = map_name_to_id_.find( name );
 
-    if( it == map_id_to_name_.end() )
+    if( it == map_name_to_id_.end() )
         return 0;
 
     return it->second;
@@ -572,7 +572,7 @@ void Fsm::import_values_into_arguments( const std::vector<Argument> & arguments,
         }
         else
         {
-            dummy_log_fatal( log_id_, id_, "import_values_into_arguments: illegal combination: variable_id %u, variable_name '%s'", variable_id, variable_name.c_str() );
+            dummy_log_fatal( log_id_, id_, "import_values_into_arguments: illegal combination: variable_id %u, variable_name '%s'", e.variable_id, e.variable_name.c_str() );
             assert( 0 );
             throw std::runtime_error( "import_values_into_arguments: illegal combination" );
         }
@@ -590,7 +590,7 @@ void Fsm::import_value_into_variable( const std::string & variable_name, const V
     import_value_into_variable( id, value );
 }
 
-void Fsm::import_value_into_variable( element_id_t variable_id, const std::string & name, const Value & value )
+void Fsm::import_value_into_variable( element_id_t variable_id, const Value & value )
 {
     auto variable = find_variable( variable_id );
 
@@ -608,11 +608,9 @@ void Fsm::set_timer( Timer * timer, const Value & delay )
 {
     dummy_log_trace( log_id_, id_, "set_timer: timer %s (%u), %.2f sec", timer->get_name().c_str(), timer->get_id(), delay.arg_d );
 
-    auto d = delay.arg_d;
-
     auto & name = timer->get_name();
 
-    std::vector<Argument> dummy;
+    std::vector<Value> dummy;
 
     auto signal = new Signal( id_, name, dummy );
 
@@ -760,17 +758,17 @@ void Fsm::execute_action_connector_id( element_id_t action_connector_id )
 
 void Fsm::execute_action_connector( const ActionConnector & action_connector )
 {
-    auto & action = * action_connector.action_;
+    auto & action = * action_connector.get_action();
 
     auto flow_control = handle_action( action );
 
     if( flow_control == flow_control_e::NEXT )
     {
-        execute_action_connector_id( action_connector.next_id_ );
+        execute_action_connector_id( action_connector.get_next_id() );
     }
     else if( flow_control == flow_control_e::ALT_NEXT )
     {
-        execute_action_connector_id( action_connector.alt_next_id_ );
+        execute_action_connector_id( action_connector.get_alt_next_id() );
     }
     else // if( flow_control == flow_control_e::STOP )
     {
@@ -782,7 +780,7 @@ Fsm::flow_control_e Fsm::handle_action( const Action & action )
 {
     typedef Fsm Type;
 
-    typedef void (Type::*PPMF)( const Action & r );
+    typedef flow_control_e (Type::*PPMF)( const Action & r );
 
 #define MAP_ENTRY(_v)       { typeid( _v ),        & Type::handle_##_v }
 
@@ -808,9 +806,7 @@ Fsm::flow_control_e Fsm::handle_action( const Action & action )
         throw std::runtime_error( "unsupported action type " + std::string( typeid( action ).name() ) );
     }
 
-    auto handler = this->*it->second;
-
-    auto flow_control = handler( action );
+    auto flow_control = (this->*it->second)( action );
 
     return flow_control;
 }
@@ -933,9 +929,11 @@ Fsm::flow_control_e Fsm::handle_NextState( const Action & aa )
 
     return flow_control_e::STOP;
 }
-Fsm::flow_control_e Fsm::handle_Exit( const Action & aa )
+Fsm::flow_control_e Fsm::handle_Exit( const Action & /* aa */ )
 {
-    auto & a = dynamic_cast< const Exit &>( aa );
+    assert( id_ended_ == false );
+
+    id_ended_ = true;
 
     return flow_control_e::STOP;
 }

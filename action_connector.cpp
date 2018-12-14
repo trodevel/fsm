@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10010 $ $Date:: 2018-11-23 #$ $Author: serge $
+// $Revision: 10171 $ $Date:: 2018-12-14 #$ $Author: serge $
 
 #include "action_connector.h"       // self
 
@@ -43,14 +43,20 @@ void ActionConnector::set_alt_next_id( element_id_t id )
     alt_next_id_    = id;
 }
 
-element_id_t ActionConnector::get_next_id( element_id_t id ) const
+element_id_t ActionConnector::get_next_id() const
 {
     return next_id_;
 }
 
-element_id_t ActionConnector::get_alt_next_id( element_id_t id ) const
+element_id_t ActionConnector::get_alt_next_id() const
 {
     return alt_next_id_;
+}
+
+
+const Action* ActionConnector::get_action() const
+{
+    return action_.get();
 }
 
 } // namespace fsm
