@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10196 $ $Date:: 2018-12-14 #$ $Author: serge $
+// $Revision: 10205 $ $Date:: 2018-12-15 #$ $Author: serge $
 
 #include "process.h"            // self
 
@@ -48,7 +48,9 @@ Process::Process(
         scheduler_( scheduler ),
         req_id_gen_( req_id_gen ),
         id_ended_( false ),
-        current_state_( 0 )
+        current_state_( 0 ),
+        names_( id, log_id ),
+        mem_( id, log_id, req_id_gen, & names_ )
 
 {
     dummy_logi_info( log_id_, id_, "created" );
@@ -106,7 +108,7 @@ element_id_t Process::create_state( const std::string & name )
 
     dummy_log_debug( log_id_, id_, "create_state: %s (%u)", name.c_str(), id );
 
-    add_name( id, name );
+    names_.add_name( id, name );
 
     return id;
 }
@@ -186,7 +188,7 @@ element_id_t Process::create_add_timer( const std::string & name )
 
     dummy_log_debug( log_id_, id_, "create_add_timer: created timer %s (%u)", name.c_str(), id );
 
-    add_name( id, name );
+    names_.add_name( id, name );
 
     return id;
 }
@@ -203,7 +205,7 @@ element_id_t Process::create_signal_handler( const std::string & name )
 
     dummy_log_debug( log_id_, id_, "create_signal_handler: created signal handler %s (%u)", name.c_str(), id );
 
-    add_name( id, name );
+    names_.add_name( id, name );
 
     return id;
 }
@@ -225,45 +227,17 @@ element_id_t Process::create_action_connector( Action * action )
 
 element_id_t Process::create_add_variable( const std::string & name, data_type_e type )
 {
-    Value dummy;
-
-    dummy.type  = type;
-
-    return create_add_variable( name, type, dummy );
+    return mem_.create_add_variable( name, type );
 }
 
 element_id_t Process::create_add_variable( const std::string & name, data_type_e type, const Value & value )
 {
-    auto id = get_next_id();
-
-    auto obj = new Variable( log_id_, id, name, type, value );
-
-    auto b = map_id_to_variable_.insert( std::make_pair( id, obj ) ).second;
-
-    assert( b );
-
-    dummy_log_debug( log_id_, id_, "create_add_variable: created variable %u", id );
-
-    add_name( id, name );
-
-    return id;
+    return mem_.create_add_variable( name, type, value );
 }
 
 element_id_t Process::create_add_constant( const std::string & name, data_type_e type, const Value & value )
 {
-    auto id = get_next_id();
-
-    auto obj = new Constant( log_id_, id, name, type, value );
-
-    auto b = map_id_to_constant_.insert( std::make_pair( id, obj ) ).second;
-
-    assert( b );
-
-    dummy_log_debug( log_id_, id_, "create_add_constant: created constant %u", id );
-
-    add_name( id, name );
-
-    return id;
+    return mem_.create_add_constant( name, type, value );
 }
 
 void Process::set_initial_state( element_id_t state_id )
@@ -285,115 +259,11 @@ void Process::handle( const Signal * req )
 
     std::vector<element_id_t> arguments;
 
-    init_temp_variables_from_signal( * req, & arguments );
+    mem_.init_temp_variables_from_signal( * req, & arguments );
 
     state->handle_signal( req->name, arguments );
 
     delete req;
-}
-
-void Process::add_name( element_id_t id, const std::string & name )
-{
-    map_id_to_name_.insert( std::make_pair( id, name ) );
-
-    auto p = map_name_to_id_.insert( std::make_pair( name, id ) );
-
-    if( p.second == false )
-    {
-        dummy_log_fatal( log_id_, id_, "add_name: cannot add element %s (%u), another element exists %s (%u)", name.c_str(), id, name.c_str(), p.first->second );
-        assert( 0 );
-        throw std::runtime_error( "cannot add element " + name + " " + std::to_string( id ) );
-    }
-}
-
-const std::string & Process::get_name( element_id_t id )
-{
-    static const std::string unk( "?" );
-
-    auto it = map_id_to_name_.find( id );
-
-    if( it != map_id_to_name_.end() )
-        return it->second;
-
-    return unk;
-}
-
-element_id_t Process::find_element( const std::string & name ) const
-{
-    auto it = map_name_to_id_.find( name );
-
-    if( it == map_name_to_id_.end() )
-        return 0;
-
-    return it->second;
-}
-
-bool Process::delete_name( element_id_t id )
-{
-    auto it = map_id_to_name_.find( id );
-
-    if( it == map_id_to_name_.end() )
-        return false;
-
-    auto & name = it->second;
-
-    map_name_to_id_.erase( name );
-
-    map_id_to_name_.erase( it );
-
-    return true;
-}
-
-void Process::clear_temp_variables()
-{
-    for( auto e : map_id_to_temp_variable_ )
-    {
-        auto id = e.first;
-        auto b = delete_name( id );
-
-        assert( b ); (void)b;
-    }
-
-    dummy_logi_debug( log_id_, id_, "clear_temp_variables: %u variables deleted", map_id_to_temp_variable_.size() );
-
-    map_id_to_temp_variable_.clear();
-}
-
-void Process::init_temp_variables_from_signal( const Signal & s, std::vector<element_id_t> * arguments )
-{
-    clear_temp_variables();
-
-    auto i = 0;
-
-    for( auto v : s.arguments )
-    {
-        ++i;
-
-        auto id = create_temp_variable( v, i );
-
-        arguments->push_back( id );
-    }
-
-    dummy_logi_debug( log_id_, id_, "created %u temp variables", i );
-}
-
-element_id_t Process::create_temp_variable( const Value & v, unsigned n )
-{
-    auto id = get_next_id();
-
-    auto name = "$" + std::to_string( n );
-
-    auto obj = new Variable( log_id_, id, name, v.type, v );
-
-    auto b = map_id_to_temp_variable_.insert( std::make_pair( id, obj ) ).second;
-
-    assert( b );
-
-    dummy_log_debug( log_id_, id_, "create_temp_variable: created variable %u", id );
-
-    add_name( id, name );
-
-    return id;
 }
 
 State* Process::find_state( element_id_t id )
@@ -410,36 +280,6 @@ State* Process::find_state( element_id_t id )
     return nullptr;
 }
 
-Variable* Process::find_variable( element_id_t id )
-{
-    {
-        auto it = map_id_to_variable_.find( id );
-
-        if( it != map_id_to_variable_.end() )
-        {
-            return it->second;
-        }
-    }
-
-    {
-        auto it = map_id_to_temp_variable_.find( id );
-
-        if( it != map_id_to_temp_variable_.end() )
-        {
-            return it->second;
-        }
-    }
-
-    return nullptr;
-}
-
-Variable* Process::find_variable( const std::string & name )
-{
-    auto id = find_element( name );
-
-    return find_variable( id );
-}
-
 Timer* Process::find_timer( element_id_t id )
 {
     {
@@ -452,96 +292,6 @@ Timer* Process::find_timer( element_id_t id )
     }
 
     return nullptr;
-}
-
-void Process::convert_arguments_to_values( std::vector<Value> * values, const std::vector<Argument> & arguments )
-{
-    dummy_log_trace( log_id_, id_, "convert_arguments_to_values: convert %u arguments", arguments.size() );
-
-    for( auto & e : arguments )
-    {
-        Value v;
-
-        convert_argument_to_value( & v, e );
-
-        values->push_back( v );
-    }
-}
-
-void Process::convert_argument_to_value( Value * value, const Argument & argument )
-{
-    if( argument.type == argument_type_e::VALUE )
-    {
-        assign( value, argument.value );
-    }
-    else // if( argument.type == argument_type_e::VARIABLE_IN ) // or VARIABLE_OUT
-    {
-        if( argument.variable_id != 0 && argument.variable_name.empty() )
-        {
-            convert_variable_to_value( value, argument.variable_id );
-        }
-        else if( argument.variable_id == 0 && argument.variable_name.empty() == false )
-        {
-            auto variable_id = find_element( argument.variable_name );
-
-            assert( variable_id );
-
-            convert_variable_to_value( value, argument.variable_id );
-        }
-        else
-        {
-            dummy_log_fatal( log_id_, id_, "convert_argument_to_value: illegal combination: variable_id %u, variable_name '%s'", argument.variable_id, argument.variable_name.c_str() );
-            assert( 0 );
-            throw std::runtime_error( "convert_argument_to_value: illegal combination" );
-        }
-    }
-}
-
-void Process::convert_variable_to_value( Value * value, element_id_t variable_id )
-{
-    {
-        auto it = map_id_to_variable_.find( variable_id );
-
-        if( it != map_id_to_variable_.end() )
-        {
-            assign( value, it->second->get() );
-            return;
-        }
-    }
-
-    {
-        auto it = map_id_to_temp_variable_.find( variable_id );
-
-        if( it != map_id_to_temp_variable_.end() )
-        {
-            assign( value, it->second->get() );
-            return;
-        }
-    }
-
-    {
-        auto it = map_id_to_constant_.find( variable_id );
-
-        if( it != map_id_to_constant_.end() )
-        {
-            assign( value, it->second->get() );
-            return;
-        }
-    }
-
-    dummy_log_fatal( log_id_, id_, "convert_variable_to_value: variable_id %u not found in the list of variables, temp variables, and constants", variable_id );
-    assert( 0 );
-    throw std::runtime_error( "convert_variable_to_value: variable_id " + std::to_string( variable_id ) + " not found in the list of variables, temp variables, and constants" );
-}
-
-void Process::convert_values_to_value_pointers( std::vector<Value*> * value_pointers, std::vector<Value> & values )
-{
-    for( auto & e : values )
-    {
-        auto * p = & e;
-
-        value_pointers->push_back( p );
-    }
 }
 
 void Process::evaluate_expression( Value * value, const Expression & expr )
@@ -577,7 +327,7 @@ void Process::evaluate_expression_ExpressionArgument( Value * value, const Expre
 {
     auto & a = dynamic_cast< const ExpressionArgument &>( eexpr );
 
-    convert_argument_to_value( value, a.arg );
+    mem_.convert_argument_to_value( value, a.arg );
 }
 
 void Process::evaluate_expression_UnaryExpression( Value * value, const Expression & eexpr )
@@ -602,67 +352,6 @@ void Process::evaluate_expression_BinaryExpression( Value * value, const Express
     evaluate_expression( & rhs, * a.rhs.get() );
 
     binary_operation( value, a.type, lhs, rhs );
-}
-
-void Process::import_values_into_arguments( const std::vector<Argument> & arguments, const std::vector<Value> & values )
-{
-    dummy_log_trace( log_id_, id_, "import_values_into_arguments: %u arguments", arguments.size() );
-
-    assert( arguments.size() == values.size() );
-
-    unsigned i = 0;
-    unsigned imported = 0;
-
-    for( auto & e : arguments )
-    {
-        ++i;
-
-        // ignore all variables except output variables
-        if( e.type != argument_type_e::VARIABLE_OUT )
-        {
-            continue;
-        }
-
-        if( e.variable_id != 0 )
-        {
-            import_value_into_variable( e.variable_id, values[i] );
-        }
-        else if( e.variable_name.empty() != false )
-        {
-            import_value_into_variable( e.variable_name, values[i] );
-        }
-        else
-        {
-            dummy_log_fatal( log_id_, id_, "import_values_into_arguments: illegal combination: variable_id %u, variable_name '%s'", e.variable_id, e.variable_name.c_str() );
-            assert( 0 );
-            throw std::runtime_error( "import_values_into_arguments: illegal combination" );
-        }
-
-        ++imported;
-    }
-
-    dummy_log_trace( log_id_, id_, "import_values_into_arguments: imported %u values", imported );
-}
-
-void Process::import_value_into_variable( const std::string & variable_name, const Value & value )
-{
-    auto id = find_element( variable_name );
-
-    import_value_into_variable( id, value );
-}
-
-void Process::import_value_into_variable( element_id_t variable_id, const Value & value )
-{
-    auto variable = find_variable( variable_id );
-
-    if( variable == nullptr )
-    {
-        dummy_log_fatal( log_id_, id_, "import_value_into_variable: variable_id %u not found in the list of variables and temp variables", variable_id );
-        assert( 0 );
-        throw std::runtime_error( "import_values_into_arguments: variable_id " + std::to_string( variable_id ) + " not found in the list of variables and temp variables" );
-    }
-
-    variable->set( value );
 }
 
 void Process::set_timer( Timer * timer, const Value & delay )
@@ -816,7 +505,7 @@ Process::flow_control_e Process::handle_SendSignal( const Action & aa )
 
     std::vector<Value> values;
 
-    convert_arguments_to_values( & values, a.arguments );
+    mem_.convert_arguments_to_values( & values, a.arguments );
 
     callback_->handle_send_signal( id_, a.name, values );
 
@@ -838,7 +527,7 @@ Process::flow_control_e Process::handle_SetTimer( const Action & aa )
 
     Value delay;
 
-    convert_argument_to_value( & delay, a.delay );
+    mem_.convert_argument_to_value( & delay, a.delay );
 
     set_timer( timer, delay );
 
@@ -869,15 +558,15 @@ Process::flow_control_e Process::handle_FunctionCall( const Action & aa )
 
     std::vector<Value> values;
 
-    convert_arguments_to_values( & values, a.arguments );
+    mem_.convert_arguments_to_values( & values, a.arguments );
 
     std::vector<Value*> value_pointers;
 
-    convert_values_to_value_pointers( & value_pointers, values );
+    mem_.convert_values_to_value_pointers( & value_pointers, values );
 
     callback_->handle_function_call( id_, a.name, value_pointers );
 
-    import_values_into_arguments( a.arguments, values );
+    mem_.import_values_into_arguments( a.arguments, values );
 
     return flow_control_e::NEXT;
 }
@@ -939,7 +628,7 @@ Process::flow_control_e Process::handle_Exit( const Action & /* aa */ )
 
 void Process::next_state( element_id_t state )
 {
-    dummy_logi_debug( log_id_, id_, "switched state %s (%u) --> %s (%u)", get_name( current_state_ ).c_str(), current_state_, get_name( state ).c_str(), state );
+    dummy_logi_debug( log_id_, id_, "switched state %s (%u) --> %s (%u)", names_.get_name( current_state_ ).c_str(), current_state_, names_.get_name( state ).c_str(), state );
 
     current_state_  = state;
 }

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10189 $ $Date:: 2018-12-14 #$ $Author: serge $
+// $Revision: 10200 $ $Date:: 2018-12-15 #$ $Author: serge $
 
 #ifndef LIB_FSM__PROCESS_H
 #define LIB_FSM__PROCESS_H
@@ -42,6 +42,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include "signal.h"             // Signal
 #include "i_fsm.h"              // IFsm
 #include "i_callback.h"         // ICallback
+#include "names_db.h"           // NamesDb
+#include "memory.h"             // Memory
 
 namespace fsm {
 
@@ -49,7 +51,8 @@ class Process:
         public ISignalHandler
 {
 public:
-    Process(    uint32_t                id,
+    Process(
+            uint32_t                id,
             uint32_t                log_id,
             IFsm                    * parent,
             ICallback               * callback,
@@ -85,8 +88,6 @@ private:
     typedef std::map<element_id_t,Variable*>        MapIdToVariable;
     typedef std::map<element_id_t,Constant*>        MapIdToConstant;
     typedef std::map<element_id_t,Timer*>           MapIdToTimer;
-    typedef std::map<element_id_t,std::string>      MapIdToString;
-    typedef std::map<std::string,element_id_t>      MapStringToId;
 
     enum class flow_control_e
     {
@@ -99,33 +100,13 @@ private:
     Process( const Process & )              = delete;
     Process & operator=( const Process & )  = delete;
 
-    void add_name( element_id_t id, const std::string & name );
-    const std::string & get_name( element_id_t id );
-    element_id_t find_element( const std::string & name ) const;
-    bool delete_name( element_id_t id );
-
-    void clear_temp_variables();
-    void init_temp_variables_from_signal( const Signal & s, std::vector<element_id_t> * arguments );
-    element_id_t create_temp_variable( const Value & v, unsigned n );
-
     State* find_state( element_id_t id );
-    Variable* find_variable( element_id_t id );
-    Variable* find_variable( const std::string & name );
     Timer* find_timer( element_id_t id );
-
-    void convert_arguments_to_values( std::vector<Value> * values, const std::vector<Argument> & arguments );
-    void convert_argument_to_value( Value * value, const Argument & argument );
-    void convert_variable_to_value( Value * value, element_id_t variable_id );
-    void convert_values_to_value_pointers( std::vector<Value*> * value_pointers, std::vector<Value> & values );
 
     void evaluate_expression( Value * value, const Expression & expr );
     void evaluate_expression_ExpressionArgument( Value * value, const Expression & expr );
     void evaluate_expression_UnaryExpression( Value * value, const Expression & expr );
     void evaluate_expression_BinaryExpression( Value * value, const Expression & expr );
-
-    void import_values_into_arguments( const std::vector<Argument> & arguments, const std::vector<Value> & values );
-    void import_value_into_variable( const std::string & variable_name, const Value & value );
-    void import_value_into_variable( element_id_t variable_id, const Value & value );
 
     void set_timer( Timer * timer, const Value & delay );
     void reset_timer( Timer * timer );
@@ -161,12 +142,10 @@ private:
     MapIdToState                map_id_to_state_;
     MapIdToSignalHandler        map_id_to_signal_handler_;
     MapIdToActionConnector      map_id_to_action_connector_;
-    MapIdToVariable             map_id_to_variable_;
-    MapIdToVariable             map_id_to_temp_variable_;
-    MapIdToConstant             map_id_to_constant_;
     MapIdToTimer                map_id_to_timer_;
-    MapIdToString               map_id_to_name_;
-    MapStringToId               map_name_to_id_;
+
+    NamesDb                     names_;
+    Memory                      mem_;
 };
 
 } // namespace fsm
