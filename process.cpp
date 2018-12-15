@@ -19,9 +19,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10180 $ $Date:: 2018-12-14 #$ $Author: serge $
+// $Revision: 10196 $ $Date:: 2018-12-14 #$ $Author: serge $
 
-#include "fsm.h"                // self
+#include "process.h"            // self
 
 #include <cassert>              // assert
 #include <typeindex>            // std::type_index
@@ -30,10 +30,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #include "utils/dummy_logger.h"     // dummy_log_debug
 #include "scheduler/timeout_job_aux.h"      // create_and_insert_timeout_job
+#include "value_operations.h"               // compare_values
 
 namespace fsm {
 
-Fsm::Fsm(
+Process::Process(
         uint32_t                id,
         uint32_t                log_id,
         IFsm                    * parent,
@@ -53,7 +54,7 @@ Fsm::Fsm(
     dummy_logi_info( log_id_, id_, "created" );
 }
 
-Fsm::~Fsm()
+Process::~Process()
 {
     for( auto & e : map_id_to_state_ )
     {
@@ -63,7 +64,7 @@ Fsm::~Fsm()
     dummy_logi_info( log_id_, id_, "destructed" );
 }
 
-void Fsm::handle_signal_handler( element_id_t signal_handler_id, const std::vector<element_id_t> & arguments )
+void Process::handle_signal_handler( element_id_t signal_handler_id, const std::vector<element_id_t> & arguments )
 {
     dummy_log_trace( log_id_, id_, "handle_signal_handler: signal handler id %u", signal_handler_id );
 
@@ -88,12 +89,12 @@ void Fsm::handle_signal_handler( element_id_t signal_handler_id, const std::vect
     }
 }
 
-bool Fsm::is_ended() const
+bool Process::is_ended() const
 {
     return id_ended_;
 }
 
-element_id_t Fsm::create_state( const std::string & name )
+element_id_t Process::create_state( const std::string & name )
 {
     auto id = get_next_id();
 
@@ -110,7 +111,7 @@ element_id_t Fsm::create_state( const std::string & name )
     return id;
 }
 
-element_id_t Fsm::create_add_signal_handler( element_id_t state_id, const std::string & signal_name )
+element_id_t Process::create_add_signal_handler( element_id_t state_id, const std::string & signal_name )
 {
     dummy_log_trace( log_id_, id_, "create_add_signal_handler: state id %u, signal name %s", state_id, signal_name.c_str() );
 
@@ -132,7 +133,7 @@ element_id_t Fsm::create_add_signal_handler( element_id_t state_id, const std::s
     return id;
 }
 
-element_id_t Fsm::create_add_first_action_connector( element_id_t signal_handler_id, Action * action )
+element_id_t Process::create_add_first_action_connector( element_id_t signal_handler_id, Action * action )
 {
     dummy_log_trace( log_id_, id_, "create_add_first_action_connector: signal handler id %u", signal_handler_id );
 
@@ -152,7 +153,7 @@ element_id_t Fsm::create_add_first_action_connector( element_id_t signal_handler
     return id;
 }
 
-element_id_t Fsm::create_add_next_action_connector( element_id_t action_connector_id, Action * action )
+element_id_t Process::create_add_next_action_connector( element_id_t action_connector_id, Action * action )
 {
     dummy_log_trace( log_id_, id_, "create_add_next_action_connector: action_connector_id %u", action_connector_id );
 
@@ -173,7 +174,7 @@ element_id_t Fsm::create_add_next_action_connector( element_id_t action_connecto
     return id;
 }
 
-element_id_t Fsm::create_add_timer( const std::string & name )
+element_id_t Process::create_add_timer( const std::string & name )
 {
     auto id = get_next_id();
 
@@ -190,7 +191,7 @@ element_id_t Fsm::create_add_timer( const std::string & name )
     return id;
 }
 
-element_id_t Fsm::create_signal_handler( const std::string & name )
+element_id_t Process::create_signal_handler( const std::string & name )
 {
     auto id = get_next_id();
 
@@ -207,7 +208,7 @@ element_id_t Fsm::create_signal_handler( const std::string & name )
     return id;
 }
 
-element_id_t Fsm::create_action_connector( Action * action )
+element_id_t Process::create_action_connector( Action * action )
 {
     auto id = get_next_id();
 
@@ -222,7 +223,7 @@ element_id_t Fsm::create_action_connector( Action * action )
     return id;
 }
 
-element_id_t Fsm::create_add_variable( const std::string & name, data_type_e type )
+element_id_t Process::create_add_variable( const std::string & name, data_type_e type )
 {
     Value dummy;
 
@@ -231,7 +232,7 @@ element_id_t Fsm::create_add_variable( const std::string & name, data_type_e typ
     return create_add_variable( name, type, dummy );
 }
 
-element_id_t Fsm::create_add_variable( const std::string & name, data_type_e type, const Value & value )
+element_id_t Process::create_add_variable( const std::string & name, data_type_e type, const Value & value )
 {
     auto id = get_next_id();
 
@@ -248,7 +249,7 @@ element_id_t Fsm::create_add_variable( const std::string & name, data_type_e typ
     return id;
 }
 
-element_id_t Fsm::create_add_constant( const std::string & name, data_type_e type, const Value & value )
+element_id_t Process::create_add_constant( const std::string & name, data_type_e type, const Value & value )
 {
     auto id = get_next_id();
 
@@ -265,7 +266,7 @@ element_id_t Fsm::create_add_constant( const std::string & name, data_type_e typ
     return id;
 }
 
-void Fsm::set_initial_state( element_id_t state_id )
+void Process::set_initial_state( element_id_t state_id )
 {
     dummy_log_trace( log_id_, id_, "set_initial_state: %u", state_id );
 
@@ -274,7 +275,7 @@ void Fsm::set_initial_state( element_id_t state_id )
     current_state_  = state_id;
 }
 
-void Fsm::handle( const Signal * req )
+void Process::handle( const Signal * req )
 {
     dummy_log_trace( log_id_, id_, "handle: %s", typeid( *req ).name() );
 
@@ -291,7 +292,7 @@ void Fsm::handle( const Signal * req )
     delete req;
 }
 
-void Fsm::add_name( element_id_t id, const std::string & name )
+void Process::add_name( element_id_t id, const std::string & name )
 {
     map_id_to_name_.insert( std::make_pair( id, name ) );
 
@@ -305,7 +306,7 @@ void Fsm::add_name( element_id_t id, const std::string & name )
     }
 }
 
-const std::string & Fsm::get_name( element_id_t id )
+const std::string & Process::get_name( element_id_t id )
 {
     static const std::string unk( "?" );
 
@@ -317,7 +318,7 @@ const std::string & Fsm::get_name( element_id_t id )
     return unk;
 }
 
-element_id_t Fsm::find_element( const std::string & name ) const
+element_id_t Process::find_element( const std::string & name ) const
 {
     auto it = map_name_to_id_.find( name );
 
@@ -327,7 +328,7 @@ element_id_t Fsm::find_element( const std::string & name ) const
     return it->second;
 }
 
-bool Fsm::delete_name( element_id_t id )
+bool Process::delete_name( element_id_t id )
 {
     auto it = map_id_to_name_.find( id );
 
@@ -343,7 +344,7 @@ bool Fsm::delete_name( element_id_t id )
     return true;
 }
 
-void Fsm::clear_temp_variables()
+void Process::clear_temp_variables()
 {
     for( auto e : map_id_to_temp_variable_ )
     {
@@ -358,7 +359,7 @@ void Fsm::clear_temp_variables()
     map_id_to_temp_variable_.clear();
 }
 
-void Fsm::init_temp_variables_from_signal( const Signal & s, std::vector<element_id_t> * arguments )
+void Process::init_temp_variables_from_signal( const Signal & s, std::vector<element_id_t> * arguments )
 {
     clear_temp_variables();
 
@@ -376,7 +377,7 @@ void Fsm::init_temp_variables_from_signal( const Signal & s, std::vector<element
     dummy_logi_debug( log_id_, id_, "created %u temp variables", i );
 }
 
-element_id_t Fsm::create_temp_variable( const Value & v, unsigned n )
+element_id_t Process::create_temp_variable( const Value & v, unsigned n )
 {
     auto id = get_next_id();
 
@@ -395,7 +396,7 @@ element_id_t Fsm::create_temp_variable( const Value & v, unsigned n )
     return id;
 }
 
-State* Fsm::find_state( element_id_t id )
+State* Process::find_state( element_id_t id )
 {
     {
         auto it = map_id_to_state_.find( id );
@@ -409,7 +410,7 @@ State* Fsm::find_state( element_id_t id )
     return nullptr;
 }
 
-Variable* Fsm::find_variable( element_id_t id )
+Variable* Process::find_variable( element_id_t id )
 {
     {
         auto it = map_id_to_variable_.find( id );
@@ -432,14 +433,14 @@ Variable* Fsm::find_variable( element_id_t id )
     return nullptr;
 }
 
-Variable* Fsm::find_variable( const std::string & name )
+Variable* Process::find_variable( const std::string & name )
 {
     auto id = find_element( name );
 
     return find_variable( id );
 }
 
-Timer* Fsm::find_timer( element_id_t id )
+Timer* Process::find_timer( element_id_t id )
 {
     {
         auto it = map_id_to_timer_.find( id );
@@ -453,7 +454,7 @@ Timer* Fsm::find_timer( element_id_t id )
     return nullptr;
 }
 
-void Fsm::convert_arguments_to_values( std::vector<Value> * values, const std::vector<Argument> & arguments )
+void Process::convert_arguments_to_values( std::vector<Value> * values, const std::vector<Argument> & arguments )
 {
     dummy_log_trace( log_id_, id_, "convert_arguments_to_values: convert %u arguments", arguments.size() );
 
@@ -467,7 +468,7 @@ void Fsm::convert_arguments_to_values( std::vector<Value> * values, const std::v
     }
 }
 
-void Fsm::convert_argument_to_value( Value * value, const Argument & argument )
+void Process::convert_argument_to_value( Value * value, const Argument & argument )
 {
     if( argument.type == argument_type_e::VALUE )
     {
@@ -496,7 +497,7 @@ void Fsm::convert_argument_to_value( Value * value, const Argument & argument )
     }
 }
 
-void Fsm::convert_variable_to_value( Value * value, element_id_t variable_id )
+void Process::convert_variable_to_value( Value * value, element_id_t variable_id )
 {
     {
         auto it = map_id_to_variable_.find( variable_id );
@@ -533,7 +534,7 @@ void Fsm::convert_variable_to_value( Value * value, element_id_t variable_id )
     throw std::runtime_error( "convert_variable_to_value: variable_id " + std::to_string( variable_id ) + " not found in the list of variables, temp variables, and constants" );
 }
 
-void Fsm::convert_values_to_value_pointers( std::vector<Value*> * value_pointers, std::vector<Value> & values )
+void Process::convert_values_to_value_pointers( std::vector<Value*> * value_pointers, std::vector<Value> & values )
 {
     for( auto & e : values )
     {
@@ -543,7 +544,67 @@ void Fsm::convert_values_to_value_pointers( std::vector<Value*> * value_pointers
     }
 }
 
-void Fsm::import_values_into_arguments( const std::vector<Argument> & arguments, const std::vector<Value> & values )
+void Process::evaluate_expression( Value * value, const Expression & expr )
+{
+    typedef Process Type;
+
+    typedef void (Type::*PPMF)( Value *, const Expression & );
+
+#define MAP_ENTRY(_v)       { typeid( _v ),        & Type::evaluate_expression_##_v }
+
+    static const std::unordered_map<std::type_index, PPMF> funcs =
+    {
+        MAP_ENTRY( ExpressionArgument ),
+        MAP_ENTRY( UnaryExpression ),
+        MAP_ENTRY( BinaryExpression ),
+    };
+
+#undef MAP_ENTRY
+
+    auto it = funcs.find( typeid( expr ) );
+
+    if( it == funcs.end() )
+    {
+        dummy_logi_fatal( log_id_, id_, "unsupported expression type %s", typeid( expr ).name() );
+        assert( 0 );
+        throw std::runtime_error( "unsupported expression type " + std::string( typeid( expr ).name() ) );
+    }
+
+    (this->*it->second)( value, expr );
+}
+
+void Process::evaluate_expression_ExpressionArgument( Value * value, const Expression & eexpr )
+{
+    auto & a = dynamic_cast< const ExpressionArgument &>( eexpr );
+
+    convert_argument_to_value( value, a.arg );
+}
+
+void Process::evaluate_expression_UnaryExpression( Value * value, const Expression & eexpr )
+{
+    auto & a = dynamic_cast< const UnaryExpression &>( eexpr );
+
+    Value temp;
+
+    evaluate_expression( & temp, * a.op.get() );
+
+    unary_operation( value, a.type, temp );
+}
+
+void Process::evaluate_expression_BinaryExpression( Value * value, const Expression & eexpr )
+{
+    auto & a = dynamic_cast< const BinaryExpression &>( eexpr );
+
+    Value lhs;
+    Value rhs;
+
+    evaluate_expression( & lhs, * a.lhs.get() );
+    evaluate_expression( & rhs, * a.rhs.get() );
+
+    binary_operation( value, a.type, lhs, rhs );
+}
+
+void Process::import_values_into_arguments( const std::vector<Argument> & arguments, const std::vector<Value> & values )
 {
     dummy_log_trace( log_id_, id_, "import_values_into_arguments: %u arguments", arguments.size() );
 
@@ -583,14 +644,14 @@ void Fsm::import_values_into_arguments( const std::vector<Argument> & arguments,
     dummy_log_trace( log_id_, id_, "import_values_into_arguments: imported %u values", imported );
 }
 
-void Fsm::import_value_into_variable( const std::string & variable_name, const Value & value )
+void Process::import_value_into_variable( const std::string & variable_name, const Value & value )
 {
     auto id = find_element( variable_name );
 
     import_value_into_variable( id, value );
 }
 
-void Fsm::import_value_into_variable( element_id_t variable_id, const Value & value )
+void Process::import_value_into_variable( element_id_t variable_id, const Value & value )
 {
     auto variable = find_variable( variable_id );
 
@@ -604,7 +665,7 @@ void Fsm::import_value_into_variable( element_id_t variable_id, const Value & va
     variable->set( value );
 }
 
-void Fsm::set_timer( Timer * timer, const Value & delay )
+void Process::set_timer( Timer * timer, const Value & delay )
 {
     dummy_log_trace( log_id_, id_, "set_timer: timer %s (%u), %.2f sec", timer->get_name().c_str(), timer->get_id(), delay.arg_d );
 
@@ -643,7 +704,7 @@ void Fsm::set_timer( Timer * timer, const Value & delay )
 
 }
 
-void Fsm::reset_timer( Timer * timer )
+void Process::reset_timer( Timer * timer )
 {
     dummy_log_trace( log_id_, id_, "reset_timer: timer %s (%u)", timer->get_name().c_str(), timer->get_id() );
 
@@ -676,69 +737,7 @@ void Fsm::reset_timer( Timer * timer )
     timer->set_job_id( 0 );
 }
 
-template <class T>
-bool Fsm::compare_values_t( comparison_type_e type, const T & lhs, const T & rhs )
-{
-    switch( type )
-    {
-    case comparison_type_e::EQ:
-        return lhs == rhs;
-
-    case comparison_type_e::NEQ:
-        return lhs != rhs;
-
-    case comparison_type_e::LT:
-        return lhs < rhs;
-
-    case comparison_type_e::LE:
-        return lhs <= rhs;
-
-    case comparison_type_e::GT:
-        return lhs > rhs;
-
-    case comparison_type_e::GE:
-        return lhs >= rhs;
-
-    default:
-        break;
-    }
-
-    dummy_logi_fatal( log_id_, id_, "illegal comparison type %u", unsigned( type ) );
-    assert( 0 );
-    throw std::runtime_error( "illegal comparison type  " + std::to_string( unsigned( type ) ) );
-
-    return false;
-}
-
-
-bool Fsm::compare_values( comparison_type_e type, const Value & lhs, const Value & rhs )
-{
-    switch( lhs.type )
-    {
-    case data_type_e::BOOL:
-        return compare_values_t( type, lhs.arg_b, rhs.arg_b );
-
-    case data_type_e::INT:
-        return compare_values_t( type, lhs.arg_i, rhs.arg_i );
-
-    case data_type_e::DOUBLE:
-        return compare_values_t( type, lhs.arg_d, rhs.arg_d );
-
-    case data_type_e::STRING:
-        return compare_values_t( type, lhs.arg_s, rhs.arg_s );
-
-    default:
-        break;
-    }
-
-    dummy_logi_fatal( log_id_, id_, "illegal data type %u", unsigned( lhs.type ) );
-    assert( 0 );
-    throw std::runtime_error( "illegal data type  " + std::to_string( unsigned( lhs.type ) ) );
-
-    return false;
-}
-
-void Fsm::execute_action_connector_id( element_id_t action_connector_id )
+void Process::execute_action_connector_id( element_id_t action_connector_id )
 {
     dummy_log_trace( log_id_, id_, "execute_action_connector_id: action_connector_id %u", action_connector_id );
 
@@ -756,7 +755,7 @@ void Fsm::execute_action_connector_id( element_id_t action_connector_id )
     execute_action_connector( * action_connector );
 }
 
-void Fsm::execute_action_connector( const ActionConnector & action_connector )
+void Process::execute_action_connector( const ActionConnector & action_connector )
 {
     auto & action = * action_connector.get_action();
 
@@ -776,9 +775,9 @@ void Fsm::execute_action_connector( const ActionConnector & action_connector )
     }
 }
 
-Fsm::flow_control_e Fsm::handle_action( const Action & action )
+Process::flow_control_e Process::handle_action( const Action & action )
 {
-    typedef Fsm Type;
+    typedef Process Type;
 
     typedef flow_control_e (Type::*PPMF)( const Action & r );
 
@@ -811,7 +810,7 @@ Fsm::flow_control_e Fsm::handle_action( const Action & action )
     return flow_control;
 }
 
-Fsm::flow_control_e Fsm::handle_SendSignal( const Action & aa )
+Process::flow_control_e Process::handle_SendSignal( const Action & aa )
 {
     auto & a = dynamic_cast< const SendSignal &>( aa );
 
@@ -824,7 +823,7 @@ Fsm::flow_control_e Fsm::handle_SendSignal( const Action & aa )
     return flow_control_e::NEXT;
 }
 
-Fsm::flow_control_e Fsm::handle_SetTimer( const Action & aa )
+Process::flow_control_e Process::handle_SetTimer( const Action & aa )
 {
     auto & a = dynamic_cast< const SetTimer &>( aa );
 
@@ -846,7 +845,7 @@ Fsm::flow_control_e Fsm::handle_SetTimer( const Action & aa )
     return flow_control_e::NEXT;
 }
 
-Fsm::flow_control_e Fsm::handle_ResetTimer( const Action & aa )
+Process::flow_control_e Process::handle_ResetTimer( const Action & aa )
 {
     auto & a = dynamic_cast< const ResetTimer &>( aa );
 
@@ -864,7 +863,7 @@ Fsm::flow_control_e Fsm::handle_ResetTimer( const Action & aa )
     return flow_control_e::NEXT;
 }
 
-Fsm::flow_control_e Fsm::handle_FunctionCall( const Action & aa )
+Process::flow_control_e Process::handle_FunctionCall( const Action & aa )
 {
     auto & a = dynamic_cast< const FunctionCall &>( aa );
 
@@ -883,17 +882,17 @@ Fsm::flow_control_e Fsm::handle_FunctionCall( const Action & aa )
     return flow_control_e::NEXT;
 }
 
-Fsm::flow_control_e Fsm::handle_Condition( const Action & aa )
+Process::flow_control_e Process::handle_Condition( const Action & aa )
 {
     auto & a = dynamic_cast< const Condition &>( aa );
 
-    if( a.expr.type == comparison_type_e::NOT )
+    if( a.type == comparison_type_e::NOT )
     {
         // unary expression
 
         Value val;
 
-        convert_argument_to_value( & val, a.expr.lhs );
+        evaluate_expression( & val, * a.lhs.get() );
 
         if( val.arg_b == false )
             return flow_control_e::NEXT;
@@ -902,17 +901,17 @@ Fsm::flow_control_e Fsm::handle_Condition( const Action & aa )
     }
 
     Value lhs;
-    convert_argument_to_value( & lhs, a.expr.lhs );
+    evaluate_expression( & lhs, * a.lhs.get() );
 
     Value rhs;
-    convert_argument_to_value( & rhs, a.expr.lhs );
+    evaluate_expression( & rhs, * a.lhs.get() );
 
-    auto b = compare_values( a.expr.type, lhs, rhs );
+    auto b = compare_values( a.type, lhs, rhs );
 
     return b ? flow_control_e::NEXT : flow_control_e::ALT_NEXT;
 }
 
-Fsm::flow_control_e Fsm::handle_NextState( const Action & aa )
+Process::flow_control_e Process::handle_NextState( const Action & aa )
 {
     auto & a = dynamic_cast< const NextState &>( aa );
 
@@ -929,7 +928,7 @@ Fsm::flow_control_e Fsm::handle_NextState( const Action & aa )
 
     return flow_control_e::STOP;
 }
-Fsm::flow_control_e Fsm::handle_Exit( const Action & /* aa */ )
+Process::flow_control_e Process::handle_Exit( const Action & /* aa */ )
 {
     assert( id_ended_ == false );
 
@@ -938,14 +937,14 @@ Fsm::flow_control_e Fsm::handle_Exit( const Action & /* aa */ )
     return flow_control_e::STOP;
 }
 
-void Fsm::next_state( element_id_t state )
+void Process::next_state( element_id_t state )
 {
     dummy_logi_debug( log_id_, id_, "switched state %s (%u) --> %s (%u)", get_name( current_state_ ).c_str(), current_state_, get_name( state ).c_str(), state );
 
     current_state_  = state;
 }
 
-element_id_t Fsm::get_next_id()
+element_id_t Process::get_next_id()
 {
     return req_id_gen_->get_next_request_id();
 }

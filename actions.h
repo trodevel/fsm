@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10176 $ $Date:: 2018-12-14 #$ $Author: serge $
+// $Revision: 10195 $ $Date:: 2018-12-14 #$ $Author: serge $
 
 #ifndef LIB_FSM__ACTIONS_H
 #define LIB_FSM__ACTIONS_H
@@ -78,12 +78,19 @@ struct FunctionCall: public Action
 
 struct Condition: public Action
 {
-    Condition( const Expression & expr ):
-        expr( expr )
+    Condition(
+            comparison_type_e           type,
+            Expression                  * lhs,
+            Expression                  * rhs ):
+        type( type ),
+        lhs( lhs ),
+        rhs( rhs )
     {
     }
 
-    Expression  expr;
+    comparison_type_e           type;
+    std::unique_ptr<Expression> lhs;
+    std::unique_ptr<Expression> rhs;
 };
 
 struct NextState: public Action

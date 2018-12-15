@@ -19,10 +19,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10156 $ $Date:: 2018-12-13 #$ $Author: serge $
+// $Revision: 10189 $ $Date:: 2018-12-14 #$ $Author: serge $
 
-#ifndef LIB_FSM__FSM_H
-#define LIB_FSM__FSM_H
+#ifndef LIB_FSM__PROCESS_H
+#define LIB_FSM__PROCESS_H
 
 #include <map>                  // std::map
 
@@ -45,17 +45,17 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 namespace fsm {
 
-class Fsm:
+class Process:
         public ISignalHandler
 {
 public:
-    Fsm(    uint32_t                id,
+    Process(    uint32_t                id,
             uint32_t                log_id,
             IFsm                    * parent,
             ICallback               * callback,
             scheduler::IScheduler   * scheduler,
             utils::IRequestIdGen    * req_id_gen );
-    ~Fsm();
+    ~Process();
 
     void handle( const Signal * req );
 
@@ -96,8 +96,8 @@ private:
     };
 
 private:
-    Fsm( const Fsm & )              = delete;
-    Fsm & operator=( const Fsm & )  = delete;
+    Process( const Process & )              = delete;
+    Process & operator=( const Process & )  = delete;
 
     void add_name( element_id_t id, const std::string & name );
     const std::string & get_name( element_id_t id );
@@ -118,16 +118,17 @@ private:
     void convert_variable_to_value( Value * value, element_id_t variable_id );
     void convert_values_to_value_pointers( std::vector<Value*> * value_pointers, std::vector<Value> & values );
 
+    void evaluate_expression( Value * value, const Expression & expr );
+    void evaluate_expression_ExpressionArgument( Value * value, const Expression & expr );
+    void evaluate_expression_UnaryExpression( Value * value, const Expression & expr );
+    void evaluate_expression_BinaryExpression( Value * value, const Expression & expr );
+
     void import_values_into_arguments( const std::vector<Argument> & arguments, const std::vector<Value> & values );
     void import_value_into_variable( const std::string & variable_name, const Value & value );
     void import_value_into_variable( element_id_t variable_id, const Value & value );
 
     void set_timer( Timer * timer, const Value & delay );
     void reset_timer( Timer * timer );
-
-    template <class T>
-    bool compare_values_t( comparison_type_e type, const T & lhs, const T & rhs );
-    bool compare_values( comparison_type_e type, const Value & lhs, const Value & rhs );
 
     void execute_action_connector_id( element_id_t action_connector_id );
     void execute_action_connector( const ActionConnector & action_connector );
@@ -170,4 +171,4 @@ private:
 
 } // namespace fsm
 
-#endif // LIB_FSM__FSM_H
+#endif // LIB_FSM__PROCESS_H

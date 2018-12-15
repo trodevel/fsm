@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10178 $ $Date:: 2018-12-14 #$ $Author: serge $
+// $Revision: 10181 $ $Date:: 2018-12-14 #$ $Author: serge $
 
 #include "fsm_manager.h"        // self
 
@@ -42,7 +42,7 @@ FsmManager::FsmManager():
 
 FsmManager::~FsmManager()
 {
-    for( auto & e : map_id_to_fsm_ )
+    for( auto & e : map_id_to_process_ )
     {
         delete e.second;
     }
@@ -87,17 +87,17 @@ void FsmManager::shutdown()
     WorkerBase::shutdown();
 }
 
-uint32_t FsmManager::create_fsm()
+uint32_t FsmManager::create_process()
 {
     MUTEX_SCOPE_LOCK( mutex_ );
 
     auto id = req_id_gen_.get_next_request_id();
 
-    auto fsm = new Fsm( id, log_id_fsm_, this, callback_, scheduler_, & req_id_gen_ );
+    auto fsm = new Process( id, log_id_fsm_, this, callback_, scheduler_, & req_id_gen_ );
 
     dummy_log_info( log_id_, "new fsm %u", id );
 
-    auto b = map_id_to_fsm_.insert( std::make_pair( id, fsm ) ).second;
+    auto b = map_id_to_process_.insert( std::make_pair( id, fsm ) ).second;
 
     assert( b );(void)b;
 
@@ -105,11 +105,11 @@ uint32_t FsmManager::create_fsm()
 }
 
 // must be called in the locked state
-Fsm* FsmManager::find_fsm( uint32_t fsm_id )
+Process* FsmManager::find_process( uint32_t process_id )
 {
-    auto it = map_id_to_fsm_.find( fsm_id );
+    auto it = map_id_to_process_.find( process_id );
 
-    if( it != map_id_to_fsm_.end() )
+    if( it != map_id_to_process_.end() )
     {
         return it->second;
     }
@@ -129,11 +129,11 @@ void FsmManager::handle( const Signal * req )
     {
         MUTEX_SCOPE_LOCK( mutex_ );
 
-        auto fsm_id = req->fsm_id;
+        auto process_id = req->process_id;
 
-        auto it = map_id_to_fsm_.find( fsm_id );
+        auto it = map_id_to_process_.find( process_id );
 
-        if( it != map_id_to_fsm_.end() )
+        if( it != map_id_to_process_.end() )
         {
             it->second->handle( req );
 
@@ -141,7 +141,7 @@ void FsmManager::handle( const Signal * req )
         }
         else
         {
-            dummy_log_error( log_id_, "fsm id %u: wrong fsm id or fsm ended", fsm_id );
+            dummy_log_error( log_id_, "fsm id %u: wrong fsm id or fsm ended", process_id );
         }
     }
 
@@ -153,13 +153,13 @@ void FsmManager::release( const Signal * req ) const
     delete req;
 }
 
-void FsmManager::check_fsm_end( MapIdToFsm::iterator it )
+void FsmManager::check_fsm_end( MapIdToProcess::iterator it )
 {
     if( it->second->is_ended() )
     {
         delete it->second;
 
-        map_id_to_fsm_.erase( it );
+        map_id_to_process_.erase( it );
     }
 }
 

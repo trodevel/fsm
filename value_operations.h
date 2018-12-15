@@ -1,6 +1,6 @@
 /*
 
-FSM objects.
+FSM. Value Operations.
 
 Copyright (C) 2018 Sergey Kolevatov
 
@@ -19,41 +19,24 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10196 $ $Date:: 2018-12-14 #$ $Author: serge $
+// $Revision: 10191 $ $Date:: 2018-12-14 #$ $Author: serge $
 
-#ifndef LIB_FSM__EXPRESSION_H
-#define LIB_FSM__EXPRESSION_H
+#ifndef LIB_FSM__VALUE_OPERATIONS_H
+#define LIB_FSM__VALUE_OPERATIONS_H
 
-#include <memory>               // std::unique_ptr
-
-#include "argument.h"           // Argument
+#include "value.h"              // Value
+#include "elements.h"           // comparison_type_e
 
 namespace fsm {
 
-struct Expression
-{
-    virtual ~Expression() {}
-};
+template <class T>
+bool compare_values_t( comparison_type_e type, const T & lhs, const T & rhs );
+bool compare_values( comparison_type_e type, const Value & lhs, const Value & rhs );
 
-struct ExpressionArgument: public Expression
-{
-    Argument            arg;
-};
+void unary_operation( Value * res, unary_operation_type_e type, const Value & op );
 
-struct UnaryExpression: public Expression
-{
-    unary_operation_type_e      type;
-    std::unique_ptr<Expression> op;
-};
-
-struct BinaryExpression: public Expression
-{
-    binary_operation_type_e     type;
-
-    std::unique_ptr<Expression> lhs;
-    std::unique_ptr<Expression> rhs;
-};
+void binary_operation( Value * res, binary_operation_type_e type, const Value & lhs, const Value & rhs );
 
 } // namespace fsm
 
-#endif // LIB_FSM__EXPRESSION_H
+#endif // LIB_FSM__VALUE_OPERATIONS_H

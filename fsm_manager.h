@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10160 $ $Date:: 2018-12-13 #$ $Author: serge $
+// $Revision: 10181 $ $Date:: 2018-12-14 #$ $Author: serge $
 
 #ifndef LIB_FSM__FSM_MANAGER_H
 #define LIB_FSM__FSM_MANAGER_H
@@ -40,7 +40,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include "signal.h"             // Signal
 #include "i_fsm.h"              // IFsm
 #include "i_callback.h"         // ICallback
-#include "fsm.h"                // Fsm
+#include "process.h"            // Process
 
 namespace fsm {
 
@@ -71,16 +71,16 @@ public:
 
     void shutdown();
 
-    uint32_t create_fsm();
+    uint32_t create_process();
 
     // must be called in the locked state
-    Fsm* find_fsm( uint32_t fsm_id );
+    Process* find_process( uint32_t process_id );
 
     std::mutex      & get_mutex() const;
 
 private:
 
-    typedef std::map<uint32_t,Fsm*>    MapIdToFsm;
+    typedef std::map<uint32_t,Process*>    MapIdToProcess;
 
 private:
     FsmManager( const FsmManager & )              = delete;
@@ -91,7 +91,7 @@ private:
 
     element_id_t get_next_id();
 
-    void check_fsm_end( MapIdToFsm::iterator it );
+    void check_fsm_end( MapIdToProcess::iterator it );
 
 private:
 
@@ -103,7 +103,7 @@ private:
     scheduler::IScheduler       * scheduler_;
 
 
-    MapIdToFsm                  map_id_to_fsm_;
+    MapIdToProcess                  map_id_to_process_;
 
     utils::RequestIdGen         req_id_gen_;
 };

@@ -16,11 +16,11 @@ public:
     {
     }
 
-    void handle_send_signal( uint32_t fsm_id, const std::string & name, const std::vector<fsm::Value> & arguments ) override
+    void handle_send_signal( uint32_t process_id, const std::string & name, const std::vector<fsm::Value> & arguments ) override
     {
     }
 
-    void handle_function_call( uint32_t fsm_id, const std::string & name, const std::vector<fsm::Value*> & arguments ) override
+    void handle_function_call( uint32_t process_id, const std::string & name, const std::vector<fsm::Value*> & arguments ) override
     {
     }
 
@@ -62,11 +62,11 @@ private:
             }
             else if( cmd == "send" )
             {
-                uint32_t    fsm_id;
+                uint32_t    process_id;
                 std::string name;
 
-                stream >> fsm_id;
-                if( fsm_id == 0 )
+                stream >> process_id;
+                if( process_id == 0 )
                 {
                     std::cout << "ERROR: fsm id is 0" << std::endl;
                     return true;
@@ -110,7 +110,7 @@ private:
                     }
                 }
 
-                fsm_man_->consume( new fsm::Signal( fsm_id, name, arguments ) );
+                fsm_man_->consume( new fsm::Signal( process_id, name, arguments ) );
             }
             else
             {

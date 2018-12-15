@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10056 $ $Date:: 2018-12-06 #$ $Author: serge $
+// $Revision: 10181 $ $Date:: 2018-12-14 #$ $Author: serge $
 
 #ifndef LIB_FSM__I_CALLBACK_H
 #define LIB_FSM__I_CALLBACK_H
@@ -34,8 +34,8 @@ struct ICallback
 {
     virtual ~ICallback() {}
 
-    virtual void handle_send_signal( uint32_t fsm_id, const std::string & name, const std::vector<Value> & arguments )       = 0;
-    virtual void handle_function_call( uint32_t fsm_id, const std::string & name, const std::vector<Value*> & arguments )    = 0;
+    virtual void handle_send_signal( uint32_t process_id, const std::string & name, const std::vector<Value> & arguments )       = 0;
+    virtual void handle_function_call( uint32_t process_id, const std::string & name, const std::vector<Value*> & arguments )    = 0;
 };
 
 } // namespace fsm

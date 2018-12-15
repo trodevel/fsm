@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9978 $ $Date:: 2018-11-14 #$ $Author: serge $
+// $Revision: 10185 $ $Date:: 2018-12-14 #$ $Author: serge $
 
 #include "value.h"          // self
 
@@ -72,6 +72,16 @@ void assign( Value * lhs, const Value & rhs )
 {
     switch( lhs->type )
     {
+    case data_type_e::UNDEF:
+    {
+        lhs->type   = rhs.type;
+        lhs->arg_b  = rhs.arg_b;
+        lhs->arg_i  = rhs.arg_i;
+        lhs->arg_d  = rhs.arg_d;
+        lhs->arg_s  = rhs.arg_s;
+    }
+    break;
+
     case data_type_e::BOOL:
     {
         lhs->arg_b  = rhs.arg_b;
