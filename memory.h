@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10204 $ $Date:: 2018-12-15 #$ $Author: serge $
+// $Revision: 10237 $ $Date:: 2018-12-16 #$ $Author: serge $
 
 #ifndef LIB_FSM__MEMORY_H
 #define LIB_FSM__MEMORY_H
@@ -28,7 +28,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #include "utils/request_id_gen.h"   // utils::RequestIdGen
 
-#include "argument.h"           // Argument
 #include "variable.h"           // Variable
 #include "constant.h"           // Constant
 #include "signal.h"             // Signal
@@ -58,15 +57,14 @@ public:
     Variable* find_variable( element_id_t id );
     Variable* find_variable( const std::string & name );
 
-    void convert_arguments_to_values( std::vector<Value> * values, const std::vector<Argument> & arguments );
-    void convert_argument_to_value( Value * value, const Argument & argument );
-    void convert_variable_to_value( Value * value, element_id_t variable_id );
-    void convert_values_to_value_pointers( std::vector<Value*> * value_pointers, std::vector<Value> & values );
+    void evaluate_expressions( std::vector<Value> * values, const std::vector<ExpressionPtr> & arguments );
+    void evaluate_expressions( std::vector<Value> * values, const std::vector<std::pair<bool,ExpressionPtr>> & arguments );
 
-    void import_values_into_arguments( const std::vector<Argument> & arguments, const std::vector<Value> & values );
+    void import_values_into_variables( const std::vector<std::pair<bool,ExpressionPtr>> & arguments, const std::vector<Value> & values );
     void import_value_into_variable( const std::string & variable_name, const Value & value );
     void import_value_into_variable( element_id_t variable_id, const Value & value );
 
+    void evaluate_expression( Value * value, ExpressionPtr expr );
     void evaluate_expression( Value * value, const Expression & expr );
 
 private:
@@ -77,7 +75,11 @@ private:
     Memory( const Memory & )              = delete;
     Memory & operator=( const Memory & )  = delete;
 
-    void evaluate_expression_ExpressionArgument( Value * value, const Expression & expr );
+    void convert_variable_to_value( Value * value, element_id_t variable_id );
+
+    void evaluate_expression_ExpressionValue( Value * value, const Expression & expr );
+    void evaluate_expression_ExpressionVariable( Value * value, const Expression & expr );
+    void evaluate_expression_ExpressionVariableName( Value * value, const Expression & expr );
     void evaluate_expression_UnaryExpression( Value * value, const Expression & expr );
     void evaluate_expression_BinaryExpression( Value * value, const Expression & expr );
 

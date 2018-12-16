@@ -19,14 +19,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10097 $ $Date:: 2018-12-09 #$ $Author: serge $
+// $Revision: 10215 $ $Date:: 2018-12-16 #$ $Author: serge $
 
 #ifndef LIB_FSM__STATE_H
 #define LIB_FSM__STATE_H
 
 #include <map>                  // std::map
 
-#include "argument.h"           // Argument
 #include "actions.h"            // Actions
 #include "i_signal_handler.h"   // ISignalHandler
 

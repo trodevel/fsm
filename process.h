@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10200 $ $Date:: 2018-12-15 #$ $Author: serge $
+// $Revision: 10230 $ $Date:: 2018-12-16 #$ $Author: serge $
 
 #ifndef LIB_FSM__PROCESS_H
 #define LIB_FSM__PROCESS_H
@@ -30,7 +30,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include "utils/request_id_gen.h"   // utils::RequestIdGen
 #include "scheduler/i_scheduler.h"  // IScheduler
 
-#include "argument.h"           // Argument
 #include "actions.h"            // Actions
 #include "state.h"              // State
 #include "signal_handler.h"     // SignalHandler
@@ -103,13 +102,10 @@ private:
     State* find_state( element_id_t id );
     Timer* find_timer( element_id_t id );
 
-    void evaluate_expression( Value * value, const Expression & expr );
-    void evaluate_expression_ExpressionArgument( Value * value, const Expression & expr );
-    void evaluate_expression_UnaryExpression( Value * value, const Expression & expr );
-    void evaluate_expression_BinaryExpression( Value * value, const Expression & expr );
-
     void set_timer( Timer * timer, const Value & delay );
     void reset_timer( Timer * timer );
+
+    static void convert_values_to_value_pointers( std::vector<Value*> * value_pointers, std::vector<Value> & values );
 
     void execute_action_connector_id( element_id_t action_connector_id );
     void execute_action_connector( const ActionConnector & action_connector );

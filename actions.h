@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10195 $ $Date:: 2018-12-14 #$ $Author: serge $
+// $Revision: 10236 $ $Date:: 2018-12-16 #$ $Author: serge $
 
 #ifndef LIB_FSM__ACTIONS_H
 #define LIB_FSM__ACTIONS_H
@@ -32,26 +32,26 @@ namespace fsm {
 
 struct SendSignal: public Action
 {
-    SendSignal( const std::string & name, const std::vector<Argument> & arguments ):
+    SendSignal( const std::string & name, const std::vector<ExpressionPtr> & arguments ):
         name( name ),
         arguments( arguments )
     {
     }
 
-    std::string             name;
-    std::vector<Argument>   arguments;
+    std::string                 name;
+    std::vector<ExpressionPtr>  arguments;
 };
 
 struct SetTimer: public Action
 {
-    SetTimer( element_id_t timer_id, const Argument & delay ):
+    SetTimer( element_id_t timer_id, const ExpressionPtr & delay ):
         timer_id( timer_id ),
         delay( delay )
     {
     }
 
     element_id_t            timer_id;
-    Argument                delay;
+    ExpressionPtr           delay;
 };
 
 struct ResetTimer: public Action
@@ -66,14 +66,14 @@ struct ResetTimer: public Action
 
 struct FunctionCall: public Action
 {
-    FunctionCall( const std::string & name, const std::vector<Argument> & arguments ):
+    FunctionCall( const std::string & name, const std::vector<std::pair<bool,ExpressionPtr>> & arguments ):
         name( name ),
         arguments( arguments )
     {
     }
 
-    std::string             name;
-    std::vector<Argument>   arguments;
+    std::string                                 name;
+    std::vector<std::pair<bool,ExpressionPtr>>  arguments;
 };
 
 struct Condition: public Action
@@ -89,8 +89,8 @@ struct Condition: public Action
     }
 
     comparison_type_e           type;
-    std::unique_ptr<Expression> lhs;
-    std::unique_ptr<Expression> rhs;
+    ExpressionPtr               lhs;
+    ExpressionPtr               rhs;
 };
 
 struct NextState: public Action
@@ -105,7 +105,7 @@ struct NextState: public Action
 
 struct Exit: public Action
 {
-    Exit( const std::vector<Argument> & arguments )
+    Exit( const std::vector<ExpressionPtr> & arguments )
     {
     }
 };

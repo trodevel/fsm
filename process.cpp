@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10205 $ $Date:: 2018-12-15 #$ $Author: serge $
+// $Revision: 10238 $ $Date:: 2018-12-16 #$ $Author: serge $
 
 #include "process.h"            // self
 
@@ -294,66 +294,6 @@ Timer* Process::find_timer( element_id_t id )
     return nullptr;
 }
 
-void Process::evaluate_expression( Value * value, const Expression & expr )
-{
-    typedef Process Type;
-
-    typedef void (Type::*PPMF)( Value *, const Expression & );
-
-#define MAP_ENTRY(_v)       { typeid( _v ),        & Type::evaluate_expression_##_v }
-
-    static const std::unordered_map<std::type_index, PPMF> funcs =
-    {
-        MAP_ENTRY( ExpressionArgument ),
-        MAP_ENTRY( UnaryExpression ),
-        MAP_ENTRY( BinaryExpression ),
-    };
-
-#undef MAP_ENTRY
-
-    auto it = funcs.find( typeid( expr ) );
-
-    if( it == funcs.end() )
-    {
-        dummy_logi_fatal( log_id_, id_, "unsupported expression type %s", typeid( expr ).name() );
-        assert( 0 );
-        throw std::runtime_error( "unsupported expression type " + std::string( typeid( expr ).name() ) );
-    }
-
-    (this->*it->second)( value, expr );
-}
-
-void Process::evaluate_expression_ExpressionArgument( Value * value, const Expression & eexpr )
-{
-    auto & a = dynamic_cast< const ExpressionArgument &>( eexpr );
-
-    mem_.convert_argument_to_value( value, a.arg );
-}
-
-void Process::evaluate_expression_UnaryExpression( Value * value, const Expression & eexpr )
-{
-    auto & a = dynamic_cast< const UnaryExpression &>( eexpr );
-
-    Value temp;
-
-    evaluate_expression( & temp, * a.op.get() );
-
-    unary_operation( value, a.type, temp );
-}
-
-void Process::evaluate_expression_BinaryExpression( Value * value, const Expression & eexpr )
-{
-    auto & a = dynamic_cast< const BinaryExpression &>( eexpr );
-
-    Value lhs;
-    Value rhs;
-
-    evaluate_expression( & lhs, * a.lhs.get() );
-    evaluate_expression( & rhs, * a.rhs.get() );
-
-    binary_operation( value, a.type, lhs, rhs );
-}
-
 void Process::set_timer( Timer * timer, const Value & delay )
 {
     dummy_log_trace( log_id_, id_, "set_timer: timer %s (%u), %.2f sec", timer->get_name().c_str(), timer->get_id(), delay.arg_d );
@@ -424,6 +364,16 @@ void Process::reset_timer( Timer * timer )
     }
 
     timer->set_job_id( 0 );
+}
+
+void Process::convert_values_to_value_pointers( std::vector<Value*> * value_pointers, std::vector<Value> & values )
+{
+    for( auto & e : values )
+    {
+        auto * p = & e;
+
+        value_pointers->push_back( p );
+    }
 }
 
 void Process::execute_action_connector_id( element_id_t action_connector_id )
@@ -505,7 +455,7 @@ Process::flow_control_e Process::handle_SendSignal( const Action & aa )
 
     std::vector<Value> values;
 
-    mem_.convert_arguments_to_values( & values, a.arguments );
+    mem_.evaluate_expressions( & values, a.arguments );
 
     callback_->handle_send_signal( id_, a.name, values );
 
@@ -527,7 +477,7 @@ Process::flow_control_e Process::handle_SetTimer( const Action & aa )
 
     Value delay;
 
-    mem_.convert_argument_to_value( & delay, a.delay );
+    mem_.evaluate_expression( & delay, a.delay );
 
     set_timer( timer, delay );
 
@@ -558,15 +508,15 @@ Process::flow_control_e Process::handle_FunctionCall( const Action & aa )
 
     std::vector<Value> values;
 
-    mem_.convert_arguments_to_values( & values, a.arguments );
+    mem_.evaluate_expressions( & values, a.arguments );
 
     std::vector<Value*> value_pointers;
 
-    mem_.convert_values_to_value_pointers( & value_pointers, values );
+    convert_values_to_value_pointers( & value_pointers, values );
 
     callback_->handle_function_call( id_, a.name, value_pointers );
 
-    mem_.import_values_into_arguments( a.arguments, values );
+    mem_.import_values_into_variables( a.arguments, values );
 
     return flow_control_e::NEXT;
 }
@@ -581,7 +531,7 @@ Process::flow_control_e Process::handle_Condition( const Action & aa )
 
         Value val;
 
-        evaluate_expression( & val, * a.lhs.get() );
+        mem_.evaluate_expression( & val, a.lhs );
 
         if( val.arg_b == false )
             return flow_control_e::NEXT;
@@ -590,10 +540,10 @@ Process::flow_control_e Process::handle_Condition( const Action & aa )
     }
 
     Value lhs;
-    evaluate_expression( & lhs, * a.lhs.get() );
+    mem_.evaluate_expression( & lhs, a.lhs );
 
     Value rhs;
-    evaluate_expression( & rhs, * a.lhs.get() );
+    mem_.evaluate_expression( & rhs, a.rhs );
 
     auto b = compare_values( a.type, lhs, rhs );
 

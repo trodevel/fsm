@@ -19,14 +19,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10196 $ $Date:: 2018-12-14 #$ $Author: serge $
+// $Revision: 10212 $ $Date:: 2018-12-16 #$ $Author: serge $
 
 #ifndef LIB_FSM__EXPRESSION_H
 #define LIB_FSM__EXPRESSION_H
 
-#include <memory>               // std::unique_ptr
+#include <memory>               // std::shared_ptr
 
-#include "argument.h"           // Argument
+#include "elements.h"           // element_id_t
+#include "value.h"              // Value
 
 namespace fsm {
 
@@ -35,23 +36,35 @@ struct Expression
     virtual ~Expression() {}
 };
 
-struct ExpressionArgument: public Expression
+typedef std::shared_ptr<Expression> ExpressionPtr;
+
+struct ExpressionVariable: public Expression
 {
-    Argument            arg;
+    element_id_t        variable_id;
+};
+
+struct ExpressionVariableName: public Expression
+{
+    std::string         variable_name;
+};
+
+struct ExpressionValue: public Expression
+{
+    Value               value;
 };
 
 struct UnaryExpression: public Expression
 {
     unary_operation_type_e      type;
-    std::unique_ptr<Expression> op;
+    ExpressionPtr               op;
 };
 
 struct BinaryExpression: public Expression
 {
     binary_operation_type_e     type;
 
-    std::unique_ptr<Expression> lhs;
-    std::unique_ptr<Expression> rhs;
+    ExpressionPtr               lhs;
+    ExpressionPtr               rhs;
 };
 
 } // namespace fsm

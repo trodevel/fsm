@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10181 $ $Date:: 2018-12-14 #$ $Author: serge $
+// $Revision: 10219 $ $Date:: 2018-12-16 #$ $Author: serge $
 
 #ifndef LIB_FSM__FSM_MANAGER_H
 #define LIB_FSM__FSM_MANAGER_H
@@ -31,7 +31,6 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include "utils/request_id_gen.h"   // utils::RequestIdGen
 #include "scheduler/i_scheduler.h"  // IScheduler
 
-#include "argument.h"           // Argument
 #include "actions.h"            // Actions
 #include "state.h"              // State
 #include "signal_handler.h"     // SignalHandler

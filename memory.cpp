@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10202 $ $Date:: 2018-12-15 #$ $Author: serge $
+// $Revision: 10237 $ $Date:: 2018-12-16 #$ $Author: serge $
 
 #include "memory.h"            // self
 
@@ -176,46 +176,31 @@ Variable* Memory::find_variable( const std::string & name )
     return find_variable( id );
 }
 
-void Memory::convert_arguments_to_values( std::vector<Value> * values, const std::vector<Argument> & arguments )
+void Memory::evaluate_expressions( std::vector<Value> * values, const std::vector<ExpressionPtr> & arguments )
 {
-    dummy_log_trace( log_id_, id_, "convert_arguments_to_values: convert %u arguments", arguments.size() );
+    dummy_log_trace( log_id_, id_, "evaluate_expressions: convert %u arguments", arguments.size() );
 
     for( auto & e : arguments )
     {
         Value v;
 
-        convert_argument_to_value( & v, e );
+        evaluate_expression( & v, e );
 
         values->push_back( v );
     }
 }
 
-void Memory::convert_argument_to_value( Value * value, const Argument & argument )
+void Memory::evaluate_expressions( std::vector<Value> * values, const std::vector<std::pair<bool,ExpressionPtr>> & arguments )
 {
-    if( argument.type == argument_type_e::VALUE )
-    {
-        assign( value, argument.value );
-    }
-    else // if( argument.type == argument_type_e::VARIABLE_IN ) // or VARIABLE_OUT
-    {
-        if( argument.variable_id != 0 && argument.variable_name.empty() )
-        {
-            convert_variable_to_value( value, argument.variable_id );
-        }
-        else if( argument.variable_id == 0 && argument.variable_name.empty() == false )
-        {
-            auto variable_id = names_->find_element( argument.variable_name );
+    dummy_log_trace( log_id_, id_, "evaluate_expressions: convert %u arguments", arguments.size() );
 
-            assert( variable_id );
+    for( auto & e : arguments )
+    {
+        Value v;
 
-            convert_variable_to_value( value, argument.variable_id );
-        }
-        else
-        {
-            dummy_log_fatal( log_id_, id_, "convert_argument_to_value: illegal combination: variable_id %u, variable_name '%s'", argument.variable_id, argument.variable_name.c_str() );
-            assert( 0 );
-            throw std::runtime_error( "convert_argument_to_value: illegal combination" );
-        }
+        evaluate_expression( & v, e.second );
+
+        values->push_back( v );
     }
 }
 
@@ -256,19 +241,9 @@ void Memory::convert_variable_to_value( Value * value, element_id_t variable_id 
     throw std::runtime_error( "convert_variable_to_value: variable_id " + std::to_string( variable_id ) + " not found in the list of variables, temp variables, and constants" );
 }
 
-void Memory::convert_values_to_value_pointers( std::vector<Value*> * value_pointers, std::vector<Value> & values )
+void Memory::import_values_into_variables( const std::vector<std::pair<bool,ExpressionPtr>> & arguments, const std::vector<Value> & values )
 {
-    for( auto & e : values )
-    {
-        auto * p = & e;
-
-        value_pointers->push_back( p );
-    }
-}
-
-void Memory::import_values_into_arguments( const std::vector<Argument> & arguments, const std::vector<Value> & values )
-{
-    dummy_log_trace( log_id_, id_, "import_values_into_arguments: %u arguments", arguments.size() );
+    dummy_log_trace( log_id_, id_, "import_values_into_variables: %u arguments", arguments.size() );
 
     assert( arguments.size() == values.size() );
 
@@ -280,30 +255,40 @@ void Memory::import_values_into_arguments( const std::vector<Argument> & argumen
         ++i;
 
         // ignore all variables except output variables
-        if( e.type != argument_type_e::VARIABLE_OUT )
+        if( e.first == false )
         {
             continue;
         }
 
-        if( e.variable_id != 0 )
+        auto & eexpr = * e.second.get();
+
+        if( typeid( eexpr ) == typeid( ExpressionVariable ) )
         {
-            import_value_into_variable( e.variable_id, values[i] );
+            auto & a = dynamic_cast< const ExpressionVariable &>( eexpr );
+
+            assert( a.variable_id );
+
+            import_value_into_variable( a.variable_id, values[i] );
         }
-        else if( e.variable_name.empty() != false )
+        else if( typeid( eexpr ) == typeid( ExpressionVariableName ) )
         {
-            import_value_into_variable( e.variable_name, values[i] );
+            auto & a = dynamic_cast< const ExpressionVariableName &>( eexpr );
+
+            assert( ! a.variable_name.empty() );
+
+            import_value_into_variable( a.variable_name, values[i] );
         }
         else
         {
-            dummy_log_fatal( log_id_, id_, "import_values_into_arguments: illegal combination: variable_id %u, variable_name '%s'", e.variable_id, e.variable_name.c_str() );
+            dummy_logi_fatal( log_id_, id_, "argument is not a variable %s", typeid( eexpr ).name() );
             assert( 0 );
-            throw std::runtime_error( "import_values_into_arguments: illegal combination" );
+            throw std::runtime_error( "argument is not a variable " + std::string( typeid( eexpr ).name() ) );
         }
 
         ++imported;
     }
 
-    dummy_log_trace( log_id_, id_, "import_values_into_arguments: imported %u values", imported );
+    dummy_log_trace( log_id_, id_, "import_values_into_variables: imported %u values", imported );
 }
 
 void Memory::import_value_into_variable( const std::string & variable_name, const Value & value )
@@ -321,10 +306,95 @@ void Memory::import_value_into_variable( element_id_t variable_id, const Value &
     {
         dummy_log_fatal( log_id_, id_, "import_value_into_variable: variable_id %u not found in the list of variables and temp variables", variable_id );
         assert( 0 );
-        throw std::runtime_error( "import_values_into_arguments: variable_id " + std::to_string( variable_id ) + " not found in the list of variables and temp variables" );
+        throw std::runtime_error( "import_values_into_variables: variable_id " + std::to_string( variable_id ) + " not found in the list of variables and temp variables" );
     }
 
     variable->set( value );
+}
+
+void Memory::evaluate_expression( Value * value, ExpressionPtr expr )
+{
+    evaluate_expression( value, * expr.get() );
+}
+
+void Memory::evaluate_expression( Value * value, const Expression & expr )
+{
+    typedef Memory Type;
+
+    typedef void (Type::*PPMF)( Value *, const Expression & );
+
+#define MAP_ENTRY(_v)       { typeid( _v ),        & Type::evaluate_expression_##_v }
+
+    static const std::unordered_map<std::type_index, PPMF> funcs =
+    {
+        MAP_ENTRY( ExpressionValue ),
+        MAP_ENTRY( ExpressionVariable ),
+        MAP_ENTRY( ExpressionVariableName ),
+        MAP_ENTRY( UnaryExpression ),
+        MAP_ENTRY( BinaryExpression ),
+    };
+
+#undef MAP_ENTRY
+
+    auto it = funcs.find( typeid( expr ) );
+
+    if( it == funcs.end() )
+    {
+        dummy_logi_fatal( log_id_, id_, "unsupported expression type %s", typeid( expr ).name() );
+        assert( 0 );
+        throw std::runtime_error( "unsupported expression type " + std::string( typeid( expr ).name() ) );
+    }
+
+    (this->*it->second)( value, expr );
+}
+
+void Memory::evaluate_expression_ExpressionValue( Value * value, const Expression & eexpr )
+{
+    auto & a = dynamic_cast< const ExpressionValue&>( eexpr );
+
+    assign( value, a.value );
+}
+
+void Memory::evaluate_expression_ExpressionVariable( Value * value, const Expression & eexpr )
+{
+    auto & a = dynamic_cast< const ExpressionVariable &>( eexpr );
+
+    convert_variable_to_value( value, a.variable_id );
+}
+
+void Memory::evaluate_expression_ExpressionVariableName( Value * value, const Expression & eexpr )
+{
+    auto & a = dynamic_cast< const ExpressionVariableName &>( eexpr );
+
+    auto variable_id = names_->find_element( a.variable_name );
+
+    assert( variable_id );
+
+    convert_variable_to_value( value, variable_id );
+}
+
+void Memory::evaluate_expression_UnaryExpression( Value * value, const Expression & eexpr )
+{
+    auto & a = dynamic_cast< const UnaryExpression &>( eexpr );
+
+    Value temp;
+
+    evaluate_expression( & temp, a.op );
+
+    unary_operation( value, a.type, temp );
+}
+
+void Memory::evaluate_expression_BinaryExpression( Value * value, const Expression & eexpr )
+{
+    auto & a = dynamic_cast< const BinaryExpression &>( eexpr );
+
+    Value lhs;
+    Value rhs;
+
+    evaluate_expression( & lhs, a.lhs );
+    evaluate_expression( & rhs, a.rhs );
+
+    binary_operation( value, a.type, lhs, rhs );
 }
 
 element_id_t Memory::get_next_id()
