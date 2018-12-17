@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10237 $ $Date:: 2018-12-16 #$ $Author: serge $
+// $Revision: 10244 $ $Date:: 2018-12-17 #$ $Author: serge $
 
 #include "memory.h"            // self
 
@@ -30,6 +30,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #include "utils/dummy_logger.h"     // dummy_log_debug
 #include "value_operations.h"               // compare_values
+#include "syntax_error.h"           // SyntaxError
 
 namespace fsm {
 
@@ -238,7 +239,7 @@ void Memory::convert_variable_to_value( Value * value, element_id_t variable_id 
 
     dummy_log_fatal( log_id_, id_, "convert_variable_to_value: variable_id %u not found in the list of variables, temp variables, and constants", variable_id );
     assert( 0 );
-    throw std::runtime_error( "convert_variable_to_value: variable_id " + std::to_string( variable_id ) + " not found in the list of variables, temp variables, and constants" );
+    throw SyntaxError( "convert_variable_to_value: variable_id " + std::to_string( variable_id ) + " not found in the list of variables, temp variables, and constants" );
 }
 
 void Memory::import_values_into_variables( const std::vector<std::pair<bool,ExpressionPtr>> & arguments, const std::vector<Value> & values )
@@ -282,7 +283,7 @@ void Memory::import_values_into_variables( const std::vector<std::pair<bool,Expr
         {
             dummy_logi_fatal( log_id_, id_, "argument is not a variable %s", typeid( eexpr ).name() );
             assert( 0 );
-            throw std::runtime_error( "argument is not a variable " + std::string( typeid( eexpr ).name() ) );
+            throw SyntaxError( "argument is not a variable " + std::string( typeid( eexpr ).name() ) );
         }
 
         ++imported;
@@ -306,7 +307,7 @@ void Memory::import_value_into_variable( element_id_t variable_id, const Value &
     {
         dummy_log_fatal( log_id_, id_, "import_value_into_variable: variable_id %u not found in the list of variables and temp variables", variable_id );
         assert( 0 );
-        throw std::runtime_error( "import_values_into_variables: variable_id " + std::to_string( variable_id ) + " not found in the list of variables and temp variables" );
+        throw SyntaxError( "import_values_into_variables: variable_id " + std::to_string( variable_id ) + " not found in the list of variables and temp variables" );
     }
 
     variable->set( value );
@@ -342,7 +343,7 @@ void Memory::evaluate_expression( Value * value, const Expression & expr )
     {
         dummy_logi_fatal( log_id_, id_, "unsupported expression type %s", typeid( expr ).name() );
         assert( 0 );
-        throw std::runtime_error( "unsupported expression type " + std::string( typeid( expr ).name() ) );
+        throw SyntaxError( "unsupported expression type " + std::string( typeid( expr ).name() ) );
     }
 
     (this->*it->second)( value, expr );

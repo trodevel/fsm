@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10236 $ $Date:: 2018-12-16 #$ $Author: serge $
+// $Revision: 10239 $ $Date:: 2018-12-17 #$ $Author: serge $
 
 #ifndef LIB_FSM__ACTIONS_H
 #define LIB_FSM__ACTIONS_H
@@ -74,6 +74,18 @@ struct FunctionCall: public Action
 
     std::string                                 name;
     std::vector<std::pair<bool,ExpressionPtr>>  arguments;
+};
+
+struct Task: public Action
+{
+    Task( element_id_t variable_id, const ExpressionPtr & expr ):
+        variable_id( variable_id ),
+        expr( expr )
+    {
+    }
+
+    element_id_t            variable_id;
+    ExpressionPtr           expr;
 };
 
 struct Condition: public Action

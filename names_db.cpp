@@ -19,13 +19,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10198 $ $Date:: 2018-12-15 #$ $Author: serge $
+// $Revision: 10244 $ $Date:: 2018-12-17 #$ $Author: serge $
 
 #include "names_db.h"           // self
 
 #include <cassert>              // assert
 
 #include "utils/dummy_logger.h"     // dummy_log_debug
+
+#include "syntax_error.h"           // SyntaxError
 
 namespace fsm {
 
@@ -53,7 +55,7 @@ void NamesDb::add_name( element_id_t id, const std::string & name )
     {
         dummy_log_fatal( log_id_, id_, "add_name: cannot add element %s (%u), another element exists %s (%u)", name.c_str(), id, name.c_str(), p.first->second );
         assert( 0 );
-        throw std::runtime_error( "cannot add element " + name + " " + std::to_string( id ) );
+        throw SyntaxError( "cannot add element " + name + " " + std::to_string( id ) );
     }
 }
 

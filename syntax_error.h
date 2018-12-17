@@ -1,6 +1,6 @@
 /*
 
-FSM. Value Operations.
+Syntax Error.
 
 Copyright (C) 2018 Sergey Kolevatov
 
@@ -19,22 +19,23 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10250 $ $Date:: 2018-12-17 #$ $Author: serge $
+// $Revision: 10243 $ $Date:: 2018-12-17 #$ $Author: serge $
 
-#ifndef LIB_FSM__VALUE_OPERATIONS_H
-#define LIB_FSM__VALUE_OPERATIONS_H
+#ifndef FSM__SYNTAX_ERROR_H
+#define FSM__SYNTAX_ERROR_H
 
-#include "value.h"              // Value
-#include "elements.h"           // comparison_type_e
+#include <stdexcept>            // std::runtime_error
 
-namespace fsm {
+namespace fsm
+{
 
-bool compare_values( comparison_type_e type, const Value & lhs, const Value & rhs );
-
-void unary_operation( Value * res, unary_operation_type_e type, const Value & op );
-
-void binary_operation( Value * res, binary_operation_type_e type, const Value & lhs, const Value & rhs );
+struct SyntaxError: public std::runtime_error
+{
+    SyntaxError( const std::string & str ):
+        std::runtime_error( str )
+    {}
+};
 
 } // namespace fsm
 
-#endif // LIB_FSM__VALUE_OPERATIONS_H
+#endif // FSM__SYNTAX_ERROR_H

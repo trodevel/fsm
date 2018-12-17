@@ -27,7 +27,7 @@ public:
     void control_thread()
     {
         std::cout << "type exit or quit to quit: " << std::endl;
-        std::cout << "send <signal_name> [<arg_type> <arg_val> [<arg_type> <arg_val> [...]]]" << std::endl;
+        std::cout << "send <process_id> <signal_name> [<arg_type> <arg_val> [<arg_type> <arg_val> [...]]]" << std::endl;
 
         std::string input;
 

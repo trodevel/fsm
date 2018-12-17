@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10084 $ $Date:: 2018-12-07 #$ $Author: serge $
+// $Revision: 10242 $ $Date:: 2018-12-17 #$ $Author: serge $
 
 #include "variable.h"           // self
 
@@ -50,7 +50,7 @@ Variable::Variable( uint32_t log_id, element_id_t id, const std::string & name, 
 
     value_.type = type;
 
-    assign( & value_, value );
+    fsm::assign( & value_, value );
 }
 
 const Value & Variable::get() const
@@ -60,7 +60,11 @@ const Value & Variable::get() const
 
 void Variable::set( const Value & v )
 {
-    assign( & value_, v );
+    value_  = v;
 }
 
+void Variable::assign( const Value & v )
+{
+    fsm::assign( & value_, v );
+}
 } // namespace fsm

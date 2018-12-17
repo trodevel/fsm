@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10148 $ $Date:: 2018-12-13 #$ $Author: serge $
+// $Revision: 10240 $ $Date:: 2018-12-17 #$ $Author: serge $
 
 #ifndef LIB_FSM__VARIABLE_H
 #define LIB_FSM__VARIABLE_H
@@ -36,6 +36,7 @@ public:
 
     const Value & get() const;
     void set( const Value & v );
+    void assign( const Value & v );
 
 private:
     Variable( const Variable & )              = delete;

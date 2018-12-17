@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10230 $ $Date:: 2018-12-16 #$ $Author: serge $
+// $Revision: 10241 $ $Date:: 2018-12-17 #$ $Author: serge $
 
 #ifndef LIB_FSM__PROCESS_H
 #define LIB_FSM__PROCESS_H
@@ -115,6 +115,7 @@ private:
     flow_control_e handle_SetTimer( const Action & a );
     flow_control_e handle_ResetTimer( const Action & a );
     flow_control_e handle_FunctionCall( const Action & a );
+    flow_control_e handle_Task( const Action & a );
     flow_control_e handle_Condition( const Action & a );
     flow_control_e handle_NextState( const Action & a );
     flow_control_e handle_Exit( const Action & a );

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10238 $ $Date:: 2018-12-16 #$ $Author: serge $
+// $Revision: 10244 $ $Date:: 2018-12-17 #$ $Author: serge $
 
 #include "process.h"            // self
 
@@ -31,6 +31,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include "utils/dummy_logger.h"     // dummy_log_debug
 #include "scheduler/timeout_job_aux.h"      // create_and_insert_timeout_job
 #include "value_operations.h"               // compare_values
+
+#include "syntax_error.h"           // SyntaxError
 
 namespace fsm {
 
@@ -75,7 +77,7 @@ void Process::handle_signal_handler( element_id_t signal_handler_id, const std::
     if( it == map_id_to_signal_handler_.end() )
     {
         dummy_log_fatal( log_id_, id_, "handle_signal_handler: cannot find signal handler id %u", signal_handler_id );
-        throw std::runtime_error( "signal handler id " + std::to_string( signal_handler_id ) + " not found" );
+        throw SyntaxError( "signal handler id " + std::to_string( signal_handler_id ) + " not found" );
         return;
     }
 
@@ -122,7 +124,7 @@ element_id_t Process::create_add_signal_handler( element_id_t state_id, const st
     if( state == nullptr )
     {
         dummy_log_fatal( log_id_, id_, "create_add_signal_handler: cannot find state id %u", state_id );
-        throw std::runtime_error( "state id " + std::to_string( state_id ) + " not found" );
+        throw SyntaxError( "state id " + std::to_string( state_id ) + " not found" );
         return 0;
     }
 
@@ -144,7 +146,7 @@ element_id_t Process::create_add_first_action_connector( element_id_t signal_han
     if( it == map_id_to_signal_handler_.end() )
     {
         dummy_log_fatal( log_id_, id_, "create_add_first_action_connector: cannot find signal handler id %u", signal_handler_id );
-        throw std::runtime_error( "signal handler id " + std::to_string( signal_handler_id ) + " not found" );
+        throw SyntaxError( "signal handler id " + std::to_string( signal_handler_id ) + " not found" );
         return 0;
     }
 
@@ -165,7 +167,7 @@ element_id_t Process::create_add_next_action_connector( element_id_t action_conn
     {
         dummy_log_fatal( log_id_, id_, "create_add_next_action_connector: cannot find action_connector_id %u", action_connector_id );
         assert( 0 );
-        throw std::runtime_error( "signal handler id " + std::to_string( action_connector_id ) + " not found" );
+        throw SyntaxError( "signal handler id " + std::to_string( action_connector_id ) + " not found" );
         return 0;
     }
 
@@ -386,7 +388,7 @@ void Process::execute_action_connector_id( element_id_t action_connector_id )
     {
         dummy_logi_fatal( log_id_, id_, "cannot find action connector %u", action_connector_id );
         assert( 0 );
-        throw std::runtime_error( "cannot find action connector " + std::to_string( action_connector_id ) );
+        throw SyntaxError( "cannot find action connector " + std::to_string( action_connector_id ) );
     }
 
     auto action_connector = it->second;
@@ -428,6 +430,7 @@ Process::flow_control_e Process::handle_action( const Action & action )
         MAP_ENTRY( SetTimer ),
         MAP_ENTRY( ResetTimer ),
         MAP_ENTRY( FunctionCall ),
+        MAP_ENTRY( Task ),
         MAP_ENTRY( Condition ),
         MAP_ENTRY( NextState ),
         MAP_ENTRY( Exit ),
@@ -441,7 +444,7 @@ Process::flow_control_e Process::handle_action( const Action & action )
     {
         dummy_logi_fatal( log_id_, id_, "unsupported action type %s", typeid( action ).name() );
         assert( 0 );
-        throw std::runtime_error( "unsupported action type " + std::string( typeid( action ).name() ) );
+        throw SyntaxError( "unsupported action type " + std::string( typeid( action ).name() ) );
     }
 
     auto flow_control = (this->*it->second)( action );
@@ -472,7 +475,7 @@ Process::flow_control_e Process::handle_SetTimer( const Action & aa )
     {
         dummy_logi_fatal( log_id_, id_, "cannot find timer %u", a.timer_id );
         assert( 0 );
-        throw std::runtime_error( "cannot find timer " + std::to_string( a.timer_id ) );
+        throw SyntaxError( "cannot find timer " + std::to_string( a.timer_id ) );
     }
 
     Value delay;
@@ -494,7 +497,7 @@ Process::flow_control_e Process::handle_ResetTimer( const Action & aa )
     {
         dummy_logi_fatal( log_id_, id_, "cannot find timer %u", a.timer_id );
         assert( 0 );
-        throw std::runtime_error( "cannot find timer " + std::to_string( a.timer_id ) );
+        throw SyntaxError( "cannot find timer " + std::to_string( a.timer_id ) );
     }
 
     reset_timer( timer );
@@ -517,6 +520,28 @@ Process::flow_control_e Process::handle_FunctionCall( const Action & aa )
     callback_->handle_function_call( id_, a.name, value_pointers );
 
     mem_.import_values_into_variables( a.arguments, values );
+
+    return flow_control_e::NEXT;
+}
+
+Process::flow_control_e Process::handle_Task( const Action & aa )
+{
+    auto & a = dynamic_cast< const Task &>( aa );
+
+    auto variable = mem_.find_variable( a.variable_id );
+
+    if( variable == nullptr )
+    {
+        dummy_logi_fatal( log_id_, id_, "cannot find variable %u", a.variable_id );
+        assert( 0 );
+        throw SyntaxError( "cannot find variable " + std::to_string( a.variable_id ) );
+    }
+
+    Value res;
+
+    mem_.evaluate_expression( & res, a.expr );
+
+    variable->assign( res );
 
     return flow_control_e::NEXT;
 }
@@ -560,7 +585,7 @@ Process::flow_control_e Process::handle_NextState( const Action & aa )
     {
         dummy_logi_fatal( log_id_, id_, "cannot find state %u", a.state_id );
         assert( 0 );
-        throw std::runtime_error( "cannot find state " + std::to_string( a.state_id ) );
+        throw SyntaxError( "cannot find state " + std::to_string( a.state_id ) );
     }
 
     next_state( a.state_id );
