@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10271 $ $Date:: 2018-12-18 #$ $Author: serge $
+// $Revision: 10277 $ $Date:: 2018-12-19 #$ $Author: serge $
 
 #include "process.h"            // self
 
@@ -291,6 +291,15 @@ void Process::set_initial_state( element_id_t state_id )
 void Process::handle( const Signal & req )
 {
     dummy_log_trace( log_id_, id_, "handle: %s", typeid( req ).name() );
+
+    if( is_ended() == true )
+    {
+        dummy_log_info( log_id_, id_, "process finished, ignoring" );
+
+        return;
+    }
+
+    assert( internal_state_ == internal_state_e::ACTIVE );
 
     auto state = find_state( current_state_ );
 

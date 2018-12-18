@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10239 $ $Date:: 2018-12-17 #$ $Author: serge $
+// $Revision: 10278 $ $Date:: 2018-12-19 #$ $Author: serge $
 
 #ifndef LIB_FSM__ACTIONS_H
 #define LIB_FSM__ACTIONS_H
@@ -117,7 +117,7 @@ struct NextState: public Action
 
 struct Exit: public Action
 {
-    Exit( const std::vector<ExpressionPtr> & arguments )
+    Exit()
     {
     }
 };
