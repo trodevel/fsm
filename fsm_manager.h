@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10219 $ $Date:: 2018-12-16 #$ $Author: serge $
+// $Revision: 10276 $ $Date:: 2018-12-18 #$ $Author: serge $
 
 #ifndef LIB_FSM__FSM_MANAGER_H
 #define LIB_FSM__FSM_MANAGER_H
@@ -37,6 +37,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include "action_connector.h"   // ActionConnector
 #include "i_signal_handler.h"   // ISignalHandler
 #include "signal.h"             // Signal
+#include "objects.h"            // StartProcess
 #include "i_fsm.h"              // IFsm
 #include "i_callback.h"         // ICallback
 #include "process.h"            // Process
@@ -45,7 +46,7 @@ namespace fsm {
 
 class FsmManager;
 
-typedef workt::WorkerT< const Signal *, FsmManager> WorkerBase;
+typedef workt::WorkerT< const Object *, FsmManager> WorkerBase;
 
 class FsmManager:
         public WorkerBase,
@@ -64,13 +65,15 @@ public:
             scheduler::IScheduler               * scheduler,
             std::string                         * error_msg );
 
-    void consume( const Signal * req ) override;
+    void consume( const Object * req ) override;
 
     void start();
 
     void shutdown();
 
     uint32_t create_process();
+
+    void start_process( uint32_t process_id );
 
     // must be called in the locked state
     Process* find_process( uint32_t process_id );
@@ -85,12 +88,14 @@ private:
     FsmManager( const FsmManager & )              = delete;
     FsmManager & operator=( const FsmManager & )  = delete;
 
-    void handle( const Signal * req );
-    void release( const Signal * req ) const;
+    void handle( const Object * req );
+    void handle_Signal( const Object & req );
+    void handle_StartProcess( const Object & req );
+    void release( const Object * req ) const;
 
     element_id_t get_next_id();
 
-    void check_fsm_end( MapIdToProcess::iterator it );
+    void check_process_end( MapIdToProcess::iterator it );
 
 private:
 

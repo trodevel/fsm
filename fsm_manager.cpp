@@ -19,11 +19,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10181 $ $Date:: 2018-12-14 #$ $Author: serge $
+// $Revision: 10276 $ $Date:: 2018-12-18 #$ $Author: serge $
 
 #include "fsm_manager.h"        // self
 
 #include <cassert>              // assert
+#include <typeindex>            // std::type_index
+#include <typeinfo>
+#include <unordered_map>
 
 #include "utils/dummy_logger.h"     // dummy_log_debug
 #include "utils/mutex_helper.h"     // MUTEX_SCOPE_LOCK
@@ -72,7 +75,7 @@ bool FsmManager::init(
     return true;
 }
 
-void FsmManager::consume( const Signal * req )
+void FsmManager::consume( const Object * req )
 {
     WorkerBase::consume( req );
 }
@@ -104,6 +107,13 @@ uint32_t FsmManager::create_process()
     return id;
 }
 
+void FsmManager::start_process( uint32_t process_id )
+{
+    dummy_log_info( log_id_, "start process %u", process_id );
+
+    consume( new StartProcess( process_id ) );
+}
+
 // must be called in the locked state
 Process* FsmManager::find_process( uint32_t process_id )
 {
@@ -124,12 +134,44 @@ std::mutex & FsmManager::get_mutex() const
     return mutex_;
 }
 
-void FsmManager::handle( const Signal * req )
+void FsmManager::handle( const Object * req )
 {
+    typedef FsmManager Type;
+
+    typedef void (Type::*PPMF)( const Object & r );
+
+#define MAP_ENTRY(_v)       { typeid( _v ),        & Type::handle_##_v }
+
+    static const std::unordered_map<std::type_index, PPMF> funcs =
+    {
+        MAP_ENTRY( Signal ),
+        MAP_ENTRY( StartProcess ),
+    };
+
+#undef MAP_ENTRY
+
+    auto it = funcs.find( typeid( * req ) );
+
+    if( it == funcs.end() )
+    {
+        dummy_log_fatal( log_id_, "unsupported object %s", typeid( * req ).name() );
+        assert( 0 );
+        throw std::runtime_error( "unsupported object " + std::string( typeid( * req ).name() ) );
+    }
+
+    (this->*it->second)( * req );
+
+    release( req );
+}
+
+void FsmManager::handle_Signal( const Object & rreq )
+{
+    auto & req = dynamic_cast< const Signal &>( rreq );
+
     {
         MUTEX_SCOPE_LOCK( mutex_ );
 
-        auto process_id = req->process_id;
+        auto process_id = req.process_id;
 
         auto it = map_id_to_process_.find( process_id );
 
@@ -137,23 +179,47 @@ void FsmManager::handle( const Signal * req )
         {
             it->second->handle( req );
 
-            check_fsm_end( it );
+            check_process_end( it );
         }
         else
         {
-            dummy_log_error( log_id_, "fsm id %u: wrong fsm id or fsm ended", process_id );
+            dummy_log_error( log_id_, "process id %u: wrong process id or process ended", process_id );
         }
     }
-
-    release( req );
 }
 
-void FsmManager::release( const Signal * req ) const
+void FsmManager::handle_StartProcess( const Object & rreq )
+{
+    auto & req = dynamic_cast< const StartProcess &>( rreq );
+
+    dummy_log_trace( log_id_, "handle %s, process id %u", typeid( req ).name(), req.process_id );
+
+    {
+        MUTEX_SCOPE_LOCK( mutex_ );
+
+        auto process_id = req.process_id;
+
+        auto it = map_id_to_process_.find( process_id );
+
+        if( it != map_id_to_process_.end() )
+        {
+            it->second->start();
+
+            check_process_end( it );
+        }
+        else
+        {
+            dummy_log_error( log_id_, "process id %u: wrong process id or process ended", process_id );
+        }
+    }
+}
+
+void FsmManager::release( const Object * req ) const
 {
     delete req;
 }
 
-void FsmManager::check_fsm_end( MapIdToProcess::iterator it )
+void FsmManager::check_process_end( MapIdToProcess::iterator it )
 {
     if( it->second->is_ended() )
     {

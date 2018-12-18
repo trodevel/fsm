@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10264 $ $Date:: 2018-12-18 #$ $Author: serge $
+// $Revision: 10271 $ $Date:: 2018-12-18 #$ $Author: serge $
 
 #include "process.h"            // self
 
@@ -288,9 +288,9 @@ void Process::set_initial_state( element_id_t state_id )
     current_state_  = state_id;
 }
 
-void Process::handle( const Signal * req )
+void Process::handle( const Signal & req )
 {
-    dummy_log_trace( log_id_, id_, "handle: %s", typeid( *req ).name() );
+    dummy_log_trace( log_id_, id_, "handle: %s", typeid( req ).name() );
 
     auto state = find_state( current_state_ );
 
@@ -298,11 +298,9 @@ void Process::handle( const Signal * req )
 
     std::vector<element_id_t> arguments;
 
-    mem_.init_temp_variables_from_signal( * req, & arguments );
+    mem_.init_temp_variables_from_signal( req, & arguments );
 
-    state->handle_signal( req->name, arguments );
-
-    delete req;
+    state->handle_signal( req.name, arguments );
 }
 
 State* Process::find_state( element_id_t id )
@@ -353,7 +351,7 @@ void Process::set_timer( Timer * timer, const Value & delay )
             * scheduler_,
             "timer_job",
             scheduler::Duration( delay.arg_d ),
-            std::bind( static_cast<void (IFsm::*)(const Signal * )>(&IFsm::consume), parent_, signal ) );
+            std::bind( static_cast<void (IFsm::*)(const Object * )>(&IFsm::consume), parent_, signal ) );
 
     if( b == false )
     {

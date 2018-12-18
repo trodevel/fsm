@@ -19,18 +19,19 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10181 $ $Date:: 2018-12-14 #$ $Author: serge $
+// $Revision: 10268 $ $Date:: 2018-12-18 #$ $Author: serge $
 
 #ifndef LIB_FSM__SIGNAL_H
 #define LIB_FSM__SIGNAL_H
 
 #include <vector>               // std::vector
 
+#include "object.h"             // Object
 #include "value.h"              // Value
 
 namespace fsm {
 
-struct Signal
+struct Signal: public Object
 {
     Signal( uint32_t process_id, const std::string & name, const std::vector<Value> & arguments ):
         process_id( process_id ),

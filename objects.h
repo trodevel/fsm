@@ -1,6 +1,6 @@
 /*
 
-IFsm.
+StartProcess.
 
 Copyright (C) 2018 Sergey Kolevatov
 
@@ -19,23 +19,27 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10268 $ $Date:: 2018-12-18 #$ $Author: serge $
+// $Revision: 10273 $ $Date:: 2018-12-18 #$ $Author: serge $
 
-#ifndef LIB_FSM__I_FSM_H
-#define LIB_FSM__I_FSM_H
+#ifndef LIB_FSM__OBJECTS_H
+#define LIB_FSM__OBJECTS_H
+
+#include <cstdint>              // uint32_t
 
 #include "object.h"             // Object
 
 namespace fsm {
 
-class IFsm
+struct StartProcess: public Object
 {
-public:
-    virtual ~IFsm() {};
+    StartProcess( uint32_t process_id ):
+        process_id( process_id )
+    {
+    }
 
-    virtual void consume( const Object * req ) = 0;
+    uint32_t                        process_id;
 };
 
 } // namespace fsm
 
-#endif // LIB_FSM__I_FSM_H
+#endif // LIB_FSM__OBJECTS_H
