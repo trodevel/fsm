@@ -1,7 +1,9 @@
 #include <iostream>         // cout
 #include <memory>
 #include <sstream>          // stringstream
+#include <cassert>          // assert
 
+#include "utils/mutex_helper.h"     // MUTEX_SCOPE_LOCK
 #include "utils/dummy_logger.h"     // dummy_logger::set_log_level
 #include "scheduler/scheduler.h"    // Scheduler
 
@@ -130,7 +132,22 @@ private:
 
 void create_fsm_1( fsm::FsmManager * fsm_man )
 {
+    auto id = fsm_man->create_process();
 
+    auto & mutex = fsm_man->get_mutex();
+
+    MUTEX_SCOPE_LOCK( mutex );
+
+    auto fsm = fsm_man->find_process( id );
+
+    assert( fsm );
+
+    auto IDLE               = fsm->create_state( "IDLE" );
+    auto PLAYING_MESSAGE    = fsm->create_state( "PLAYING_MESSAGE" );
+
+    auto IDLE__T            = fsm->create_add_signal_handler( IDLE, "T" );
+
+    //auto ac1                = fsm->create_add_first_action_connector( IDLE__T, new fsm::SendSignal( "PlayRequest", {new fsm::ExpressionValue( fsm::Value )} ));
 }
 
 void create_fsm_2( fsm::FsmManager * fsm_man )
