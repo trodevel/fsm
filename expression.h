@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10212 $ $Date:: 2018-12-16 #$ $Author: serge $
+// $Revision: 10261 $ $Date:: 2018-12-18 #$ $Author: serge $
 
 #ifndef LIB_FSM__EXPRESSION_H
 #define LIB_FSM__EXPRESSION_H
@@ -40,21 +40,42 @@ typedef std::shared_ptr<Expression> ExpressionPtr;
 
 struct ExpressionVariable: public Expression
 {
+    ExpressionVariable( element_id_t variable_id ):
+        variable_id( variable_id )
+    {
+    }
+
     element_id_t        variable_id;
 };
 
 struct ExpressionVariableName: public Expression
 {
+    ExpressionVariableName( const std::string & variable_name ):
+        variable_name( variable_name )
+    {
+    }
+
     std::string         variable_name;
 };
 
 struct ExpressionValue: public Expression
 {
+    ExpressionValue( const Value & value ):
+        value( value )
+    {
+    }
+
     Value               value;
 };
 
 struct UnaryExpression: public Expression
 {
+    UnaryExpression( unary_operation_type_e type, ExpressionPtr op ):
+        type( type ),
+        op( op )
+    {
+    }
+
     unary_operation_type_e      type;
     ExpressionPtr               op;
 };
@@ -65,6 +86,13 @@ struct BinaryExpression: public Expression
 
     ExpressionPtr               lhs;
     ExpressionPtr               rhs;
+
+    BinaryExpression( binary_operation_type_e type, ExpressionPtr lhs, ExpressionPtr rhs ):
+        type( type ),
+        lhs( lhs ),
+        rhs( rhs )
+    {
+    }
 };
 
 } // namespace fsm

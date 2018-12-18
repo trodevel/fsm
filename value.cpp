@@ -19,13 +19,49 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10185 $ $Date:: 2018-12-14 #$ $Author: serge $
+// $Revision: 10258 $ $Date:: 2018-12-18 #$ $Author: serge $
 
 #include "value.h"          // self
 
 #include <limits>           // quiet_NaN()
 
 namespace fsm {
+
+Value::Value():
+    type( data_type_e::UNDEF ),
+    arg_b( false ),
+    arg_i( 0 ),
+    arg_d( 0 )
+{
+}
+
+Value::Value( bool b ):
+    type( data_type_e::BOOL ),
+    arg_b( b )
+{
+    harmonize( this );
+}
+
+Value::Value( int i ):
+    type( data_type_e::INT ),
+    arg_i( i )
+{
+    harmonize( this );
+}
+
+Value::Value( double d ):
+    type( data_type_e::DOUBLE ),
+    arg_d( d )
+{
+    harmonize( this );
+}
+
+Value::Value( const std::string & s ):
+    type( data_type_e::STRING ),
+    arg_s( s )
+{
+    harmonize( this );
+}
 
 void harmonize( Value * v )
 {

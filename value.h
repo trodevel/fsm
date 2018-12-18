@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9978 $ $Date:: 2018-11-14 #$ $Author: serge $
+// $Revision: 10258 $ $Date:: 2018-12-18 #$ $Author: serge $
 
 #ifndef LIB_FSM__VALUE_H
 #define LIB_FSM__VALUE_H
@@ -30,6 +30,12 @@ namespace fsm {
 
 struct Value
 {
+    Value();
+    Value( bool b );
+    Value( int i );
+    Value( double d );
+    Value( const std::string & s );
+
     data_type_e     type;
 
     bool            arg_b;

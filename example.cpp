@@ -142,12 +142,20 @@ void create_fsm_1( fsm::FsmManager * fsm_man )
 
     assert( fsm );
 
+    auto timer              = fsm->create_add_timer( "T" );
+
     auto IDLE               = fsm->create_state( "IDLE" );
     auto PLAYING_MESSAGE    = fsm->create_state( "PLAYING_MESSAGE" );
 
+    auto st_ac1             = fsm->create_add_start_action_connector( new fsm::SetTimer( timer, fsm::ExpressionPtr( new fsm::ExpressionValue( fsm::Value( 1 ) ) ) ) );
+    auto st_ac2             = fsm->create_add_next_action_connector( st_ac1, new fsm::NextState( IDLE ) );
+    (void)st_ac2;   // not needed
+
     auto IDLE__T            = fsm->create_add_signal_handler( IDLE, "T" );
 
-    //auto ac1                = fsm->create_add_first_action_connector( IDLE__T, new fsm::SendSignal( "PlayRequest", {new fsm::ExpressionValue( fsm::Value )} ));
+    auto IDLE__T__ac1       = fsm->create_add_first_action_connector( IDLE__T, new fsm::SendSignal( "PlayRequest", { fsm::ExpressionPtr( new fsm::ExpressionValue( fsm::Value( 1 ) ) )} ));
+    auto IDLE__T__ac2       = fsm->create_add_next_action_connector( IDLE__T__ac1, new fsm::NextState( PLAYING_MESSAGE ) );
+    (void)IDLE__T__ac2;  // not needed
 }
 
 void create_fsm_2( fsm::FsmManager * fsm_man )

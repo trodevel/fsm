@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10241 $ $Date:: 2018-12-17 #$ $Author: serge $
+// $Revision: 10264 $ $Date:: 2018-12-18 #$ $Author: serge $
 
 #ifndef LIB_FSM__PROCESS_H
 #define LIB_FSM__PROCESS_H
@@ -59,10 +59,12 @@ public:
             utils::IRequestIdGen    * req_id_gen );
     ~Process();
 
+    void start();
     void handle( const Signal * req );
 
     void handle_signal_handler( element_id_t signal_handler_id, const std::vector<element_id_t> & arguments ) override;
 
+    element_id_t create_add_start_action_connector( Action * action );
     element_id_t create_state( const std::string & name );
     element_id_t create_add_signal_handler( element_id_t state_id, const std::string & signal_name );
     element_id_t create_add_first_action_connector( element_id_t signal_handler_id, Action * action );
@@ -93,6 +95,13 @@ private:
         STOP,
         NEXT,
         ALT_NEXT
+    };
+
+    enum class internal_state_e
+    {
+        IDLE,
+        ACTIVE,
+        FINISHED
     };
 
 private:
@@ -133,8 +142,9 @@ private:
     scheduler::IScheduler       * scheduler_;
     utils::IRequestIdGen        * req_id_gen_;
 
-    bool                        id_ended_;
+    internal_state_e            internal_state_;
     element_id_t                current_state_;
+    element_id_t                start_action_connector_;
 
     MapIdToState                map_id_to_state_;
     MapIdToSignalHandler        map_id_to_signal_handler_;

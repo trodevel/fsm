@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10244 $ $Date:: 2018-12-17 #$ $Author: serge $
+// $Revision: 10264 $ $Date:: 2018-12-18 #$ $Author: serge $
 
 #include "process.h"            // self
 
@@ -49,8 +49,9 @@ Process::Process(
         callback_( callback ),
         scheduler_( scheduler ),
         req_id_gen_( req_id_gen ),
-        id_ended_( false ),
+        internal_state_( internal_state_e::IDLE ),
         current_state_( 0 ),
+        start_action_connector_( 0 ),
         names_( id, log_id ),
         mem_( id, log_id, req_id_gen, & names_ )
 
@@ -66,6 +67,25 @@ Process::~Process()
     }
 
     dummy_logi_info( log_id_, id_, "destructed" );
+}
+
+void Process::start()
+{
+    dummy_log_trace( log_id_, id_, "start" );
+
+    assert( internal_state_ == internal_state_e::IDLE );
+
+    internal_state_ = internal_state_e::ACTIVE;
+
+    dummy_log_debug( log_id_, id_, "start: start_action_connector %u", start_action_connector_ );
+
+    if( start_action_connector_ == 0 )
+    {
+        dummy_log_fatal( log_id_, id_, "start: start_action_connector is not set" );
+        throw SyntaxError( "start: start_action_connector is not set" );
+    }
+
+    execute_action_connector_id( start_action_connector_ );
 }
 
 void Process::handle_signal_handler( element_id_t signal_handler_id, const std::vector<element_id_t> & arguments )
@@ -95,7 +115,24 @@ void Process::handle_signal_handler( element_id_t signal_handler_id, const std::
 
 bool Process::is_ended() const
 {
-    return id_ended_;
+    return internal_state_ == internal_state_e::FINISHED;
+}
+
+element_id_t Process::create_add_start_action_connector( Action * action )
+{
+    if( start_action_connector_ != 0 )
+    {
+        dummy_log_fatal( log_id_, id_, "start_action_connector is already defined (%u)", start_action_connector_ );
+        throw SyntaxError( "start_action_connector is already defined (" + std::to_string( start_action_connector_ ) + ")" );
+    }
+
+    auto id = create_action_connector( action );
+
+    start_action_connector_ = id;
+
+    dummy_log_trace( log_id_, id_, "create_add_start_action_connector: start_action_connector %u", start_action_connector_ );
+
+    return id;
 }
 
 element_id_t Process::create_state( const std::string & name )
@@ -594,9 +631,9 @@ Process::flow_control_e Process::handle_NextState( const Action & aa )
 }
 Process::flow_control_e Process::handle_Exit( const Action & /* aa */ )
 {
-    assert( id_ended_ == false );
+    assert( internal_state_ == internal_state_e::ACTIVE );
 
-    id_ended_ = true;
+    internal_state_ = internal_state_e::FINISHED;
 
     return flow_control_e::STOP;
 }
