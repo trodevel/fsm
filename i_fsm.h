@@ -33,7 +33,7 @@ class IFsm
 public:
     virtual ~IFsm() {};
 
-    virtual void consume( const Object * req ) = 0;
+    virtual void consume( const ev::Object * req ) = 0;
 };
 
 } // namespace fsm

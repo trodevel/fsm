@@ -30,6 +30,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 namespace fsm {
 
+namespace ev {
+
 struct StartProcess: public Object
 {
     StartProcess( uint32_t process_id ):
@@ -39,6 +41,8 @@ struct StartProcess: public Object
 
     uint32_t                        process_id;
 };
+
+} // namespace ev
 
 } // namespace fsm
 

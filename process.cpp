@@ -288,7 +288,7 @@ void Process::set_initial_state( element_id_t state_id )
     current_state_  = state_id;
 }
 
-void Process::handle( const Signal & req )
+void Process::handle( const ev::Signal & req )
 {
     dummy_log_trace( log_id_, id_, "handle: %s", typeid( req ).name() );
 
@@ -348,7 +348,7 @@ void Process::set_timer( Timer * timer, const Value & delay )
 
     std::vector<Value> dummy;
 
-    auto signal = new Signal( id_, name, dummy );
+    auto signal = new ev::Signal( id_, name, dummy );
 
     std::string error_msg;
 
@@ -360,7 +360,7 @@ void Process::set_timer( Timer * timer, const Value & delay )
             * scheduler_,
             "timer_job",
             scheduler::Duration( delay.arg_d ),
-            std::bind( static_cast<void (IFsm::*)(const Object * )>(&IFsm::consume), parent_, signal ) );
+            std::bind( static_cast<void (IFsm::*)(const ev::Object * )>(&IFsm::consume), parent_, signal ) );
 
     if( b == false )
     {

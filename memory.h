@@ -51,7 +51,7 @@ public:
     element_id_t create_add_constant( const std::string & name, data_type_e type, const Value & value );
 
     void clear_temp_variables();
-    void init_temp_variables_from_signal( const Signal & s, std::vector<element_id_t> * arguments );
+    void init_temp_variables_from_signal( const ev::Signal & s, std::vector<element_id_t> * arguments );
     element_id_t create_temp_variable( const Value & v, unsigned n );
 
     Variable* find_variable( element_id_t id );

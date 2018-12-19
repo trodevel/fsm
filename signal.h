@@ -31,6 +31,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 namespace fsm {
 
+namespace ev {
+
 struct Signal: public Object
 {
     Signal( uint32_t process_id, const std::string & name, const std::vector<Value> & arguments ):
@@ -44,6 +46,8 @@ struct Signal: public Object
     std::string                     name;
     std::vector<Value>              arguments;
 };
+
+} // namespace ev
 
 } // namespace fsm
 

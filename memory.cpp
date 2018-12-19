@@ -110,7 +110,7 @@ void Memory::clear_temp_variables()
     map_id_to_temp_variable_.clear();
 }
 
-void Memory::init_temp_variables_from_signal( const Signal & s, std::vector<element_id_t> * arguments )
+void Memory::init_temp_variables_from_signal( const ev::Signal & s, std::vector<element_id_t> * arguments )
 {
     clear_temp_variables();
 

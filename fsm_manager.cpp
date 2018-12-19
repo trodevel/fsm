@@ -75,7 +75,7 @@ bool FsmManager::init(
     return true;
 }
 
-void FsmManager::consume( const Object * req )
+void FsmManager::consume( const ev::Object * req )
 {
     WorkerBase::consume( req );
 }
@@ -111,7 +111,7 @@ void FsmManager::start_process( uint32_t process_id )
 {
     dummy_log_info( log_id_, "start process %u", process_id );
 
-    consume( new StartProcess( process_id ) );
+    consume( new ev::StartProcess( process_id ) );
 }
 
 // must be called in the locked state
@@ -134,13 +134,13 @@ std::mutex & FsmManager::get_mutex() const
     return mutex_;
 }
 
-void FsmManager::handle( const Object * req )
+void FsmManager::handle( const ev::Object * req )
 {
     typedef FsmManager Type;
 
-    typedef void (Type::*PPMF)( const Object & r );
+    typedef void (Type::*PPMF)( const ev::Object & r );
 
-#define MAP_ENTRY(_v)       { typeid( _v ),        & Type::handle_##_v }
+#define MAP_ENTRY(_v)       { typeid( ev:: _v ),        & Type::handle_##_v }
 
     static const std::unordered_map<std::type_index, PPMF> funcs =
     {
@@ -164,9 +164,9 @@ void FsmManager::handle( const Object * req )
     release( req );
 }
 
-void FsmManager::handle_Signal( const Object & rreq )
+void FsmManager::handle_Signal( const ev::Object & rreq )
 {
-    auto & req = dynamic_cast< const Signal &>( rreq );
+    auto & req = dynamic_cast< const ev::Signal &>( rreq );
 
     {
         MUTEX_SCOPE_LOCK( mutex_ );
@@ -188,9 +188,9 @@ void FsmManager::handle_Signal( const Object & rreq )
     }
 }
 
-void FsmManager::handle_StartProcess( const Object & rreq )
+void FsmManager::handle_StartProcess( const ev::Object & rreq )
 {
-    auto & req = dynamic_cast< const StartProcess &>( rreq );
+    auto & req = dynamic_cast< const ev::StartProcess &>( rreq );
 
     dummy_log_trace( log_id_, "handle %s, process id %u", typeid( req ).name(), req.process_id );
 
@@ -214,7 +214,7 @@ void FsmManager::handle_StartProcess( const Object & rreq )
     }
 }
 
-void FsmManager::release( const Object * req ) const
+void FsmManager::release( const ev::Object * req ) const
 {
     delete req;
 }

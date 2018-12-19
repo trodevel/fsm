@@ -60,7 +60,7 @@ public:
     ~Process();
 
     void start();
-    void handle( const Signal & req );
+    void handle( const ev::Signal & req );
 
     void handle_signal_handler( element_id_t signal_handler_id, const std::vector<element_id_t> & arguments ) override;
 

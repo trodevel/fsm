@@ -46,7 +46,7 @@ namespace fsm {
 
 class FsmManager;
 
-typedef workt::WorkerT< const Object *, FsmManager> WorkerBase;
+typedef workt::WorkerT< const ev::Object *, FsmManager> WorkerBase;
 
 class FsmManager:
         public WorkerBase,
@@ -65,7 +65,7 @@ public:
             scheduler::IScheduler               * scheduler,
             std::string                         * error_msg );
 
-    void consume( const Object * req ) override;
+    void consume( const ev::Object * req ) override;
 
     void start();
 
@@ -88,10 +88,10 @@ private:
     FsmManager( const FsmManager & )              = delete;
     FsmManager & operator=( const FsmManager & )  = delete;
 
-    void handle( const Object * req );
-    void handle_Signal( const Object & req );
-    void handle_StartProcess( const Object & req );
-    void release( const Object * req ) const;
+    void handle( const ev::Object * req );
+    void handle_Signal( const ev::Object & req );
+    void handle_StartProcess( const ev::Object & req );
+    void release( const ev::Object * req ) const;
 
     element_id_t get_next_id();
 

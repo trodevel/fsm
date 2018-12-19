@@ -112,7 +112,7 @@ private:
                     }
                 }
 
-                fsm_man_->consume( new fsm::Signal( process_id, name, arguments ) );
+                fsm_man_->consume( new fsm::ev::Signal( process_id, name, arguments ) );
             }
             else
             {

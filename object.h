@@ -26,10 +26,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 namespace fsm {
 
+namespace ev {
+
 struct Object
 {
     virtual ~Object() {}
 };
+
+} // namespace ev
 
 } // namespace fsm
 
