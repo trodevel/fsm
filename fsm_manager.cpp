@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10276 $ $Date:: 2018-12-18 #$ $Author: serge $
+// $Revision: 10290 $ $Date:: 2018-12-20 #$ $Author: serge $
 
 #include "fsm_manager.h"        // self
 
@@ -146,6 +146,7 @@ void FsmManager::handle( const ev::Object * req )
     {
         MAP_ENTRY( Signal ),
         MAP_ENTRY( StartProcess ),
+        MAP_ENTRY( Timer ),
     };
 
 #undef MAP_ENTRY
@@ -204,6 +205,32 @@ void FsmManager::handle_StartProcess( const ev::Object & rreq )
         if( it != map_id_to_process_.end() )
         {
             it->second->start();
+
+            check_process_end( it );
+        }
+        else
+        {
+            dummy_log_error( log_id_, "process id %u: wrong process id or process ended", process_id );
+        }
+    }
+}
+
+void FsmManager::handle_Timer( const ev::Object & rreq )
+{
+    auto & req = dynamic_cast< const ev::Timer&>( rreq );
+
+    dummy_log_trace( log_id_, "handle %s, process id %u", typeid( req ).name(), req.process_id );
+
+    {
+        MUTEX_SCOPE_LOCK( mutex_ );
+
+        auto process_id = req.process_id;
+
+        auto it = map_id_to_process_.find( process_id );
+
+        if( it != map_id_to_process_.end() )
+        {
+            it->second->handle( req );
 
             check_process_end( it );
         }

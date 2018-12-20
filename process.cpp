@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10277 $ $Date:: 2018-12-19 #$ $Author: serge $
+// $Revision: 10291 $ $Date:: 2018-12-20 #$ $Author: serge $
 
 #include "process.h"            // self
 
@@ -312,6 +312,42 @@ void Process::handle( const ev::Signal & req )
     state->handle_signal( req.name, arguments );
 }
 
+void Process::handle( const ev::Timer & req )
+{
+    dummy_log_trace( log_id_, id_, "handle: %s", typeid( req ).name() );
+
+    if( is_ended() == true )
+    {
+        dummy_log_info( log_id_, id_, "process finished, ignoring" );
+
+        return;
+    }
+
+    assert( internal_state_ == internal_state_e::ACTIVE );
+
+    auto timer = find_timer( req.timer_id );
+
+    assert( timer != nullptr );
+
+    auto job_id = timer->get_job_id();
+
+    if( job_id == 0 )
+    {
+        dummy_log_info( log_id_, id_, "timer %u is already cancelled", req.timer_id );
+        return;
+    }
+
+    timer->set_job_id( 0 ); // cancel scheduler job id
+
+    auto & name = timer->get_name();
+
+    std::vector<Value> dummy;
+
+    ev::Signal signal( id_, name, dummy );
+
+    handle( signal );
+}
+
 State* Process::find_state( element_id_t id )
 {
     {
@@ -344,11 +380,22 @@ void Process::set_timer( Timer * timer, const Value & delay )
 {
     dummy_log_trace( log_id_, id_, "set_timer: timer %s (%u), %.2f sec", timer->get_name().c_str(), timer->get_id(), delay.arg_d );
 
+    auto timer_id   = timer->get_id();
+    auto job_id     = timer->get_job_id();
+
+    if( job_id != 0 )
+    {
+        dummy_log_fatal( log_id_, id_, "timer id %u is active (job id %u)", timer_id, job_id );
+        assert( 0 );
+        throw SyntaxError( "timer " + std::to_string( timer_id ) + " is active (job id " + std::to_string( job_id ) + ")" );
+        return;
+    }
+
     auto & name = timer->get_name();
 
     std::vector<Value> dummy;
 
-    auto signal = new ev::Signal( id_, name, dummy );
+    auto signal = new ev::Timer( id_, timer_id );
 
     std::string error_msg;
 
@@ -385,11 +432,12 @@ void Process::reset_timer( Timer * timer )
 
     auto & name = timer->get_name();
 
-    auto sched_job_id = timer->get_job_id();
+    auto timer_id       = timer->get_id();
+    auto sched_job_id   = timer->get_job_id();
 
     if( sched_job_id == 0 )
     {
-        dummy_log_trace( log_id_, id_, "reset_timer: job id is 0" );
+        dummy_log_debug( log_id_, id_, "reset_timer: timer id %u, job id is 0", timer_id );
 
         return;
     }

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10273 $ $Date:: 2018-12-18 #$ $Author: serge $
+// $Revision: 10288 $ $Date:: 2018-12-20 #$ $Author: serge $
 
 #ifndef LIB_FSM__OBJECTS_H
 #define LIB_FSM__OBJECTS_H
@@ -40,6 +40,18 @@ struct StartProcess: public Object
     }
 
     uint32_t                        process_id;
+};
+
+struct Timer: public Object
+{
+    Timer( uint32_t process_id, element_id_t timer_id ):
+        process_id( process_id ),
+        timer_id( timer_id )
+    {
+    }
+
+    uint32_t                        process_id;
+    element_id_t                    timer_id;
 };
 
 } // namespace ev

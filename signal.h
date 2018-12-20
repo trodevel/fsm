@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10268 $ $Date:: 2018-12-18 #$ $Author: serge $
+// $Revision: 10288 $ $Date:: 2018-12-20 #$ $Author: serge $
 
 #ifndef LIB_FSM__SIGNAL_H
 #define LIB_FSM__SIGNAL_H

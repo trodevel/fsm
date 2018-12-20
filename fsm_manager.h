@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10276 $ $Date:: 2018-12-18 #$ $Author: serge $
+// $Revision: 10290 $ $Date:: 2018-12-20 #$ $Author: serge $
 
 #ifndef LIB_FSM__FSM_MANAGER_H
 #define LIB_FSM__FSM_MANAGER_H
@@ -91,6 +91,7 @@ private:
     void handle( const ev::Object * req );
     void handle_Signal( const ev::Object & req );
     void handle_StartProcess( const ev::Object & req );
+    void handle_Timer( const ev::Object & req );
     void release( const ev::Object * req ) const;
 
     element_id_t get_next_id();

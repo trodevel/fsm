@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10244 $ $Date:: 2018-12-17 #$ $Author: serge $
+// $Revision: 10288 $ $Date:: 2018-12-20 #$ $Author: serge $
 
 #include "memory.h"            // self
 

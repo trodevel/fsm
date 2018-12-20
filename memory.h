@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10237 $ $Date:: 2018-12-16 #$ $Author: serge $
+// $Revision: 10288 $ $Date:: 2018-12-20 #$ $Author: serge $
 
 #ifndef LIB_FSM__MEMORY_H
 #define LIB_FSM__MEMORY_H
