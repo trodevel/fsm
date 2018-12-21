@@ -130,18 +130,8 @@ private:
     fsm::IFsm                   * fsm_man_;
 };
 
-void create_fsm_1( fsm::FsmManager * fsm_man )
+void init_fsm_1( fsm::Process * fsm )
 {
-    auto id = fsm_man->create_process();
-
-    auto & mutex = fsm_man->get_mutex();
-
-    MUTEX_SCOPE_LOCK( mutex );
-
-    auto fsm = fsm_man->find_process( id );
-
-    assert( fsm );
-
     auto timer              = fsm->create_add_timer( "T" );
     auto E_DONE             = fsm->create_add_constant( "DONE",     fsm::data_type_e::INT, fsm::Value( 0 ) );
     auto E_CANCELLED        = fsm->create_add_constant( "CANCELLED", fsm::data_type_e::INT, fsm::Value( 1 ) );
@@ -213,6 +203,21 @@ void create_fsm_1( fsm::FsmManager * fsm_man )
                     fsm::ExpressionPtr( new fsm::ExpressionValue( fsm::Value( "cannot play sound file" ) ) )
             } ));
     fsm->create_add_next_action_connector( PLAYING_MESSAGE__PlayFailed__ac1, new fsm::Exit() );
+}
+
+void create_fsm_1( fsm::FsmManager * fsm_man )
+{
+    auto id = fsm_man->create_process();
+
+    auto & mutex = fsm_man->get_mutex();
+
+    MUTEX_SCOPE_LOCK( mutex );
+
+    auto fsm = fsm_man->find_process( id );
+
+    assert( fsm );
+
+    init_fsm_1( fsm );
 }
 
 void create_fsm_2( fsm::FsmManager * fsm_man )

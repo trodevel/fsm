@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10290 $ $Date:: 2018-12-20 #$ $Author: serge $
+// $Revision: 10292 $ $Date:: 2018-12-20 #$ $Author: serge $
 
 #include "fsm_manager.h"        // self
 
@@ -96,7 +96,7 @@ uint32_t FsmManager::create_process()
 
     auto id = req_id_gen_.get_next_request_id();
 
-    auto fsm = new Process( id, log_id_fsm_, this, callback_, scheduler_, & req_id_gen_ );
+    auto fsm = new Process( id, log_id_fsm_, this, callback_, scheduler_ );
 
     dummy_log_info( log_id_, "new fsm %u", id );
 

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10291 $ $Date:: 2018-12-20 #$ $Author: serge $
+// $Revision: 10297 $ $Date:: 2018-12-20 #$ $Author: serge $
 
 #include "process.h"            // self
 
@@ -28,7 +28,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include <typeinfo>
 #include <unordered_map>
 
-#include "utils/dummy_logger.h"     // dummy_log_debug
+#include "utils/dummy_logger.h"     // dummy_logi_debug
 #include "scheduler/timeout_job_aux.h"      // create_and_insert_timeout_job
 #include "value_operations.h"               // compare_values
 
@@ -41,21 +41,21 @@ Process::Process(
         uint32_t                log_id,
         IFsm                    * parent,
         ICallback               * callback,
-        scheduler::IScheduler   * scheduler,
-        utils::IRequestIdGen    * req_id_gen ):
+        scheduler::IScheduler   * scheduler ):
         id_( id ),
         log_id_( log_id ),
         parent_( parent ),
         callback_( callback ),
         scheduler_( scheduler ),
-        req_id_gen_( req_id_gen ),
         internal_state_( internal_state_e::IDLE ),
         current_state_( 0 ),
         start_action_connector_( 0 ),
         names_( id, log_id ),
-        mem_( id, log_id, req_id_gen, & names_ )
+        mem_( id, log_id, & req_id_gen_, & names_ )
 
 {
+    req_id_gen_.init( 1, 1 );
+
     dummy_logi_info( log_id_, id_, "created" );
 }
 
@@ -71,17 +71,17 @@ Process::~Process()
 
 void Process::start()
 {
-    dummy_log_trace( log_id_, id_, "start" );
+    dummy_logi_trace( log_id_, id_, "start" );
 
     assert( internal_state_ == internal_state_e::IDLE );
 
     internal_state_ = internal_state_e::ACTIVE;
 
-    dummy_log_debug( log_id_, id_, "start: start_action_connector %u", start_action_connector_ );
+    dummy_logi_debug( log_id_, id_, "start: start_action_connector %u", start_action_connector_ );
 
     if( start_action_connector_ == 0 )
     {
-        dummy_log_fatal( log_id_, id_, "start: start_action_connector is not set" );
+        dummy_logi_fatal( log_id_, id_, "start: start_action_connector is not set" );
         throw SyntaxError( "start: start_action_connector is not set" );
     }
 
@@ -90,13 +90,13 @@ void Process::start()
 
 void Process::handle_signal_handler( element_id_t signal_handler_id, const std::vector<element_id_t> & arguments )
 {
-    dummy_log_trace( log_id_, id_, "handle_signal_handler: signal handler id %u", signal_handler_id );
+    dummy_logi_trace( log_id_, id_, "handle_signal_handler: signal handler id %u", signal_handler_id );
 
     auto it = map_id_to_signal_handler_.find( signal_handler_id );
 
     if( it == map_id_to_signal_handler_.end() )
     {
-        dummy_log_fatal( log_id_, id_, "handle_signal_handler: cannot find signal handler id %u", signal_handler_id );
+        dummy_logi_fatal( log_id_, id_, "handle_signal_handler: cannot find signal handler id %u", signal_handler_id );
         throw SyntaxError( "signal handler id " + std::to_string( signal_handler_id ) + " not found" );
         return;
     }
@@ -105,7 +105,7 @@ void Process::handle_signal_handler( element_id_t signal_handler_id, const std::
 
     auto first_action_id = h->get_first_action_id();
 
-    dummy_log_debug( log_id_, id_, "handle_signal_handler: signal handler id %u, first action id %u", signal_handler_id, first_action_id );
+    dummy_logi_debug( log_id_, id_, "handle_signal_handler: signal handler id %u, first action id %u", signal_handler_id, first_action_id );
 
     if( first_action_id )
     {
@@ -122,7 +122,7 @@ element_id_t Process::create_add_start_action_connector( Action * action )
 {
     if( start_action_connector_ != 0 )
     {
-        dummy_log_fatal( log_id_, id_, "start_action_connector is already defined (%u)", start_action_connector_ );
+        dummy_logi_fatal( log_id_, id_, "start_action_connector is already defined (%u)", start_action_connector_ );
         throw SyntaxError( "start_action_connector is already defined (" + std::to_string( start_action_connector_ ) + ")" );
     }
 
@@ -130,7 +130,7 @@ element_id_t Process::create_add_start_action_connector( Action * action )
 
     start_action_connector_ = id;
 
-    dummy_log_trace( log_id_, id_, "create_add_start_action_connector: start_action_connector %u", start_action_connector_ );
+    dummy_logi_trace( log_id_, id_, "create_add_start_action_connector: start_action_connector %u", start_action_connector_ );
 
     return id;
 }
@@ -145,7 +145,7 @@ element_id_t Process::create_state( const std::string & name )
 
     assert( b );
 
-    dummy_log_debug( log_id_, id_, "create_state: %s (%u)", name.c_str(), id );
+    dummy_logi_debug( log_id_, id_, "create_state: %s (%u)", name.c_str(), id );
 
     names_.add_name( id, name );
 
@@ -154,13 +154,13 @@ element_id_t Process::create_state( const std::string & name )
 
 element_id_t Process::create_add_signal_handler( element_id_t state_id, const std::string & signal_name )
 {
-    dummy_log_trace( log_id_, id_, "create_add_signal_handler: state id %u, signal name %s", state_id, signal_name.c_str() );
+    dummy_logi_trace( log_id_, id_, "create_add_signal_handler: state id %u, signal name %s", state_id, signal_name.c_str() );
 
     auto state = find_state( state_id );
 
     if( state == nullptr )
     {
-        dummy_log_fatal( log_id_, id_, "create_add_signal_handler: cannot find state id %u", state_id );
+        dummy_logi_fatal( log_id_, id_, "create_add_signal_handler: cannot find state id %u", state_id );
         throw SyntaxError( "state id " + std::to_string( state_id ) + " not found" );
         return 0;
     }
@@ -176,13 +176,13 @@ element_id_t Process::create_add_signal_handler( element_id_t state_id, const st
 
 element_id_t Process::create_add_first_action_connector( element_id_t signal_handler_id, Action * action )
 {
-    dummy_log_trace( log_id_, id_, "create_add_first_action_connector: signal handler id %u", signal_handler_id );
+    dummy_logi_trace( log_id_, id_, "create_add_first_action_connector: signal handler id %u", signal_handler_id );
 
     auto it = map_id_to_signal_handler_.find( signal_handler_id );
 
     if( it == map_id_to_signal_handler_.end() )
     {
-        dummy_log_fatal( log_id_, id_, "create_add_first_action_connector: cannot find signal handler id %u", signal_handler_id );
+        dummy_logi_fatal( log_id_, id_, "create_add_first_action_connector: cannot find signal handler id %u", signal_handler_id );
         throw SyntaxError( "signal handler id " + std::to_string( signal_handler_id ) + " not found" );
         return 0;
     }
@@ -196,13 +196,13 @@ element_id_t Process::create_add_first_action_connector( element_id_t signal_han
 
 element_id_t Process::create_add_next_action_connector( element_id_t action_connector_id, Action * action )
 {
-    dummy_log_trace( log_id_, id_, "create_add_next_action_connector: action_connector_id %u", action_connector_id );
+    dummy_logi_trace( log_id_, id_, "create_add_next_action_connector: action_connector_id %u", action_connector_id );
 
     auto it = map_id_to_action_connector_.find( action_connector_id );
 
     if( it == map_id_to_action_connector_.end() )
     {
-        dummy_log_fatal( log_id_, id_, "create_add_next_action_connector: cannot find action_connector_id %u", action_connector_id );
+        dummy_logi_fatal( log_id_, id_, "create_add_next_action_connector: cannot find action_connector_id %u", action_connector_id );
         assert( 0 );
         throw SyntaxError( "signal handler id " + std::to_string( action_connector_id ) + " not found" );
         return 0;
@@ -225,7 +225,7 @@ element_id_t Process::create_add_timer( const std::string & name )
 
     assert( b );
 
-    dummy_log_debug( log_id_, id_, "create_add_timer: created timer %s (%u)", name.c_str(), id );
+    dummy_logi_debug( log_id_, id_, "create_add_timer: created timer %s (%u)", name.c_str(), id );
 
     names_.add_name( id, name );
 
@@ -242,7 +242,7 @@ element_id_t Process::create_signal_handler( const std::string & name )
 
     assert( b );
 
-    dummy_log_debug( log_id_, id_, "create_signal_handler: created signal handler %s (%u)", name.c_str(), id );
+    dummy_logi_debug( log_id_, id_, "create_signal_handler: created signal handler '%s' (%u)", name.c_str(), id );
 
     names_.add_name( id, name );
 
@@ -259,7 +259,7 @@ element_id_t Process::create_action_connector( Action * action )
 
     assert( b );
 
-    dummy_log_debug( log_id_, id_, "create_action_connector: created action connector %u", id );
+    dummy_logi_debug( log_id_, id_, "create_action_connector: created action connector %u", id );
 
     return id;
 }
@@ -281,7 +281,7 @@ element_id_t Process::create_add_constant( const std::string & name, data_type_e
 
 void Process::set_initial_state( element_id_t state_id )
 {
-    dummy_log_trace( log_id_, id_, "set_initial_state: %u", state_id );
+    dummy_logi_trace( log_id_, id_, "set_initial_state: %u", state_id );
 
     assert( current_state_ == 0 );
 
@@ -290,11 +290,11 @@ void Process::set_initial_state( element_id_t state_id )
 
 void Process::handle( const ev::Signal & req )
 {
-    dummy_log_trace( log_id_, id_, "handle: %s", typeid( req ).name() );
+    dummy_logi_trace( log_id_, id_, "handle: %s", typeid( req ).name() );
 
     if( is_ended() == true )
     {
-        dummy_log_info( log_id_, id_, "process finished, ignoring" );
+        dummy_logi_info( log_id_, id_, "process finished, ignoring" );
 
         return;
     }
@@ -314,11 +314,11 @@ void Process::handle( const ev::Signal & req )
 
 void Process::handle( const ev::Timer & req )
 {
-    dummy_log_trace( log_id_, id_, "handle: %s", typeid( req ).name() );
+    dummy_logi_trace( log_id_, id_, "handle: %s", typeid( req ).name() );
 
     if( is_ended() == true )
     {
-        dummy_log_info( log_id_, id_, "process finished, ignoring" );
+        dummy_logi_info( log_id_, id_, "process finished, ignoring" );
 
         return;
     }
@@ -333,7 +333,7 @@ void Process::handle( const ev::Timer & req )
 
     if( job_id == 0 )
     {
-        dummy_log_info( log_id_, id_, "timer %u is already cancelled", req.timer_id );
+        dummy_logi_info( log_id_, id_, "timer %u is already cancelled", req.timer_id );
         return;
     }
 
@@ -378,14 +378,14 @@ Timer* Process::find_timer( element_id_t id )
 
 void Process::set_timer( Timer * timer, const Value & delay )
 {
-    dummy_log_trace( log_id_, id_, "set_timer: timer %s (%u), %.2f sec", timer->get_name().c_str(), timer->get_id(), delay.arg_d );
+    dummy_logi_trace( log_id_, id_, "set_timer: timer %s (%u), %.2f sec", timer->get_name().c_str(), timer->get_id(), delay.arg_d );
 
     auto timer_id   = timer->get_id();
     auto job_id     = timer->get_job_id();
 
     if( job_id != 0 )
     {
-        dummy_log_fatal( log_id_, id_, "timer id %u is active (job id %u)", timer_id, job_id );
+        dummy_logi_fatal( log_id_, id_, "timer id %u is active (job id %u)", timer_id, job_id );
         assert( 0 );
         throw SyntaxError( "timer " + std::to_string( timer_id ) + " is active (job id " + std::to_string( job_id ) + ")" );
         return;
@@ -428,7 +428,7 @@ void Process::set_timer( Timer * timer, const Value & delay )
 
 void Process::reset_timer( Timer * timer )
 {
-    dummy_log_trace( log_id_, id_, "reset_timer: timer %s (%u)", timer->get_name().c_str(), timer->get_id() );
+    dummy_logi_trace( log_id_, id_, "reset_timer: timer %s (%u)", timer->get_name().c_str(), timer->get_id() );
 
     auto & name = timer->get_name();
 
@@ -437,7 +437,7 @@ void Process::reset_timer( Timer * timer )
 
     if( sched_job_id == 0 )
     {
-        dummy_log_debug( log_id_, id_, "reset_timer: timer id %u, job id is 0", timer_id );
+        dummy_logi_debug( log_id_, id_, "reset_timer: timer id %u, job id is 0", timer_id );
 
         return;
     }
@@ -446,7 +446,7 @@ void Process::reset_timer( Timer * timer )
 
     auto b = scheduler_->delete_job( & error_msg, sched_job_id );
 
-    dummy_log_trace( log_id_, id_, "reset_timer: job id %u", sched_job_id );
+    dummy_logi_trace( log_id_, id_, "reset_timer: job id %u", sched_job_id );
 
     if( b == false )
     {
@@ -472,7 +472,7 @@ void Process::convert_values_to_value_pointers( std::vector<Value*> * value_poin
 
 void Process::execute_action_connector_id( element_id_t action_connector_id )
 {
-    dummy_log_trace( log_id_, id_, "execute_action_connector_id: action_connector_id %u", action_connector_id );
+    dummy_logi_trace( log_id_, id_, "execute_action_connector_id: action_connector_id %u", action_connector_id );
 
     auto it = map_id_to_action_connector_.find( action_connector_id );
 
@@ -702,7 +702,7 @@ void Process::next_state( element_id_t state )
 
 element_id_t Process::get_next_id()
 {
-    return req_id_gen_->get_next_request_id();
+    return req_id_gen_.get_next_request_id();
 }
 
 } // namespace fsm

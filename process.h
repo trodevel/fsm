@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10289 $ $Date:: 2018-12-20 #$ $Author: serge $
+// $Revision: 10292 $ $Date:: 2018-12-20 #$ $Author: serge $
 
 #ifndef LIB_FSM__PROCESS_H
 #define LIB_FSM__PROCESS_H
@@ -56,8 +56,7 @@ public:
             uint32_t                log_id,
             IFsm                    * parent,
             ICallback               * callback,
-            scheduler::IScheduler   * scheduler,
-            utils::IRequestIdGen    * req_id_gen );
+            scheduler::IScheduler   * scheduler );
     ~Process();
 
     void start();
@@ -142,7 +141,6 @@ private:
     IFsm                        * parent_;
     ICallback                   * callback_;
     scheduler::IScheduler       * scheduler_;
-    utils::IRequestIdGen        * req_id_gen_;
 
     internal_state_e            internal_state_;
     element_id_t                current_state_;
@@ -152,6 +150,8 @@ private:
     MapIdToSignalHandler        map_id_to_signal_handler_;
     MapIdToActionConnector      map_id_to_action_connector_;
     MapIdToTimer                map_id_to_timer_;
+
+    utils::RequestIdGen         req_id_gen_;
 
     NamesDb                     names_;
     Memory                      mem_;
