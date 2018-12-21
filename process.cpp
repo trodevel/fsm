@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10297 $ $Date:: 2018-12-20 #$ $Author: serge $
+// $Revision: 10300 $ $Date:: 2018-12-21 #$ $Author: serge $
 
 #include "process.h"            // self
 
@@ -139,7 +139,7 @@ element_id_t Process::create_state( const std::string & name )
 {
     auto id = get_next_id();
 
-    auto state = new State( log_id_, id, name, this );
+    auto state = new State( log_id_, id, id_, name, this );
 
     auto b = map_id_to_state_.insert( std::make_pair( id, state ) ).second;
 

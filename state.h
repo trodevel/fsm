@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10215 $ $Date:: 2018-12-16 #$ $Author: serge $
+// $Revision: 10300 $ $Date:: 2018-12-21 #$ $Author: serge $
 
 #ifndef LIB_FSM__STATE_H
 #define LIB_FSM__STATE_H
@@ -34,7 +34,7 @@ namespace fsm {
 class State: public Element
 {
 public:
-    State( uint32_t log_id, element_id_t id, const std::string & name, ISignalHandler * handler );
+    State( uint32_t log_id, element_id_t id, uint32_t process_id, const std::string & name, ISignalHandler * handler );
 
     void add_signal_handler( const std::string & signal_name, element_id_t signal_handler_id );
 
@@ -50,6 +50,7 @@ private:
 
     uint32_t                                log_id_;
     element_id_t                            id_;
+    uint32_t                                process_id_;
     std::string                             name_;
 
     ISignalHandler                          * handler_;
