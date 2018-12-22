@@ -9,6 +9,7 @@
 
 #include "fsm_manager.h"    // FsmManager
 #include "parser.h"         // Parser
+#include "str_helper.h"     // StrHelper
 
 class Callback: virtual public fsm::ICallback
 {
@@ -20,18 +21,34 @@ public:
 
     void handle_send_signal( uint32_t process_id, const std::string & name, const std::vector<fsm::Value> & arguments ) override
     {
-        std::cout << "got signal from process " << process_id << " " << name << std::endl;
+        std::ostringstream os;
+        os << "got signal from process " << process_id << " " << name << " ";
+
+        for( auto & e : arguments )
+        {
+            os << fsm::StrHelper::to_string( e ) << " ";
+        }
+
+        std::cout << os.str() << std::endl;
     }
 
     void handle_function_call( uint32_t process_id, const std::string & name, const std::vector<fsm::Value*> & arguments ) override
     {
-        std::cout << "got function call from process " << process_id << " " << name << std::endl;
+        std::ostringstream os;
+        os << "got function call from process " << process_id << " " << name << " ";
+
+        for( auto & e : arguments )
+        {
+            os << fsm::StrHelper::to_string( * e ) << " ";
+        }
+
+        std::cout << os.str() << std::endl;
     }
 
     void control_thread()
     {
-        std::cout << "type exit or quit to quit: " << std::endl;
-        std::cout << "send <process_id> <signal_name> [<arg_type> <arg_val> [<arg_type> <arg_val> [...]]]" << std::endl;
+        std::cout << "type exit or q[uit] to quit: " << std::endl;
+        std::cout << "s[end] <process_id> <signal_name> [<arg_type> <arg_val> [<arg_type> <arg_val> [...]]]" << std::endl;
 
         std::string input;
 
@@ -60,11 +77,11 @@ private:
         std::stringstream stream( input );
         if( stream >> cmd )
         {
-            if( cmd == "exit" || cmd == "quit" )
+            if( cmd == "exit" || cmd == "quit" || cmd == "q" )
             {
                 return false;
             }
-            else if( cmd == "send" )
+            else if( cmd == "send" || cmd == "s" )
             {
                 uint32_t    process_id;
                 std::string name;
@@ -133,6 +150,7 @@ private:
 };
 
 void init_fsm_1( fsm::Process * fsm );
+void init_fsm_2( fsm::Process * fsm );
 
 bool init_fsm( fsm::Process * fsm, unsigned fsm_num )
 {
@@ -140,6 +158,10 @@ bool init_fsm( fsm::Process * fsm, unsigned fsm_num )
     {
     case 1:
         init_fsm_1( fsm );
+        break;
+
+    case 2:
+        init_fsm_2( fsm );
         break;
 
     default:

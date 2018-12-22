@@ -1,6 +1,6 @@
 /*
 
-FSM objects.
+String Helper. Provides to_string() function.
 
 Copyright (C) 2018 Sergey Kolevatov
 
@@ -19,36 +19,37 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10314 $ $Date:: 2018-12-21 #$ $Author: serge $
+// $Revision: 10309 $ $Date:: 2018-12-21 #$ $Author: serge $
 
-#ifndef LIB_FSM__VALUE_H
-#define LIB_FSM__VALUE_H
+#ifndef LIB_FSM__STR_HELPER_H
+#define LIB_FSM__STR_HELPER_H
 
-#include "elements.h"           // Element
+#include <string>
+#include <sstream>              // std::ostringstream
+
+#include "value.h"              // Value
 
 namespace fsm {
 
-struct Value
+class StrHelper
 {
-    Value();
-    Value( bool b );
-    Value( int i );
-    Value( double d );
-    Value( const char * s );
-    Value( const std::string & s );
+public:
+    static const std::string & to_string( data_type_e l );
+    static const std::string & to_string_short( data_type_e l );
 
-    data_type_e     type;
+    static std::ostream & write( std::ostream & os, const Value & l );
 
-    bool            arg_b;
-    int             arg_i;
-    double          arg_d;
-    std::string     arg_s;
+    template<class T>
+    static std::string to_string( const T & l )
+    {
+        std::ostringstream os;
+
+        write( os, l );
+
+        return os.str();
+    }
 };
-
-void harmonize( Value * v );
-
-void assign( Value * lhs, const Value & rhs );
 
 } // namespace fsm
 
-#endif // LIB_FSM__VALUE_H
+#endif // LIB_FSM__STR_HELPER_H

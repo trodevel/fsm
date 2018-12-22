@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10258 $ $Date:: 2018-12-18 #$ $Author: serge $
+// $Revision: 10314 $ $Date:: 2018-12-21 #$ $Author: serge $
 
 #include "value.h"          // self
 
@@ -52,6 +52,13 @@ Value::Value( int i ):
 Value::Value( double d ):
     type( data_type_e::DOUBLE ),
     arg_d( d )
+{
+    harmonize( this );
+}
+
+Value::Value( const char * s ):
+    type( data_type_e::STRING ),
+    arg_s( s )
 {
     harmonize( this );
 }
