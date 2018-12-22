@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10292 $ $Date:: 2018-12-20 #$ $Author: serge $
+// $Revision: 10325 $ $Date:: 2018-12-22 #$ $Author: serge $
 
 #ifndef LIB_FSM__PROCESS_H
 #define LIB_FSM__PROCESS_H
@@ -95,7 +95,8 @@ private:
     {
         STOP,
         NEXT,
-        ALT_NEXT
+        ALT_NEXT,
+        CHECK_SWITCH
     };
 
     enum class internal_state_e
@@ -117,6 +118,9 @@ private:
 
     static void convert_values_to_value_pointers( std::vector<Value*> * value_pointers, std::vector<Value> & values );
 
+    void set_matched_switch_condition( int matched_switch_condition );
+    int get_matched_switch_condition_and_clear();
+
     void execute_action_connector_id( element_id_t action_connector_id );
     void execute_action_connector( const ActionConnector & action_connector );
 
@@ -127,6 +131,7 @@ private:
     flow_control_e handle_FunctionCall( const Action & a );
     flow_control_e handle_Task( const Action & a );
     flow_control_e handle_Condition( const Action & a );
+    flow_control_e handle_SwitchCondition( const Action & a );
     flow_control_e handle_NextState( const Action & a );
     flow_control_e handle_Exit( const Action & a );
 
@@ -145,6 +150,8 @@ private:
     internal_state_e            internal_state_;
     element_id_t                current_state_;
     element_id_t                start_action_connector_;
+
+    int                         matched_switch_condition_;
 
     MapIdToState                map_id_to_state_;
     MapIdToSignalHandler        map_id_to_signal_handler_;

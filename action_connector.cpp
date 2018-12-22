@@ -19,9 +19,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10171 $ $Date:: 2018-12-14 #$ $Author: serge $
+// $Revision: 10328 $ $Date:: 2018-12-22 #$ $Author: serge $
 
 #include "action_connector.h"       // self
+
+#include <cassert>              // assert
 
 namespace fsm {
 
@@ -29,18 +31,39 @@ ActionConnector::ActionConnector( uint32_t log_id, element_id_t id, Action * act
         id_( id ),
         next_id_( 0 ),
         alt_next_id_( 0 ),
+        default_switch_action_( 0 ),
         action_( action )
 {
 }
 
 void ActionConnector::set_next_id( element_id_t id )
 {
+    assert( switch_actions_.empty() );
+
     next_id_    = id;
 }
 
 void ActionConnector::set_alt_next_id( element_id_t id )
 {
+    assert( switch_actions_.empty() );
+
     alt_next_id_    = id;
+}
+
+void ActionConnector::set_default_switch_action( element_id_t id )
+{
+    assert( next_id_ == 0 );
+    assert( alt_next_id_ == 0 );
+
+    default_switch_action_  = id ;
+}
+
+void ActionConnector::add_switch_action( element_id_t id )
+{
+    assert( next_id_ == 0 );
+    assert( alt_next_id_ == 0 );
+
+    switch_actions_.push_back( id );
 }
 
 element_id_t ActionConnector::get_next_id() const
@@ -53,6 +76,15 @@ element_id_t ActionConnector::get_alt_next_id() const
     return alt_next_id_;
 }
 
+element_id_t ActionConnector::get_switch_action( int switch_case_num ) const
+{
+    assert( ( switch_case_num == -1 ) || ( ( switch_case_num > 0 ) && ( unsigned( switch_case_num ) <= switch_actions_.size() ) ) );
+
+    if( switch_case_num == -1 )
+        return default_switch_action_;
+
+    return switch_actions_.at( switch_case_num - 1 );
+}
 
 const Action* ActionConnector::get_action() const
 {

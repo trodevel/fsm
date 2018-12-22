@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10300 $ $Date:: 2018-12-21 #$ $Author: serge $
+// $Revision: 10325 $ $Date:: 2018-12-22 #$ $Author: serge $
 
 #include "process.h"            // self
 
@@ -50,6 +50,7 @@ Process::Process(
         internal_state_( internal_state_e::IDLE ),
         current_state_( 0 ),
         start_action_connector_( 0 ),
+        matched_switch_condition_( 0 ),
         names_( id, log_id ),
         mem_( id, log_id, & req_id_gen_, & names_ )
 
@@ -470,6 +471,25 @@ void Process::convert_values_to_value_pointers( std::vector<Value*> * value_poin
     }
 }
 
+void Process::set_matched_switch_condition( int matched_switch_condition )
+{
+    assert( matched_switch_condition != 0 );
+    assert( matched_switch_condition_ == 0 );
+
+    matched_switch_condition_   = matched_switch_condition;
+}
+
+int Process::get_matched_switch_condition_and_clear()
+{
+    assert( matched_switch_condition_ != 0 );
+
+    auto res    = matched_switch_condition_;
+
+    matched_switch_condition_   = 0;
+
+    return res;
+}
+
 void Process::execute_action_connector_id( element_id_t action_connector_id )
 {
     dummy_logi_trace( log_id_, id_, "execute_action_connector_id: action_connector_id %u", action_connector_id );
@@ -502,6 +522,14 @@ void Process::execute_action_connector( const ActionConnector & action_connector
     {
         execute_action_connector_id( action_connector.get_alt_next_id() );
     }
+    else if( flow_control == flow_control_e::CHECK_SWITCH )
+    {
+        auto matched_switch_condition = get_matched_switch_condition_and_clear();
+
+        auto id = action_connector.get_switch_action( matched_switch_condition );
+
+        execute_action_connector_id( id );
+    }
     else // if( flow_control == flow_control_e::STOP )
     {
         // do nothing, just exit
@@ -524,6 +552,7 @@ Process::flow_control_e Process::handle_action( const Action & action )
         MAP_ENTRY( FunctionCall ),
         MAP_ENTRY( Task ),
         MAP_ENTRY( Condition ),
+        MAP_ENTRY( SwitchCondition ),
         MAP_ENTRY( NextState ),
         MAP_ENTRY( Exit ),
     };
@@ -665,6 +694,39 @@ Process::flow_control_e Process::handle_Condition( const Action & aa )
     auto b = compare_values( a.type, lhs, rhs );
 
     return b ? flow_control_e::NEXT : flow_control_e::ALT_NEXT;
+}
+
+Process::flow_control_e Process::handle_SwitchCondition( const Action & aa )
+{
+    auto & a = dynamic_cast< const SwitchCondition &>( aa );
+
+    Value lhs;
+
+    mem_.evaluate_expression( & lhs, a.var );
+
+    int i = 0;
+
+    for( auto & e : a.values )
+    {
+        ++i;
+
+        Value rhs;
+
+        mem_.evaluate_expression( & rhs, e );
+
+        auto b = compare_values( comparison_type_e::EQ, lhs, rhs );
+
+        if( b == true )
+        {
+            set_matched_switch_condition( i );
+
+            return flow_control_e::CHECK_SWITCH;
+        }
+    }
+
+    set_matched_switch_condition( -1 );  // default
+
+    return flow_control_e::CHECK_SWITCH;
 }
 
 Process::flow_control_e Process::handle_NextState( const Action & aa )

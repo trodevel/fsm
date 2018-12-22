@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10278 $ $Date:: 2018-12-19 #$ $Author: serge $
+// $Revision: 10319 $ $Date:: 2018-12-22 #$ $Author: serge $
 
 #ifndef LIB_FSM__ACTIONS_H
 #define LIB_FSM__ACTIONS_H
@@ -103,6 +103,20 @@ struct Condition: public Action
     comparison_type_e           type;
     ExpressionPtr               lhs;
     ExpressionPtr               rhs;
+};
+
+struct SwitchCondition: public Action
+{
+    SwitchCondition(
+            Expression                          * var,
+            const std::vector<ExpressionPtr>    & values ):
+        var( var ),
+        values( values )
+    {
+    }
+
+    ExpressionPtr               var;
+    std::vector<ExpressionPtr>  values;
 };
 
 struct NextState: public Action
