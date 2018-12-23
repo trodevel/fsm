@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10319 $ $Date:: 2018-12-22 #$ $Author: serge $
+// $Revision: 10339 $ $Date:: 2018-12-23 #$ $Author: serge $
 
 #ifndef LIB_FSM__ACTIONS_H
 #define LIB_FSM__ACTIONS_H
@@ -92,8 +92,8 @@ struct Condition: public Action
 {
     Condition(
             comparison_type_e           type,
-            Expression                  * lhs,
-            Expression                  * rhs ):
+            ExpressionPtr               lhs,
+            ExpressionPtr               rhs ):
         type( type ),
         lhs( lhs ),
         rhs( rhs )

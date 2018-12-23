@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10325 $ $Date:: 2018-12-22 #$ $Author: serge $
+// $Revision: 10347 $ $Date:: 2018-12-23 #$ $Author: serge $
 
 #include "process.h"            // self
 
@@ -175,43 +175,80 @@ element_id_t Process::create_add_signal_handler( element_id_t state_id, const st
     return id;
 }
 
-element_id_t Process::create_add_first_action_connector( element_id_t signal_handler_id, Action * action )
+void Process::set_first_action_connector( element_id_t signal_handler_id, element_id_t action_connector_id )
 {
-    dummy_logi_trace( log_id_, id_, "create_add_first_action_connector: signal handler id %u", signal_handler_id );
+    dummy_logi_trace( log_id_, id_, "set_first_action_connector: signal handler id %u, action_connector_id %u", signal_handler_id, action_connector_id );
 
     auto it = map_id_to_signal_handler_.find( signal_handler_id );
 
     if( it == map_id_to_signal_handler_.end() )
     {
-        dummy_logi_fatal( log_id_, id_, "create_add_first_action_connector: cannot find signal handler id %u", signal_handler_id );
+        dummy_logi_fatal( log_id_, id_, "set_first_action_connector: cannot find signal handler id %u", signal_handler_id );
         throw SyntaxError( "signal handler id " + std::to_string( signal_handler_id ) + " not found" );
-        return 0;
+        return;
     }
 
+    it->second->set_first_action_id( action_connector_id );
+}
+
+element_id_t Process::create_set_first_action_connector( element_id_t signal_handler_id, Action * action )
+{
     auto id = create_action_connector( action );
 
-    it->second->set_first_action_id( id );
+    set_first_action_connector( signal_handler_id, id );
 
     return id;
 }
 
-element_id_t Process::create_add_next_action_connector( element_id_t action_connector_id, Action * action )
+void Process::set_next_action_connector( element_id_t action_connector_id, element_id_t next_action_connector_id )
 {
-    dummy_logi_trace( log_id_, id_, "create_add_next_action_connector: action_connector_id %u", action_connector_id );
+    set_next_action_connector_intern( action_connector_id, next_action_connector_id, true );
+}
+
+void Process::set_alt_next_action_connector( element_id_t action_connector_id, element_id_t next_action_connector_id )
+{
+    set_next_action_connector_intern( action_connector_id, next_action_connector_id, false );
+}
+
+void Process::set_next_action_connector_intern( element_id_t action_connector_id, element_id_t next_action_connector_id, bool is_main )
+{
+    dummy_logi_trace( log_id_, id_, "set_next_action_connector_intern: action_connector_id %u, next_action_connector_id %u, is_mail %u", action_connector_id, next_action_connector_id, unsigned( is_main ) );
 
     auto it = map_id_to_action_connector_.find( action_connector_id );
 
     if( it == map_id_to_action_connector_.end() )
     {
-        dummy_logi_fatal( log_id_, id_, "create_add_next_action_connector: cannot find action_connector_id %u", action_connector_id );
+        dummy_logi_fatal( log_id_, id_, "set_next_action_connector_intern: cannot find action_connector_id %u", action_connector_id );
         assert( 0 );
-        throw SyntaxError( "signal handler id " + std::to_string( action_connector_id ) + " not found" );
-        return 0;
+        throw SyntaxError( "action connector id " + std::to_string( action_connector_id ) + " not found" );
+        return;
     }
 
+    if( is_main )
+    {
+        it->second->set_next_id( next_action_connector_id );
+    }
+    else
+    {
+        it->second->set_alt_next_id( next_action_connector_id );
+    }
+}
+
+element_id_t Process::create_set_next_action_connector( element_id_t action_connector_id, Action * action )
+{
+    return create_set_next_action_connector_intern( action_connector_id, action, true );
+}
+
+element_id_t Process::create_set_alt_next_action_connector( element_id_t action_connector_id, Action * action )
+{
+    return create_set_next_action_connector_intern( action_connector_id, action, false );
+}
+
+element_id_t Process::create_set_next_action_connector_intern( element_id_t action_connector_id, Action * action, bool is_main )
+{
     auto id = create_action_connector( action );
 
-    it->second->set_next_id( id );
+    set_next_action_connector_intern( action_connector_id, id, is_main );
 
     return id;
 }
