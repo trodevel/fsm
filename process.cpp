@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10347 $ $Date:: 2018-12-23 #$ $Author: serge $
+// $Revision: 10351 $ $Date:: 2018-12-27 #$ $Author: serge $
 
 #include "process.h"            // self
 
@@ -794,7 +794,14 @@ Process::flow_control_e Process::handle_Exit( const Action & /* aa */ )
 
 void Process::next_state( element_id_t state )
 {
-    dummy_logi_debug( log_id_, id_, "switched state %s (%u) --> %s (%u)", names_.get_name( current_state_ ).c_str(), current_state_, names_.get_name( state ).c_str(), state );
+    if( state == current_state_ )
+    {
+        dummy_logi_debug( log_id_, id_, "remained in state %s (%u)", names_.get_name( current_state_ ).c_str(), current_state_ );
+    }
+    else
+    {
+        dummy_logi_debug( log_id_, id_, "switched state %s (%u) --> %s (%u)", names_.get_name( current_state_ ).c_str(), current_state_, names_.get_name( state ).c_str(), state );
+    }
 
     current_state_  = state;
 }
