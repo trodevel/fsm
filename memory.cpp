@@ -71,7 +71,7 @@ element_id_t Memory::create_add_variable( const std::string & name, data_type_e 
 
     assert( b );
 
-    dummy_log_debug( log_id_, id_, "create_add_variable: created variable %u", id );
+    dummy_log_debug( log_id_, id_, "create_add_variable: created variable %s (%u)", name.c_str(), id );
 
     names_->add_name( id, name );
 
