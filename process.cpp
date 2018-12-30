@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10351 $ $Date:: 2018-12-27 #$ $Author: serge $
+// $Revision: 10362 $ $Date:: 2018-12-30 #$ $Author: serge $
 
 #include "process.h"            // self
 
@@ -32,6 +32,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include "scheduler/timeout_job_aux.h"      // create_and_insert_timeout_job
 #include "value_operations.h"               // compare_values
 
+#include "str_helper.h"             // StrHelper
 #include "syntax_error.h"           // SyntaxError
 
 namespace fsm {
@@ -677,6 +678,8 @@ Process::flow_control_e Process::handle_FunctionCall( const Action & aa )
 
     callback_->handle_function_call( id_, a.name, value_pointers );
 
+    dummy_logi_debug( log_id_, id_, "values: %s", StrHelper::to_string( values ).c_str() );
+
     mem_.import_values_into_variables( a.arguments, values );
 
     return flow_control_e::NEXT;
@@ -729,6 +732,12 @@ Process::flow_control_e Process::handle_Condition( const Action & aa )
     mem_.evaluate_expression( & rhs, a.rhs );
 
     auto b = compare_values( a.type, lhs, rhs );
+
+    dummy_logi_debug( log_id_, id_, "condition %s %s %s evaluated to %s",
+            StrHelper::to_string( a.type ).c_str(),
+            StrHelper::to_string( lhs ).c_str(),
+            StrHelper::to_string( rhs ).c_str(),
+            b ? "TRUE" : "FALSE" );
 
     return b ? flow_control_e::NEXT : flow_control_e::ALT_NEXT;
 }

@@ -14,6 +14,7 @@ void init_fsm_2( fsm::Process * fsm )
     auto A_REPEAT           = fsm->create_add_constant( "REPEAT",   fsm::data_type_e::INT, fsm::Value( 1 ) );
     auto A_DROP             = fsm->create_add_constant( "DROP",     fsm::data_type_e::INT, fsm::Value( 2 ) );
 
+    auto response           = fsm->create_add_variable( "response",         fsm::data_type_e::INT );
     auto action             = fsm->create_add_variable( "action",           fsm::data_type_e::INT );
     auto action_message     = fsm->create_add_variable( "action_message",   fsm::data_type_e::INT );
 
@@ -128,24 +129,29 @@ void init_fsm_2( fsm::Process * fsm )
 
     auto WAITING_ACTION__TONE           = fsm->create_add_signal_handler( WAITING_ACTION, "TONE" );
     auto WAITING_ACTION__TONE__ac1      = fsm->create_set_first_action_connector( WAITING_ACTION__TONE,
+            new fsm::Task(
+                    response,
+                    fsm::ExpressionPtr( new fsm::ExpressionVariableName( "$1" ) ) ) );
+
+    auto WAITING_ACTION__TONE__ac2      = fsm->create_set_next_action_connector( WAITING_ACTION__TONE__ac1,
             new fsm::FunctionCall(
                     "convert_tone_to_action",
                     {
-                            std::make_pair( false, fsm::ExpressionPtr( new fsm::ExpressionVariableName( "$1" ) ) ),
+                            std::make_pair( false, fsm::ExpressionPtr( new fsm::ExpressionVariable( response ) ) ),
                             std::make_pair( true, fsm::ExpressionPtr( new fsm::ExpressionVariable( action ) ) ),
                             std::make_pair( true, fsm::ExpressionPtr( new fsm::ExpressionVariable( action_message ) ) ),
                     }
     ) );
 
-    auto WAITING_ACTION__TONE__ac2      = fsm->create_set_next_action_connector( WAITING_ACTION__TONE__ac1,
+    auto WAITING_ACTION__TONE__ac3      = fsm->create_set_next_action_connector( WAITING_ACTION__TONE__ac2,
             new fsm::Condition(
                     fsm::comparison_type_e::EQ,
                     fsm::ExpressionPtr( new fsm::ExpressionVariable( action ) ),
                     fsm::ExpressionPtr( new fsm::ExpressionVariable( A_DROP ) )
     ) );
-    fsm->create_set_alt_next_action_connector( WAITING_ACTION__TONE__ac2, new fsm::NextState( WAITING_ACTION ) );
-    auto WAITING_ACTION__TONE__ac3      = fsm->create_set_next_action_connector( WAITING_ACTION__TONE__ac1, new fsm::SendSignal( "ScenPlayMessage", { fsm::ExpressionPtr( new fsm::ExpressionVariable( action_message ) )} ));
-    fsm->create_set_next_action_connector( WAITING_ACTION__TONE__ac3, new fsm::NextState( PLAYING_MESSAGE_ACTION ) );
+    fsm->create_set_alt_next_action_connector( WAITING_ACTION__TONE__ac3, new fsm::NextState( WAITING_ACTION ) );
+    auto WAITING_ACTION__TONE__ac4      = fsm->create_set_next_action_connector( WAITING_ACTION__TONE__ac3, new fsm::SendSignal( "ScenPlayMessage", { fsm::ExpressionPtr( new fsm::ExpressionVariable( action_message ) )} ));
+    fsm->create_set_next_action_connector( WAITING_ACTION__TONE__ac4, new fsm::NextState( PLAYING_MESSAGE_ACTION ) );
 
     auto WAITING_ACTION__T          = fsm->create_add_signal_handler( WAITING_ACTION, "T" );
     auto WAITING_ACTION__T__ac1     = fsm->create_set_first_action_connector( WAITING_ACTION__T,

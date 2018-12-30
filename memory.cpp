@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10296 $ $Date:: 2018-12-20 #$ $Author: serge $
+// $Revision: 10359 $ $Date:: 2018-12-30 #$ $Author: serge $
 
 #include "memory.h"            // self
 
@@ -140,7 +140,7 @@ element_id_t Memory::create_temp_variable( const Value & v, unsigned n )
 
     assert( b );
 
-    dummy_log_debug( log_id_, id_, "create_temp_variable: created variable %u", id );
+    dummy_log_debug( log_id_, id_, "create_temp_variable: created variable %s (%u)", name.c_str(), id );
 
     names_->add_name( id, name );
 

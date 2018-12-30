@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10315 $ $Date:: 2018-12-21 #$ $Author: serge $
+// $Revision: 10361 $ $Date:: 2018-12-30 #$ $Author: serge $
 
 #include "str_helper.h"             // self
 
@@ -75,6 +75,30 @@ const std::string & StrHelper::to_string_short( const data_type_e s )
     return it->second;
 }
 
+const std::string & StrHelper::to_string( const comparison_type_e s )
+{
+    typedef comparison_type_e Type;
+    static const std::map< Type, std::string > m =
+    {
+        { Type:: TUPLE_VAL_STR( EQ ) },
+        { Type:: TUPLE_VAL_STR( NEQ ) },
+        { Type:: TUPLE_VAL_STR( LT ) },
+        { Type:: TUPLE_VAL_STR( LE ) },
+        { Type:: TUPLE_VAL_STR( GT ) },
+        { Type:: TUPLE_VAL_STR( GE ) },
+        { Type:: TUPLE_VAL_STR( NOT ) },
+    };
+
+    auto it = m.find( s );
+
+    static const std::string undef( "undef" );
+
+    if( it == m.end() )
+        return undef;
+
+    return it->second;
+}
+
 std::ostream & StrHelper::write( std::ostream & os, const Value & l )
 {
     os << to_string_short( l.type ) << " ";
@@ -98,6 +122,28 @@ std::ostream & StrHelper::write( std::ostream & os, const Value & l )
         break;
     default:
         break;
+    }
+
+    return os;
+}
+
+std::ostream & StrHelper::write( std::ostream & os, const std::vector<fsm::Value> & l )
+{
+    for( auto & e : l )
+    {
+        write( os, e );
+        os << " ";
+    }
+
+    return os;
+}
+
+std::ostream & StrHelper::write( std::ostream & os, const std::vector<fsm::Value*> & l )
+{
+    for( auto & e : l )
+    {
+        write( os, * e );
+        os << " ";
     }
 
     return os;

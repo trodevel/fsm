@@ -21,28 +21,23 @@ public:
 
     void handle_send_signal( uint32_t process_id, const std::string & name, const std::vector<fsm::Value> & arguments ) override
     {
-        std::ostringstream os;
-        os << "got signal from process " << process_id << " " << name << " ";
-
-        for( auto & e : arguments )
-        {
-            os << fsm::StrHelper::to_string( e ) << " ";
-        }
-
-        std::cout << os.str() << std::endl;
+        std::cout << "got signal from process " << process_id << " " << name << " "
+                << fsm::StrHelper::to_string( arguments ) << std::endl;
     }
 
     void handle_function_call( uint32_t process_id, const std::string & name, const std::vector<fsm::Value*> & arguments ) override
     {
-        std::ostringstream os;
-        os << "got function call from process " << process_id << " " << name << " ";
+        std::cout << "got function call from process " << process_id << " " << name << " "
+                << fsm::StrHelper::to_string( arguments ) << std::endl;
 
-        for( auto & e : arguments )
+        if( name == "convert_tone_to_action" )
         {
-            os << fsm::StrHelper::to_string( * e ) << " ";
+            convert_tone_to_action__wrap( arguments );
         }
-
-        std::cout << os.str() << std::endl;
+        else
+        {
+            std::cout << "unhandled function " << name << std::endl;
+        }
     }
 
     void control_thread()
@@ -143,6 +138,48 @@ private:
             std::cout << "ERROR: cannot read command" << std::endl;
         }
         return true;
+    }
+
+    void convert_tone_to_action__wrap( const std::vector<fsm::Value*> & arguments )
+    {
+        assert( arguments.size() == 3 );
+
+        int tone = arguments.at( 0 )->arg_i;
+        int action;
+        int action_message;
+
+        convert_tone_to_action( tone, & action, & action_message );
+
+        fsm::assign( arguments.at( 1 ), fsm::Value( action ) );
+        fsm::assign( arguments.at( 2 ), fsm::Value( action_message ) );
+    }
+
+    void convert_tone_to_action( int tone, int * action, int * action_message )
+    {
+        static const int NONE   = 0;
+        static const int REPEAT = 1;
+        static const int DROP   = 2;
+
+        typedef int Type;
+        static const std::map< Type, std::pair<int,int> > m =
+        {
+            { 1, std::make_pair( DROP, 1 ) },
+            { 2, std::make_pair( DROP, 2 ) },
+            { 3, std::make_pair( DROP, 3 ) },
+            { 4, std::make_pair( REPEAT, 0 ) },
+        };
+
+        auto it = m.find( tone );
+
+        if( it != m.end() )
+        {
+            * action            = it->second.first;
+            * action_message    = it->second.second;
+            return;
+        }
+
+        * action            = NONE;
+        * action_message    = 0;
     }
 
 private:
