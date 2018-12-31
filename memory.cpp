@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10359 $ $Date:: 2018-12-30 #$ $Author: serge $
+// $Revision: 10376 $ $Date:: 2018-12-31 #$ $Author: serge $
 
 #include "memory.h"            // self
 
@@ -31,6 +31,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include "utils/dummy_logger.h"     // dummy_log_debug
 #include "value_operations.h"               // compare_values
 #include "syntax_error.h"           // SyntaxError
+#include "str_helper.h"             // StrHelper
 
 namespace fsm {
 
@@ -253,11 +254,10 @@ void Memory::import_values_into_variables( const std::vector<std::pair<bool,Expr
 
     for( auto & e : arguments )
     {
-        ++i;
-
         // ignore all variables except output variables
         if( e.first == false )
         {
+            ++i;
             continue;
         }
 
@@ -286,6 +286,7 @@ void Memory::import_values_into_variables( const std::vector<std::pair<bool,Expr
             throw SyntaxError( "argument is not a variable " + std::string( typeid( eexpr ).name() ) );
         }
 
+        ++i;
         ++imported;
     }
 
@@ -309,6 +310,8 @@ void Memory::import_value_into_variable( element_id_t variable_id, const Value &
         assert( 0 );
         throw SyntaxError( "import_values_into_variables: variable_id " + std::to_string( variable_id ) + " not found in the list of variables and temp variables" );
     }
+
+    dummy_logi_debug( log_id_, id_, "import_value_into_variable: %s (%i) = %s", variable->get_name().c_str(), variable->get_id(), StrHelper::to_string( value ).c_str() );
 
     variable->set( value );
 }

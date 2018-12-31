@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10307 $ $Date:: 2018-12-21 #$ $Author: serge $
+// $Revision: 10371 $ $Date:: 2018-12-31 #$ $Author: serge $
 
 #include "state.h"              // self
 
@@ -30,10 +30,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 namespace fsm {
 
 State::State( uint32_t log_id, element_id_t id, uint32_t process_id, const std::string & name, ISignalHandler * handler ):
+        NamedElement( id, name ),
         log_id_( log_id ),
-        id_( id ),
         process_id_( process_id ),
-        name_( name ),
         handler_( handler )
 {
     assert( id );
@@ -75,11 +74,6 @@ void State::handle_signal( const std::string & signal_name, const std::vector<el
 
         dummy_logi_info( log_id_, process_id_, "handler_signal: state %s (%u), signal %s - not handled", name_.c_str(), id_, signal_name.c_str() );
     }
-}
-
-const std::string & State::get_name() const
-{
-    return name_;
 }
 
 } // namespace fsm

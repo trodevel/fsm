@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10129 $ $Date:: 2018-12-12 #$ $Author: serge $
+// $Revision: 10370 $ $Date:: 2018-12-31 #$ $Author: serge $
 
 #include "timer.h"              // self
 
@@ -30,22 +30,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 namespace fsm {
 
 Timer::Timer( uint32_t log_id, element_id_t id, const std::string & name ):
+        NamedElement( id, name ),
         log_id_( log_id ),
-        id_( id ),
-        name_( name ),
         sched_job_id_( 0 )
 {
     assert( id );
-}
-
-uint32_t Timer::get_id() const
-{
-    return id_;
-}
-
-const std::string & Timer::get_name() const
-{
-    return name_;
 }
 
 void Timer::set_job_id( scheduler::job_id_t id )

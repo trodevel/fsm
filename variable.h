@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10240 $ $Date:: 2018-12-17 #$ $Author: serge $
+// $Revision: 10368 $ $Date:: 2018-12-31 #$ $Author: serge $
 
 #ifndef LIB_FSM__VARIABLE_H
 #define LIB_FSM__VARIABLE_H
@@ -28,7 +28,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 namespace fsm {
 
-class Variable: public Element
+class Variable: public NamedElement
 {
 public:
     Variable( uint32_t log_id, element_id_t id, const std::string & name, data_type_e type );
@@ -45,8 +45,6 @@ private:
 protected:
 
     uint32_t                                log_id_;
-    element_id_t                            id_;
-    std::string                             name_;
     data_type_e                             type_;
     Value                                   value_;
 };

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10129 $ $Date:: 2018-12-12 #$ $Author: serge $
+// $Revision: 10370 $ $Date:: 2018-12-31 #$ $Author: serge $
 
 #ifndef LIB_FSM__TIMER_H
 #define LIB_FSM__TIMER_H
@@ -29,13 +29,10 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 namespace fsm {
 
-class Timer: public Element
+class Timer: public NamedElement
 {
 public:
     Timer( uint32_t log_id, element_id_t id, const std::string & name );
-
-    uint32_t get_id() const;
-    const std::string & get_name() const;
 
     void set_job_id( scheduler::job_id_t id );
     scheduler::job_id_t get_job_id() const;
@@ -47,8 +44,6 @@ private:
 private:
 
     uint32_t                                log_id_;
-    element_id_t                            id_;
-    std::string                             name_;
 
     scheduler::job_id_t                     sched_job_id_;
 };

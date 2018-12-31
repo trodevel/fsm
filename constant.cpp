@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9979 $ $Date:: 2018-11-14 #$ $Author: serge $
+// $Revision: 10369 $ $Date:: 2018-12-31 #$ $Author: serge $
 
 #include "constant.h"           // self
 
@@ -30,9 +30,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 namespace fsm {
 
 Constant::Constant( uint32_t log_id, element_id_t id, const std::string & name, data_type_e type, const Value & value ):
+        NamedElement( id, name ),
         log_id_( log_id ),
-        id_( id ),
-        name_( name ),
         type_( type )
 {
     assert( id );

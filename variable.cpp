@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10242 $ $Date:: 2018-12-17 #$ $Author: serge $
+// $Revision: 10368 $ $Date:: 2018-12-31 #$ $Author: serge $
 
 #include "variable.h"           // self
 
@@ -30,9 +30,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 namespace fsm {
 
 Variable::Variable( uint32_t log_id, element_id_t id, const std::string & name, data_type_e type ):
+        NamedElement( id, name ),
         log_id_( log_id ),
-        id_( id ),
-        name_( name ),
         type_( type )
 {
     assert( id );
@@ -41,9 +40,8 @@ Variable::Variable( uint32_t log_id, element_id_t id, const std::string & name, 
 }
 
 Variable::Variable( uint32_t log_id, element_id_t id, const std::string & name, data_type_e type, const Value & value ):
+        NamedElement( id, name ),
         log_id_( log_id ),
-        id_( id ),
-        name_( name ),
         type_( type )
 {
     assert( id );

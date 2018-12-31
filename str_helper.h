@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10361 $ $Date:: 2018-12-30 #$ $Author: serge $
+// $Revision: 10363 $ $Date:: 2018-12-31 #$ $Author: serge $
 
 #ifndef LIB_FSM__STR_HELPER_H
 #define LIB_FSM__STR_HELPER_H
@@ -38,6 +38,7 @@ public:
     static const std::string & to_string( data_type_e l );
     static const std::string & to_string_short( data_type_e l );
     static const std::string & to_string( comparison_type_e l );
+    static const std::string & to_string_short( comparison_type_e l );
 
     static std::ostream & write( std::ostream & os, const Value & l );
     static std::ostream & write( std::ostream & os, const std::vector<fsm::Value> & l );

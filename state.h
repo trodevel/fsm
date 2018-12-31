@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10300 $ $Date:: 2018-12-21 #$ $Author: serge $
+// $Revision: 10371 $ $Date:: 2018-12-31 #$ $Author: serge $
 
 #ifndef LIB_FSM__STATE_H
 #define LIB_FSM__STATE_H
@@ -31,7 +31,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 namespace fsm {
 
-class State: public Element
+class State: public NamedElement
 {
 public:
     State( uint32_t log_id, element_id_t id, uint32_t process_id, const std::string & name, ISignalHandler * handler );
@@ -40,8 +40,6 @@ public:
 
     void handle_signal( const std::string & signal_name, const std::vector<element_id_t> & arguments );
 
-    const std::string & get_name() const;
-
 private:
     State( const State & )              = delete;
     State & operator=( const State & )  = delete;
@@ -49,9 +47,7 @@ private:
 private:
 
     uint32_t                                log_id_;
-    element_id_t                            id_;
     uint32_t                                process_id_;
-    std::string                             name_;
 
     ISignalHandler                          * handler_;
 

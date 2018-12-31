@@ -168,7 +168,7 @@ void init_fsm_2( fsm::Process * fsm )
     auto PLAYING_MESSAGE_ACTION__PlayFinished__ac1      = fsm->create_set_first_action_connector( PLAYING_MESSAGE_ACTION__PlayFinished,
             new fsm::SendSignal( "ScenFeedbackInt",
             {
-                    fsm::ExpressionPtr( new fsm::ExpressionValue( fsm::Value( 1 ) ) )
+                    fsm::ExpressionPtr( new fsm::ExpressionVariable( response ) )
             } ));
     auto PLAYING_MESSAGE_ACTION__PlayFinished__ac2      = fsm->create_set_next_action_connector( PLAYING_MESSAGE_ACTION__PlayFinished__ac1,
             new fsm::SendSignal( "ScenExit",

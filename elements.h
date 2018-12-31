@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10255 $ $Date:: 2018-12-18 #$ $Author: serge $
+// $Revision: 10367 $ $Date:: 2018-12-31 #$ $Author: serge $
 
 #ifndef LIB_FSM__ELEMENTS_H
 #define LIB_FSM__ELEMENTS_H
@@ -36,6 +36,30 @@ typedef unsigned action_id_t;
 struct Element
 {
     virtual ~Element() {}
+};
+
+struct NamedElement: public Element
+{
+    NamedElement( element_id_t id, const std::string & name ):
+        id_( id ),
+        name_( name )
+    {
+    }
+
+    element_id_t get_id() const
+    {
+        return id_;
+    }
+
+    const std::string & get_name() const
+    {
+        return name_;
+    }
+
+protected:
+
+    element_id_t    id_;
+    std::string     name_;
 };
 
 class Action: public Element

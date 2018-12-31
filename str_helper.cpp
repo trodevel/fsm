@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10361 $ $Date:: 2018-12-30 #$ $Author: serge $
+// $Revision: 10363 $ $Date:: 2018-12-31 #$ $Author: serge $
 
 #include "str_helper.h"             // self
 
@@ -87,6 +87,30 @@ const std::string & StrHelper::to_string( const comparison_type_e s )
         { Type:: TUPLE_VAL_STR( GT ) },
         { Type:: TUPLE_VAL_STR( GE ) },
         { Type:: TUPLE_VAL_STR( NOT ) },
+    };
+
+    auto it = m.find( s );
+
+    static const std::string undef( "undef" );
+
+    if( it == m.end() )
+        return undef;
+
+    return it->second;
+}
+
+const std::string & StrHelper::to_string_short( const comparison_type_e s )
+{
+    typedef comparison_type_e Type;
+    static const std::map< Type, std::string > m =
+    {
+        { Type:: EQ ,   "=="    },
+        { Type:: NEQ ,  "!="    },
+        { Type:: LT ,   "<"     },
+        { Type:: LE ,   "<="    },
+        { Type:: GT ,   ">"     },
+        { Type:: GE ,   ">="    },
+        { Type:: NOT ,  "!"     },
     };
 
     auto it = m.find( s );

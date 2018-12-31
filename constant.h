@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 9977 $ $Date:: 2018-11-14 #$ $Author: serge $
+// $Revision: 10369 $ $Date:: 2018-12-31 #$ $Author: serge $
 
 #ifndef LIB_FSM__CONSTANT_H
 #define LIB_FSM__CONSTANT_H
@@ -28,7 +28,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 namespace fsm {
 
-class Constant: public Element
+class Constant: public NamedElement
 {
 public:
     Constant( uint32_t log_id, element_id_t id, const std::string & name, data_type_e type, const Value & value );
@@ -42,8 +42,6 @@ private:
 protected:
 
     uint32_t                                log_id_;
-    element_id_t                            id_;
-    std::string                             name_;
     data_type_e                             type_;
     Value                                   value_;
 };
