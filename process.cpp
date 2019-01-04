@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10373 $ $Date:: 2018-12-31 #$ $Author: serge $
+// $Revision: 10388 $ $Date:: 2019-01-04 #$ $Author: serge $
 
 #include "process.h"            // self
 
@@ -203,21 +203,31 @@ element_id_t Process::create_set_first_action_connector( element_id_t signal_han
 
 void Process::set_next_action_connector( element_id_t action_connector_id, element_id_t next_action_connector_id )
 {
-    set_next_action_connector_intern( action_connector_id, next_action_connector_id, true );
+    set_next_action_connector_intern( action_connector_id, next_action_connector_id, next_action_type_e::MAIN );
 }
 
 void Process::set_alt_next_action_connector( element_id_t action_connector_id, element_id_t next_action_connector_id )
 {
-    set_next_action_connector_intern( action_connector_id, next_action_connector_id, false );
+    set_next_action_connector_intern( action_connector_id, next_action_connector_id, next_action_type_e::ALT );
 }
 
-void Process::set_next_action_connector_intern( element_id_t action_connector_id, element_id_t next_action_connector_id, bool is_main )
+void Process::set_default_switch_action_connector( element_id_t action_connector_id, element_id_t next_action_connector_id )
 {
-    dummy_logi_trace( log_id_, id_, "set_next_action_connector_intern: action_connector_id %u, next_action_connector_id %u, is_mail %u", action_connector_id, next_action_connector_id, unsigned( is_main ) );
+    set_next_action_connector_intern( action_connector_id, next_action_connector_id, next_action_type_e::SWITCH_DEFAULT );
+}
 
-    auto it = map_id_to_action_connector_.find( action_connector_id );
+void Process::add_switch_action_connector( element_id_t action_connector_id, element_id_t next_action_connector_id )
+{
+    set_next_action_connector_intern( action_connector_id, next_action_connector_id, next_action_type_e::SWITCH_NEXT );
+}
 
-    if( it == map_id_to_action_connector_.end() )
+void Process::set_next_action_connector_intern( element_id_t action_connector_id, element_id_t next_action_connector_id, next_action_type_e type )
+{
+    dummy_logi_trace( log_id_, id_, "set_next_action_connector_intern: action_connector_id %u, next_action_connector_id %u, type %u", action_connector_id, next_action_connector_id, unsigned( type ) );
+
+    auto action_connector = find_action_connector( action_connector_id );
+
+    if( action_connector == nullptr )
     {
         dummy_logi_fatal( log_id_, id_, "set_next_action_connector_intern: cannot find action_connector_id %u", action_connector_id );
         assert( 0 );
@@ -225,31 +235,56 @@ void Process::set_next_action_connector_intern( element_id_t action_connector_id
         return;
     }
 
-    if( is_main )
+    switch( type )
     {
-        it->second->set_next_id( next_action_connector_id );
-    }
-    else
-    {
-        it->second->set_alt_next_id( next_action_connector_id );
+    case next_action_type_e::MAIN:
+        action_connector->set_next_id( next_action_connector_id );
+        break;
+
+    case next_action_type_e::ALT:
+        action_connector->set_alt_next_id( next_action_connector_id );
+        break;
+
+    case next_action_type_e::SWITCH_DEFAULT:
+        action_connector->set_default_switch_action( next_action_connector_id );
+        break;
+
+    case next_action_type_e::SWITCH_NEXT:
+        action_connector->add_switch_action( next_action_connector_id );
+        break;
+
+    default:
+        dummy_logi_fatal( log_id_, id_, "set_next_action_connector_intern: unsupported type %u", unsigned( type ) );
+        assert( 0 );
+        throw SyntaxError( "unsupported type " + std::to_string( unsigned( type ) ) );
     }
 }
 
 element_id_t Process::create_set_next_action_connector( element_id_t action_connector_id, Action * action )
 {
-    return create_set_next_action_connector_intern( action_connector_id, action, true );
+    return create_set_next_action_connector_intern( action_connector_id, action, next_action_type_e::MAIN );
 }
 
 element_id_t Process::create_set_alt_next_action_connector( element_id_t action_connector_id, Action * action )
 {
-    return create_set_next_action_connector_intern( action_connector_id, action, false );
+    return create_set_next_action_connector_intern( action_connector_id, action, next_action_type_e::ALT );
 }
 
-element_id_t Process::create_set_next_action_connector_intern( element_id_t action_connector_id, Action * action, bool is_main )
+element_id_t Process::create_set_default_switch_action_connector( element_id_t action_connector_id, Action * action )
+{
+    return create_set_next_action_connector_intern( action_connector_id, action, next_action_type_e::SWITCH_DEFAULT );
+}
+
+element_id_t Process::create_add_switch_action_connector( element_id_t action_connector_id, Action * action )
+{
+    return create_set_next_action_connector_intern( action_connector_id, action, next_action_type_e::SWITCH_NEXT );
+}
+
+element_id_t Process::create_set_next_action_connector_intern( element_id_t action_connector_id, Action * action, next_action_type_e type )
 {
     auto id = create_action_connector( action );
 
-    set_next_action_connector_intern( action_connector_id, id, is_main );
+    set_next_action_connector_intern( action_connector_id, id, type );
 
     return id;
 }
@@ -415,6 +450,30 @@ Timer* Process::find_timer( element_id_t id )
     return nullptr;
 }
 
+ActionConnector* Process::find_action_connector( element_id_t id )
+{
+    auto it = map_id_to_action_connector_.find( id );
+
+    if( it != map_id_to_action_connector_.end() )
+    {
+        return it->second;
+    }
+
+    return nullptr;
+}
+
+const ActionConnector* Process::find_action_connector( element_id_t id ) const
+{
+    auto it = map_id_to_action_connector_.find( id );
+
+    if( it != map_id_to_action_connector_.end() )
+    {
+        return it->second;
+    }
+
+    return nullptr;
+}
+
 void Process::set_timer( Timer * timer, const Value & delay )
 {
     dummy_logi_trace( log_id_, id_, "set_timer: timer %s (%u), %.2f sec", timer->get_name().c_str(), timer->get_id(), delay.arg_d );
@@ -532,16 +591,14 @@ void Process::execute_action_connector_id( element_id_t action_connector_id )
 {
     dummy_logi_trace( log_id_, id_, "execute_action_connector_id: action_connector_id %u", action_connector_id );
 
-    auto it = map_id_to_action_connector_.find( action_connector_id );
+    auto action_connector = find_action_connector( action_connector_id );
 
-    if( it == map_id_to_action_connector_.end() )
+    if( action_connector == nullptr )
     {
         dummy_logi_fatal( log_id_, id_, "cannot find action connector %u", action_connector_id );
         assert( 0 );
         throw SyntaxError( "cannot find action connector " + std::to_string( action_connector_id ) );
     }
-
-    auto action_connector = it->second;
 
     execute_action_connector( * action_connector );
 }
@@ -775,11 +832,19 @@ Process::flow_control_e Process::handle_SwitchCondition( const Action & aa )
         {
             set_matched_switch_condition( i );
 
+            dummy_logi_debug( log_id_, id_, "switch variable %s matched %s, executing case %u",
+                    StrHelper::to_string( lhs ).c_str(),
+                    StrHelper::to_string( rhs ).c_str(),
+                    i );
+
             return flow_control_e::CHECK_SWITCH;
         }
     }
 
     set_matched_switch_condition( -1 );  // default
+
+    dummy_logi_debug( log_id_, id_, "switch variable %s didn't match anything, executing default case",
+            StrHelper::to_string( lhs ).c_str() );
 
     return flow_control_e::CHECK_SWITCH;
 }

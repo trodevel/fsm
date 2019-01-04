@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10347 $ $Date:: 2018-12-23 #$ $Author: serge $
+// $Revision: 10386 $ $Date:: 2019-01-04 #$ $Author: serge $
 
 #ifndef LIB_FSM__PROCESS_H
 #define LIB_FSM__PROCESS_H
@@ -68,6 +68,8 @@ public:
     void set_first_action_connector( element_id_t signal_handler_id, element_id_t action_connector_id );
     void set_next_action_connector( element_id_t action_connector_id, element_id_t next_action_connector_id );
     void set_alt_next_action_connector( element_id_t action_connector_id, element_id_t next_action_connector_id );
+    void set_default_switch_action_connector( element_id_t action_connector_id, element_id_t next_action_connector_id );
+    void add_switch_action_connector( element_id_t action_connector_id, element_id_t next_action_connector_id );
 
     element_id_t create_add_start_action_connector( Action * action );
     element_id_t create_state( const std::string & name );
@@ -75,6 +77,8 @@ public:
     element_id_t create_set_first_action_connector( element_id_t signal_handler_id, Action * action );
     element_id_t create_set_next_action_connector( element_id_t action_connector_id, Action * action );
     element_id_t create_set_alt_next_action_connector( element_id_t action_connector_id, Action * action );
+    element_id_t create_set_default_switch_action_connector( element_id_t action_connector_id, Action * action );
+    element_id_t create_add_switch_action_connector( element_id_t action_connector_id, Action * action );
     element_id_t create_add_timer( const std::string & name );
 
     element_id_t create_signal_handler( const std::string & name );
@@ -111,12 +115,22 @@ private:
         FINISHED
     };
 
+    enum class next_action_type_e
+    {
+        MAIN,
+        ALT,
+        SWITCH_DEFAULT,
+        SWITCH_NEXT
+    };
+
 private:
     Process( const Process & )              = delete;
     Process & operator=( const Process & )  = delete;
 
     State* find_state( element_id_t id );
     Timer* find_timer( element_id_t id );
+    ActionConnector* find_action_connector( element_id_t id );
+    const ActionConnector* find_action_connector( element_id_t id ) const;
 
     void set_timer( Timer * timer, const Value & delay );
     void reset_timer( Timer * timer );
@@ -126,8 +140,8 @@ private:
     void set_matched_switch_condition( int matched_switch_condition );
     int get_matched_switch_condition_and_clear();
 
-    void set_next_action_connector_intern( element_id_t action_connector_id, element_id_t next_action_connector_id, bool is_main );
-    element_id_t create_set_next_action_connector_intern( element_id_t action_connector_id, Action * action, bool is_main );
+    void set_next_action_connector_intern( element_id_t action_connector_id, element_id_t next_action_connector_id, next_action_type_e type );
+    element_id_t create_set_next_action_connector_intern( element_id_t action_connector_id, Action * action, next_action_type_e type );
 
     void execute_action_connector_id( element_id_t action_connector_id );
     void execute_action_connector( const ActionConnector & action_connector );

@@ -188,6 +188,7 @@ private:
 
 void init_fsm_1( fsm::Process * fsm );
 void init_fsm_2( fsm::Process * fsm );
+void init_fsm_3( fsm::Process * fsm );
 
 bool init_fsm( fsm::Process * fsm, unsigned fsm_num )
 {
@@ -199,6 +200,10 @@ bool init_fsm( fsm::Process * fsm, unsigned fsm_num )
 
     case 2:
         init_fsm_2( fsm );
+        break;
+
+    case 3:
+        init_fsm_3( fsm );
         break;
 
     default:
@@ -254,7 +259,7 @@ int main( int argc, char **argv )
 
     if( argc <= 1 )
     {
-        std::cout << "USAGE: ./example <fsm_num>, where fsm_num is 1 or 2" << std::endl;
+        std::cout << "USAGE: ./example <fsm_num>, where fsm_num is 1, 2 or 3" << std::endl;
         return EXIT_SUCCESS;
     }
 
