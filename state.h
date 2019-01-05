@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10371 $ $Date:: 2018-12-31 #$ $Author: serge $
+// $Revision: 10392 $ $Date:: 2019-01-04 #$ $Author: serge $
 
 #ifndef LIB_FSM__STATE_H
 #define LIB_FSM__STATE_H
@@ -33,6 +33,8 @@ namespace fsm {
 
 class State: public NamedElement
 {
+    friend class SdlGrHelper;
+
 public:
     State( uint32_t log_id, element_id_t id, uint32_t process_id, const std::string & name, ISignalHandler * handler );
 

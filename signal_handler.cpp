@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10017 $ $Date:: 2018-12-03 #$ $Author: serge $
+// $Revision: 10393 $ $Date:: 2019-01-04 #$ $Author: serge $
 
 #include "signal_handler.h"         // self
 
@@ -30,9 +30,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 namespace fsm {
 
 SignalHandler::SignalHandler( uint32_t log_id, element_id_t id, const std::string & name ):
+        NamedElement( id, name ),
         log_id_( log_id ),
-        id_( id ),
-        name_( name ),
         first_action_id_( 0 )
 {
     assert( id );
@@ -52,11 +51,6 @@ void SignalHandler::set_first_action_id( element_id_t id )
 element_id_t SignalHandler::get_first_action_id() const
 {
     return first_action_id_;
-}
-
-const std::string & SignalHandler::get_name() const
-{
-    return name_;
 }
 
 } // namespace fsm
