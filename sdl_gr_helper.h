@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10390 $ $Date:: 2019-01-04 #$ $Author: serge $
+// $Revision: 10405 $ $Date:: 2019-01-05 #$ $Author: serge $
 
 #ifndef LIB_FSM__SDL_GR_HELPER_H
 #define LIB_FSM__SDL_GR_HELPER_H
@@ -30,6 +30,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #include "value.h"              // Value
 #include "state.h"              // State
+#include "action_connector.h"   // ActionConnector
+#include "signal_handler.h"     // SignalHandler
 
 namespace fsm {
 
@@ -38,8 +40,19 @@ class Process;
 class SdlGrHelper
 {
 public:
+    static std::ostream & write_element_name( std::ostream & os, const std::string & prefix, element_id_t id );
+    static std::ostream & write_action_connector_name( std::ostream & os, element_id_t id );
+    static std::ostream & write_signal_handler_name( std::ostream & os, element_id_t id );
+    static std::ostream & write_signal_handler_def( std::ostream & os, element_id_t id, const std::string & signal_name );
     static std::ostream & write_name( std::ostream & os, const State & l );
     static std::ostream & write( std::ostream & os, const State & l );
+
+    static std::ostream & write_name( std::ostream & os, const ActionConnector & l );
+    static std::ostream & write( std::ostream & os, const ActionConnector & l );
+
+    static std::ostream & write( std::ostream & os, const SignalHandler & l );
+
+    static std::ostream & write( std::ostream & os, const Process & l );
 
     template<class T>
     static std::string to_string( const T & l )

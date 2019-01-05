@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10328 $ $Date:: 2018-12-22 #$ $Author: serge $
+// $Revision: 10404 $ $Date:: 2019-01-05 #$ $Author: serge $
 
 #include "action_connector.h"       // self
 
@@ -64,6 +64,11 @@ void ActionConnector::add_switch_action( element_id_t id )
     assert( alt_next_id_ == 0 );
 
     switch_actions_.push_back( id );
+}
+
+element_id_t ActionConnector::get_id() const
+{
+    return id_;
 }
 
 element_id_t ActionConnector::get_next_id() const

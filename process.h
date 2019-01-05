@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10386 $ $Date:: 2019-01-04 #$ $Author: serge $
+// $Revision: 10395 $ $Date:: 2019-01-05 #$ $Author: serge $
 
 #ifndef LIB_FSM__PROCESS_H
 #define LIB_FSM__PROCESS_H
@@ -50,6 +50,8 @@ namespace fsm {
 class Process:
         public ISignalHandler
 {
+    friend class SdlGrHelper;
+
 public:
     Process(
             uint32_t                id,
