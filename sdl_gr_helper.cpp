@@ -19,14 +19,19 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10406 $ $Date:: 2019-01-05 #$ $Author: serge $
+// $Revision: 10423 $ $Date:: 2019-01-08 #$ $Author: serge $
 
 #include "sdl_gr_helper.h"             // self
 
 #include <iomanip>                  // std::setfill
+#include <typeindex>                // std::type_index
+#include <typeinfo>
+#include <unordered_map>
 #include <map>
 
 #include "process.h"                // Process
+
+#include "str_helper.h"             // StrHelper
 
 namespace fsm {
 
@@ -50,19 +55,23 @@ std::ostream & SdlGrHelper::write_signal_handler_name( std::ostream & os, elemen
     return write_element_name( os, "SIGNAL_HANDLER", id );
 }
 
+std::ostream & SdlGrHelper::write_state_name( std::ostream & os, element_id_t id )
+{
+    return write_element_name( os, "STATE", id );
+}
+
 std::ostream & SdlGrHelper::write_signal_handler_def( std::ostream & os, element_id_t id, const std::string & signal_name )
 {
     write_signal_handler_name( os, id );
 
-    os << " [ label=\"" << signal_name << "\" shape=sdl_input_from_right fillcolor=orange ]";
+    os << " [ label=\"" << signal_name << "\" shape=sdl_input_from_right fillcolor=cyan ]";
 
     return os;
-
 }
 
 std::ostream & SdlGrHelper::write_name( std::ostream & os, const State & l )
 {
-    return write_element_name( os, "STATE", l.get_id() );
+    return write_state_name( os, l.get_id() );
 }
 
 std::ostream & SdlGrHelper::write( std::ostream & os, const State & l )
@@ -94,9 +103,141 @@ std::ostream & SdlGrHelper::write_name( std::ostream & os, const ActionConnector
     return write_action_connector_name( os, l.get_id() );
 }
 
+std::ostream & SdlGrHelper::write( std::ostream & os, const Action & l, const ActionConnector & ac )
+{
+    typedef SdlGrHelper Type;
+
+    typedef std::ostream & (*PPMF)( std::ostream & os, const Action & l, const ActionConnector & ac );
+
+#define MAP_ENTRY(_v)       { typeid( _v ),        & Type::write_##_v }
+
+    static const std::unordered_map<std::type_index, PPMF> funcs =
+    {
+        MAP_ENTRY( SendSignal ),
+        MAP_ENTRY( SetTimer ),
+        MAP_ENTRY( ResetTimer ),
+        MAP_ENTRY( FunctionCall ),
+        MAP_ENTRY( Task ),
+        MAP_ENTRY( Condition ),
+        MAP_ENTRY( SwitchCondition ),
+        MAP_ENTRY( NextState ),
+        MAP_ENTRY( Exit ),
+    };
+
+#undef MAP_ENTRY
+
+    auto it = funcs.find( typeid( l ) );
+
+    if( it == funcs.end() )
+    {
+        os << "# unsupported action " << typeid( l ).name() << ", action connector id " << ac.get_id() << "\n";
+        return os;
+    }
+
+    return (*it->second)( os, l, ac );
+}
+
+std::ostream & SdlGrHelper::write_SendSignal( std::ostream & os, const Action & aa, const ActionConnector & ac )
+{
+    auto & a = dynamic_cast< const SendSignal &>( aa );
+
+    os << " [ label=\"" << a.name << "\" shape=sdl_output_to_left fillcolor=orange ]" << "\n";
+
+    write_edge( os, ac.get_id(), ac.get_next_id() );
+
+    return os;
+}
+
+std::ostream & SdlGrHelper::write_SetTimer( std::ostream & os, const Action & aa, const ActionConnector & ac )
+{
+    auto & a = dynamic_cast< const SetTimer &>( aa );
+
+    os << " [ label=\"" << a.timer_id << "\" shape=sdl_set ]" << "\n";
+
+    write_edge( os, ac.get_id(), ac.get_next_id() );
+
+    return os;
+}
+
+std::ostream & SdlGrHelper::write_ResetTimer( std::ostream & os, const Action & aa, const ActionConnector & ac )
+{
+    auto & a = dynamic_cast< const ResetTimer &>( aa );
+
+    os << " [ label=\"" << a.timer_id << "\" shape=sdl_reset ]" << "\n";
+
+    write_edge( os, ac.get_id(), ac.get_next_id() );
+
+    return os;
+}
+
+std::ostream & SdlGrHelper::write_FunctionCall( std::ostream & os, const Action & aa, const ActionConnector & ac )
+{
+    auto & a = dynamic_cast< const FunctionCall &>( aa );
+
+    os << " [ label=\"" << a.name << "\" shape=sdl_call ]" << "\n";
+
+    write_edge( os, ac.get_id(), ac.get_next_id() );
+
+    return os;
+}
+
+std::ostream & SdlGrHelper::write_Task( std::ostream & os, const Action & aa, const ActionConnector & ac )
+{
+    auto & a = dynamic_cast< const Task &>( aa );
+
+    os << " [ label=\"" << a.variable_id << "\" shape=sdl_task ]" << "\n";
+
+    write_edge( os, ac.get_id(), ac.get_next_id() );
+
+    return os;
+}
+
+std::ostream & SdlGrHelper::write_Condition( std::ostream & os, const Action & aa, const ActionConnector & ac )
+{
+    auto & a = dynamic_cast< const Condition &>( aa );
+
+    os << " [ label=\"" << StrHelper::to_string_short( a.type ) << "\" shape=diamond peripheries=1 ]" << "\n";
+
+    write_edge( os, ac.get_id(), ac.get_next_id(), "Y" );
+    os << "\n";
+    write_edge( os, ac.get_id(), ac.get_alt_next_id(), "N" );
+
+    return os;
+}
+
+std::ostream & SdlGrHelper::write_SwitchCondition( std::ostream & os, const Action & aa, const ActionConnector & ac )
+{
+    return os;
+}
+
+std::ostream & SdlGrHelper::write_NextState( std::ostream & os, const Action & aa, const ActionConnector & ac )
+{
+    auto & a = dynamic_cast< const NextState &>( aa );
+
+    os << " [ label=\"next_state\" ]";
+    os << "\n";
+
+    write_name( os, ac );
+
+    os << " -> ";
+
+    write_state_name( os, a.state_id );
+
+    return os;
+}
+
+std::ostream & SdlGrHelper::write_Exit( std::ostream & os, const Action & aa, const ActionConnector & ac )
+{
+    os << " [ label=\"\" shape=sdl_stop peripheries=1 ]" << "\n";
+
+    return os;
+}
+
 std::ostream & SdlGrHelper::write( std::ostream & os, const ActionConnector & l )
 {
     write_name( os, l );
+
+    write( os, * l.get_action(), l );
 
     os << "\n";
 
@@ -153,6 +294,22 @@ std::ostream & SdlGrHelper::write( std::ostream & os, const Process & l )
     }
 
     os << "}\n";
+
+    return os;
+}
+
+std::ostream & SdlGrHelper::write_edge( std::ostream & os, element_id_t action_connector_id_1, element_id_t action_connector_id_2, const std::string & comment )
+{
+    write_action_connector_name( os, action_connector_id_1 );
+
+    os << " -> ";
+
+    write_action_connector_name( os, action_connector_id_2 );
+
+    if( ! comment.empty() )
+    {
+        os << " [ label=\"" << comment << "\" ]";
+    }
 
     return os;
 }

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10405 $ $Date:: 2019-01-05 #$ $Author: serge $
+// $Revision: 10422 $ $Date:: 2019-01-08 #$ $Author: serge $
 
 #ifndef LIB_FSM__SDL_GR_HELPER_H
 #define LIB_FSM__SDL_GR_HELPER_H
@@ -43,9 +43,22 @@ public:
     static std::ostream & write_element_name( std::ostream & os, const std::string & prefix, element_id_t id );
     static std::ostream & write_action_connector_name( std::ostream & os, element_id_t id );
     static std::ostream & write_signal_handler_name( std::ostream & os, element_id_t id );
+    static std::ostream & write_state_name( std::ostream & os, element_id_t id );
     static std::ostream & write_signal_handler_def( std::ostream & os, element_id_t id, const std::string & signal_name );
     static std::ostream & write_name( std::ostream & os, const State & l );
     static std::ostream & write( std::ostream & os, const State & l );
+
+    static std::ostream & write( std::ostream & os, const Action & l, const ActionConnector & ac );
+
+    static std::ostream & write_SendSignal( std::ostream & os, const Action & l, const ActionConnector & ac );
+    static std::ostream & write_SetTimer( std::ostream & os, const Action & l, const ActionConnector & ac );
+    static std::ostream & write_ResetTimer( std::ostream & os, const Action & l, const ActionConnector & ac );
+    static std::ostream & write_FunctionCall( std::ostream & os, const Action & l, const ActionConnector & ac );
+    static std::ostream & write_Task( std::ostream & os, const Action & l, const ActionConnector & ac );
+    static std::ostream & write_Condition( std::ostream & os, const Action & l, const ActionConnector & ac );
+    static std::ostream & write_SwitchCondition( std::ostream & os, const Action & l, const ActionConnector & ac );
+    static std::ostream & write_NextState( std::ostream & os, const Action & l, const ActionConnector & ac );
+    static std::ostream & write_Exit( std::ostream & os, const Action & l, const ActionConnector & ac );
 
     static std::ostream & write_name( std::ostream & os, const ActionConnector & l );
     static std::ostream & write( std::ostream & os, const ActionConnector & l );
@@ -63,6 +76,10 @@ public:
 
         return os.str();
     }
+
+private:
+
+    static std::ostream & write_edge( std::ostream & os, element_id_t action_connector_id_1, element_id_t action_connector_id_2, const std::string & comment = std::string() );
 };
 
 } // namespace fsm
