@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10423 $ $Date:: 2019-01-08 #$ $Author: serge $
+// $Revision: 10434 $ $Date:: 2019-01-09 #$ $Author: serge $
 
 #include "sdl_gr_helper.h"             // self
 
@@ -28,6 +28,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include <typeinfo>
 #include <unordered_map>
 #include <map>
+#include <cassert>
 
 #include "process.h"                // Process
 
@@ -37,6 +38,11 @@ namespace fsm {
 
 #define TUPLE_VAL_STR(_x_)  _x_,#_x_
 #define TUPLE_STR_VAL(_x_)  #_x_,_x_
+
+SdlGrHelper::SdlGrHelper( const Process * l ):
+        process_( l )
+{
+}
 
 std::ostream & SdlGrHelper::write_element_name( std::ostream & os, const std::string & prefix, element_id_t id )
 {
@@ -107,7 +113,7 @@ std::ostream & SdlGrHelper::write( std::ostream & os, const Action & l, const Ac
 {
     typedef SdlGrHelper Type;
 
-    typedef std::ostream & (*PPMF)( std::ostream & os, const Action & l, const ActionConnector & ac );
+    typedef std::ostream & (Type::*PPMF)( std::ostream & os, const Action & l, const ActionConnector & ac );
 
 #define MAP_ENTRY(_v)       { typeid( _v ),        & Type::write_##_v }
 
@@ -134,12 +140,14 @@ std::ostream & SdlGrHelper::write( std::ostream & os, const Action & l, const Ac
         return os;
     }
 
-    return (*it->second)( os, l, ac );
+    return (this->*it->second)( os, l, ac );
 }
 
 std::ostream & SdlGrHelper::write_SendSignal( std::ostream & os, const Action & aa, const ActionConnector & ac )
 {
     auto & a = dynamic_cast< const SendSignal &>( aa );
+
+    write_name( os, ac );
 
     os << " [ label=\"" << a.name << "\" shape=sdl_output_to_left fillcolor=orange ]" << "\n";
 
@@ -152,6 +160,8 @@ std::ostream & SdlGrHelper::write_SetTimer( std::ostream & os, const Action & aa
 {
     auto & a = dynamic_cast< const SetTimer &>( aa );
 
+    write_name( os, ac );
+
     os << " [ label=\"" << a.timer_id << "\" shape=sdl_set ]" << "\n";
 
     write_edge( os, ac.get_id(), ac.get_next_id() );
@@ -162,6 +172,8 @@ std::ostream & SdlGrHelper::write_SetTimer( std::ostream & os, const Action & aa
 std::ostream & SdlGrHelper::write_ResetTimer( std::ostream & os, const Action & aa, const ActionConnector & ac )
 {
     auto & a = dynamic_cast< const ResetTimer &>( aa );
+
+    write_name( os, ac );
 
     os << " [ label=\"" << a.timer_id << "\" shape=sdl_reset ]" << "\n";
 
@@ -174,6 +186,8 @@ std::ostream & SdlGrHelper::write_FunctionCall( std::ostream & os, const Action 
 {
     auto & a = dynamic_cast< const FunctionCall &>( aa );
 
+    write_name( os, ac );
+
     os << " [ label=\"" << a.name << "\" shape=sdl_call ]" << "\n";
 
     write_edge( os, ac.get_id(), ac.get_next_id() );
@@ -184,6 +198,8 @@ std::ostream & SdlGrHelper::write_FunctionCall( std::ostream & os, const Action 
 std::ostream & SdlGrHelper::write_Task( std::ostream & os, const Action & aa, const ActionConnector & ac )
 {
     auto & a = dynamic_cast< const Task &>( aa );
+
+    write_name( os, ac );
 
     os << " [ label=\"" << a.variable_id << "\" shape=sdl_task ]" << "\n";
 
@@ -196,6 +212,8 @@ std::ostream & SdlGrHelper::write_Condition( std::ostream & os, const Action & a
 {
     auto & a = dynamic_cast< const Condition &>( aa );
 
+    write_name( os, ac );
+
     os << " [ label=\"" << StrHelper::to_string_short( a.type ) << "\" shape=diamond peripheries=1 ]" << "\n";
 
     write_edge( os, ac.get_id(), ac.get_next_id(), "Y" );
@@ -207,27 +225,37 @@ std::ostream & SdlGrHelper::write_Condition( std::ostream & os, const Action & a
 
 std::ostream & SdlGrHelper::write_SwitchCondition( std::ostream & os, const Action & aa, const ActionConnector & ac )
 {
+    auto & a = dynamic_cast< const SwitchCondition &>( aa );
+
+    write_name( os, ac );
+
+    os << " [ label=\"" << "cond" << "\" shape=diamond peripheries=1 ]" << "\n";
+
+    write_edge( os, ac.get_id(), ac.get_default_switch_action(), "default" );
+    os << "\n";
+
+    auto & actions = ac.get_switch_actions();
+
+    for( auto e : actions )
+    {
+        write_edge( os, ac.get_id(), e );
+        os << "\n";
+    }
+
     return os;
 }
 
 std::ostream & SdlGrHelper::write_NextState( std::ostream & os, const Action & aa, const ActionConnector & ac )
 {
-    auto & a = dynamic_cast< const NextState &>( aa );
-
-    os << " [ label=\"next_state\" ]";
-    os << "\n";
-
-    write_name( os, ac );
-
-    os << " -> ";
-
-    write_state_name( os, a.state_id );
+    // do nothing, case is handled by write_edge()
 
     return os;
 }
 
 std::ostream & SdlGrHelper::write_Exit( std::ostream & os, const Action & aa, const ActionConnector & ac )
 {
+    write_name( os, ac );
+
     os << " [ label=\"\" shape=sdl_stop peripheries=1 ]" << "\n";
 
     return os;
@@ -235,8 +263,6 @@ std::ostream & SdlGrHelper::write_Exit( std::ostream & os, const Action & aa, co
 
 std::ostream & SdlGrHelper::write( std::ostream & os, const ActionConnector & l )
 {
-    write_name( os, l );
-
     write( os, * l.get_action(), l );
 
     os << "\n";
@@ -255,8 +281,10 @@ std::ostream & SdlGrHelper::write( std::ostream & os, const SignalHandler & l )
     return os;
 }
 
-std::ostream & SdlGrHelper::write( std::ostream & os, const Process & l )
+std::ostream & SdlGrHelper::write( std::ostream & os )
 {
+    generate_map_of_next_state_actions();
+
     os <<
     "digraph Process\n"
     "{\n"
@@ -272,22 +300,22 @@ std::ostream & SdlGrHelper::write( std::ostream & os, const Process & l )
     // generate start action
     os << "START [ shape=sdl_start ]\n";
     os << "START -> ";
-    write_action_connector_name( os, l.start_action_connector_ );
+    write_action_connector_name( os, process_->start_action_connector_ );
     os << "\n";
 
-    for( auto & e : l.map_id_to_state_ )
+    for( auto & e : process_->map_id_to_state_ )
     {
         write( os, * e.second );
         os << "\n";
     }
 
-    for( auto & e : l.map_id_to_action_connector_ )
+    for( auto & e : process_->map_id_to_action_connector_ )
     {
         write( os, * e.second );
         os << "\n";
     }
 
-    for( auto & e : l.map_id_to_signal_handler_ )
+    for( auto & e : process_->map_id_to_signal_handler_ )
     {
         write( os, * e.second );
         os << "\n";
@@ -304,7 +332,16 @@ std::ostream & SdlGrHelper::write_edge( std::ostream & os, element_id_t action_c
 
     os << " -> ";
 
-    write_action_connector_name( os, action_connector_id_2 );
+    element_id_t state_id;
+
+    if( is_action_next_state( action_connector_id_2, & state_id ) )
+    {
+        write_state_name( os, state_id );
+    }
+    else
+    {
+        write_action_connector_name( os, action_connector_id_2 );
+    }
 
     if( ! comment.empty() )
     {
@@ -313,6 +350,42 @@ std::ostream & SdlGrHelper::write_edge( std::ostream & os, element_id_t action_c
 
     return os;
 }
+
+void SdlGrHelper::generate_map_of_next_state_actions()
+{
+    for( auto & e : process_->map_id_to_action_connector_ )
+    {
+        auto & ac   = * e.second;
+
+        auto & aa = * ac.get_action();
+
+        if( typeid( aa ) == typeid( NextState ) )
+        {
+            auto & a = dynamic_cast< const NextState &>( aa );
+
+            auto state_id = a.state_id;
+
+            auto b = map_next_state_action_to_state_id_.insert( std::make_pair( e.first, state_id ) ).second;
+
+            assert( b );
+        }
+    }
+}
+
+bool SdlGrHelper::is_action_next_state( element_id_t action_connector_id, element_id_t * state_id ) const
+{
+    auto it = map_next_state_action_to_state_id_.find( action_connector_id );
+
+    if( it != map_next_state_action_to_state_id_.end() )
+    {
+        * state_id = it->second;
+
+        return true;
+    }
+
+    return false;
+}
+
 
 } // namespace fsm
 

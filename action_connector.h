@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10404 $ $Date:: 2019-01-05 #$ $Author: serge $
+// $Revision: 10433 $ $Date:: 2019-01-09 #$ $Author: serge $
 
 #ifndef LIB_FSM__ACTION_CONNECTOR_H
 #define LIB_FSM__ACTION_CONNECTOR_H
@@ -45,7 +45,10 @@ public:
 
     element_id_t get_next_id() const;
     element_id_t get_alt_next_id() const;
+    element_id_t get_default_switch_action() const;
     element_id_t get_switch_action( int switch_case_num ) const;
+
+    const std::vector<element_id_t> & get_switch_actions() const;
 
     const Action* get_action() const;
 

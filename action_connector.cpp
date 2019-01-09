@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10404 $ $Date:: 2019-01-05 #$ $Author: serge $
+// $Revision: 10433 $ $Date:: 2019-01-09 #$ $Author: serge $
 
 #include "action_connector.h"       // self
 
@@ -81,6 +81,11 @@ element_id_t ActionConnector::get_alt_next_id() const
     return alt_next_id_;
 }
 
+element_id_t ActionConnector::get_default_switch_action() const
+{
+    return default_switch_action_;
+}
+
 element_id_t ActionConnector::get_switch_action( int switch_case_num ) const
 {
     assert( ( switch_case_num == -1 ) || ( ( switch_case_num > 0 ) && ( unsigned( switch_case_num ) <= switch_actions_.size() ) ) );
@@ -89,6 +94,11 @@ element_id_t ActionConnector::get_switch_action( int switch_case_num ) const
         return default_switch_action_;
 
     return switch_actions_.at( switch_case_num - 1 );
+}
+
+const std::vector<element_id_t> & ActionConnector::get_switch_actions() const
+{
+    return switch_actions_;
 }
 
 const Action* ActionConnector::get_action() const

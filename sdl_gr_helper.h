@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10422 $ $Date:: 2019-01-08 #$ $Author: serge $
+// $Revision: 10428 $ $Date:: 2019-01-09 #$ $Author: serge $
 
 #ifndef LIB_FSM__SDL_GR_HELPER_H
 #define LIB_FSM__SDL_GR_HELPER_H
@@ -40,6 +40,9 @@ class Process;
 class SdlGrHelper
 {
 public:
+
+    SdlGrHelper( const Process * l );
+
     static std::ostream & write_element_name( std::ostream & os, const std::string & prefix, element_id_t id );
     static std::ostream & write_action_connector_name( std::ostream & os, element_id_t id );
     static std::ostream & write_signal_handler_name( std::ostream & os, element_id_t id );
@@ -48,24 +51,24 @@ public:
     static std::ostream & write_name( std::ostream & os, const State & l );
     static std::ostream & write( std::ostream & os, const State & l );
 
-    static std::ostream & write( std::ostream & os, const Action & l, const ActionConnector & ac );
+    std::ostream & write( std::ostream & os, const Action & l, const ActionConnector & ac );
 
-    static std::ostream & write_SendSignal( std::ostream & os, const Action & l, const ActionConnector & ac );
-    static std::ostream & write_SetTimer( std::ostream & os, const Action & l, const ActionConnector & ac );
-    static std::ostream & write_ResetTimer( std::ostream & os, const Action & l, const ActionConnector & ac );
-    static std::ostream & write_FunctionCall( std::ostream & os, const Action & l, const ActionConnector & ac );
-    static std::ostream & write_Task( std::ostream & os, const Action & l, const ActionConnector & ac );
-    static std::ostream & write_Condition( std::ostream & os, const Action & l, const ActionConnector & ac );
-    static std::ostream & write_SwitchCondition( std::ostream & os, const Action & l, const ActionConnector & ac );
-    static std::ostream & write_NextState( std::ostream & os, const Action & l, const ActionConnector & ac );
-    static std::ostream & write_Exit( std::ostream & os, const Action & l, const ActionConnector & ac );
+    std::ostream & write_SendSignal( std::ostream & os, const Action & l, const ActionConnector & ac );
+    std::ostream & write_SetTimer( std::ostream & os, const Action & l, const ActionConnector & ac );
+    std::ostream & write_ResetTimer( std::ostream & os, const Action & l, const ActionConnector & ac );
+    std::ostream & write_FunctionCall( std::ostream & os, const Action & l, const ActionConnector & ac );
+    std::ostream & write_Task( std::ostream & os, const Action & l, const ActionConnector & ac );
+    std::ostream & write_Condition( std::ostream & os, const Action & l, const ActionConnector & ac );
+    std::ostream & write_SwitchCondition( std::ostream & os, const Action & l, const ActionConnector & ac );
+    std::ostream & write_NextState( std::ostream & os, const Action & l, const ActionConnector & ac );
+    std::ostream & write_Exit( std::ostream & os, const Action & l, const ActionConnector & ac );
 
     static std::ostream & write_name( std::ostream & os, const ActionConnector & l );
-    static std::ostream & write( std::ostream & os, const ActionConnector & l );
+    std::ostream & write( std::ostream & os, const ActionConnector & l );
 
     static std::ostream & write( std::ostream & os, const SignalHandler & l );
 
-    static std::ostream & write( std::ostream & os, const Process & l );
+    std::ostream & write( std::ostream & os );
 
     template<class T>
     static std::string to_string( const T & l )
@@ -79,7 +82,21 @@ public:
 
 private:
 
-    static std::ostream & write_edge( std::ostream & os, element_id_t action_connector_id_1, element_id_t action_connector_id_2, const std::string & comment = std::string() );
+    typedef std::map<element_id_t,element_id_t> MapIdToId;
+
+private:
+
+    std::ostream & write_edge( std::ostream & os, element_id_t action_connector_id_1, element_id_t action_connector_id_2, const std::string & comment = std::string() );
+
+    void generate_map_of_next_state_actions();
+
+    bool is_action_next_state( element_id_t action_connector_id, element_id_t * state_id ) const;
+
+private:
+
+    const Process   * process_;
+
+    MapIdToId       map_next_state_action_to_state_id_;
 };
 
 } // namespace fsm

@@ -307,7 +307,7 @@ int main( int argc, char **argv )
         out << "# execute: FL=" << name << "; dot -l sdl.ps -Tps $FL.gv -o $FL.ps; ps2pdf $FL.ps $FL.pdf\n";
         out << "\n";
 
-        fsm::SdlGrHelper::write( out, * fsm_man.find_process( process_id ) );
+        fsm::SdlGrHelper( fsm_man.find_process( process_id ) ).write( out );
 
         out.close();
 
