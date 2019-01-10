@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10434 $ $Date:: 2019-01-09 #$ $Author: serge $
+// $Revision: 10438 $ $Date:: 2019-01-09 #$ $Author: serge $
 
 #include "sdl_gr_helper.h"             // self
 
@@ -162,7 +162,7 @@ std::ostream & SdlGrHelper::write_SetTimer( std::ostream & os, const Action & aa
 
     write_name( os, ac );
 
-    os << " [ label=\"" << a.timer_id << "\" shape=sdl_set ]" << "\n";
+    os << " [ label=\"" << process_->names_.get_name( a.timer_id ) << "\" shape=sdl_set ]" << "\n";
 
     write_edge( os, ac.get_id(), ac.get_next_id() );
 
@@ -175,7 +175,7 @@ std::ostream & SdlGrHelper::write_ResetTimer( std::ostream & os, const Action & 
 
     write_name( os, ac );
 
-    os << " [ label=\"" << a.timer_id << "\" shape=sdl_reset ]" << "\n";
+    os << " [ label=\"" << process_->names_.get_name( a.timer_id ) << "\" shape=sdl_reset ]" << "\n";
 
     write_edge( os, ac.get_id(), ac.get_next_id() );
 
@@ -201,7 +201,7 @@ std::ostream & SdlGrHelper::write_Task( std::ostream & os, const Action & aa, co
 
     write_name( os, ac );
 
-    os << " [ label=\"" << a.variable_id << "\" shape=sdl_task ]" << "\n";
+    os << " [ label=\"" << process_->names_.get_name( a.variable_id ) << " := \" shape=sdl_task ]" << "\n";
 
     write_edge( os, ac.get_id(), ac.get_next_id() );
 

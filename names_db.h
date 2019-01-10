@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10198 $ $Date:: 2018-12-15 #$ $Author: serge $
+// $Revision: 10435 $ $Date:: 2019-01-09 #$ $Author: serge $
 
 #ifndef LIB_FSM__NAMES_DB_H
 #define LIB_FSM__NAMES_DB_H
@@ -39,7 +39,7 @@ public:
     ~NamesDb();
 
     void add_name( element_id_t id, const std::string & name );
-    const std::string & get_name( element_id_t id );
+    const std::string & get_name( element_id_t id ) const;
     element_id_t find_element( const std::string & name ) const;
     bool delete_name( element_id_t id );
 
