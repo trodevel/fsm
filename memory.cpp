@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10376 $ $Date:: 2018-12-31 #$ $Author: serge $
+// $Revision: 10456 $ $Date:: 2019-01-10 #$ $Author: serge $
 
 #include "memory.h"            // self
 
@@ -171,11 +171,46 @@ Variable* Memory::find_variable( element_id_t id )
     return nullptr;
 }
 
+const Variable* Memory::find_variable( element_id_t id ) const
+{
+    {
+        auto it = map_id_to_variable_.find( id );
+
+        if( it != map_id_to_variable_.end() )
+        {
+            return it->second;
+        }
+    }
+
+    {
+        auto it = map_id_to_temp_variable_.find( id );
+
+        if( it != map_id_to_temp_variable_.end() )
+        {
+            return it->second;
+        }
+    }
+
+    return nullptr;
+}
+
 Variable* Memory::find_variable( const std::string & name )
 {
     auto id = names_->find_element( name );
 
     return find_variable( id );
+}
+
+const Constant* Memory::find_constant( element_id_t id ) const
+{
+    auto it = map_id_to_constant_.find( id );
+
+    if( it != map_id_to_constant_.end() )
+    {
+        return it->second;
+    }
+
+    return nullptr;
 }
 
 void Memory::evaluate_expressions( std::vector<Value> * values, const std::vector<ExpressionPtr> & arguments )

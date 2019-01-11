@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10440 $ $Date:: 2019-01-09 #$ $Author: serge $
+// $Revision: 10463 $ $Date:: 2019-01-10 #$ $Author: serge $
 
 #ifndef LIB_FSM__STR_HELPER_EXPR_H
 #define LIB_FSM__STR_HELPER_EXPR_H
@@ -32,26 +32,26 @@ class StrHelperExpr
 {
 public:
     StrHelperExpr(
-            Memory                  * memory );
+            const Memory            & memory );
 
     std::string to_string( ExpressionPtr expr ) const;
     std::string to_string( const Expression & expr ) const;
+
+    std::string to_string( const std::vector<ExpressionPtr> expr ) const;
 
 private:
     StrHelperExpr( const StrHelperExpr & )              = delete;
     StrHelperExpr & operator=( const StrHelperExpr & )  = delete;
 
-    void convert_variable_to_value( element_id_t variable_id );
-
-    std::string to_string_ExpressionValue( const Expression & expr );
-    std::string to_string_ExpressionVariable( const Expression & expr );
-    std::string to_string_ExpressionVariableName( const Expression & expr );
-    std::string to_string_UnaryExpression( const Expression & expr );
-    std::string to_string_BinaryExpression( const Expression & expr );
+    std::string to_string_ExpressionValue( const Expression & expr ) const;
+    std::string to_string_ExpressionVariable( const Expression & expr ) const;
+    std::string to_string_ExpressionVariableName( const Expression & expr ) const;
+    std::string to_string_UnaryExpression( const Expression & expr ) const;
+    std::string to_string_BinaryExpression( const Expression & expr ) const;
 
 private:
 
-    Memory                     * memory_;
+    const Memory                    & memory_;
 };
 
 } // namespace fsm

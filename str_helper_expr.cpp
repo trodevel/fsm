@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10444 $ $Date:: 2019-01-09 #$ $Author: serge $
+// $Revision: 10465 $ $Date:: 2019-01-10 #$ $Author: serge $
 
 #include "str_helper_expr.h"    // self
 
@@ -27,6 +27,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include <typeindex>            // std::type_index
 #include <typeinfo>
 #include <unordered_map>
+#include <sstream>              // std::ostringstream
 
 #include "value_operations.h"       // compare_values
 #include "syntax_error.h"           // SyntaxError
@@ -35,7 +36,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 namespace fsm {
 
 StrHelperExpr::StrHelperExpr(
-        Memory                  * memory ):
+        const Memory                & memory ):
         memory_( memory )
 {
 }
@@ -45,11 +46,35 @@ std::string StrHelperExpr::to_string( ExpressionPtr expr ) const
     return to_string( * expr.get() );
 }
 
+std::string StrHelperExpr::to_string( const std::vector<ExpressionPtr> expr ) const
+{
+    std::ostringstream os;
+
+    bool b = false;
+
+    for( auto & e : expr )
+    {
+        if( b )
+        {
+            os << ", ";
+
+        }
+        else
+        {
+            b = true;
+        }
+
+        os << to_string( e );
+    }
+
+    return os.str();
+}
+
 std::string StrHelperExpr::to_string( const Expression & expr ) const
 {
     typedef StrHelperExpr Type;
 
-    typedef void (Type::*PPMF)( Value *, const Expression & );
+    typedef std::string (Type::*PPMF)( const Expression & ) const;
 
 #define MAP_ENTRY(_v)       { typeid( _v ),        & Type::to_string_##_v }
 
@@ -76,56 +101,58 @@ std::string StrHelperExpr::to_string( const Expression & expr ) const
     return (this->*it->second)( expr );
 }
 
-std::string StrHelperExpr::to_string_ExpressionValue( const Expression & eexpr )
+std::string StrHelperExpr::to_string_ExpressionValue( const Expression & eexpr ) const
 {
     auto & a = dynamic_cast< const ExpressionValue&>( eexpr );
 
-    return StrHelper::to_string( a.value );
+    auto res = StrHelper::to_string_short( a.value );
+
+    if( res.size() > 8 )
+        return res.substr( 0, 8 ) + "...";
+
+    return res;
 }
 
-std::string StrHelperExpr::to_string_ExpressionVariable( const Expression & eexpr )
+std::string StrHelperExpr::to_string_ExpressionVariable( const Expression & eexpr ) const
 {
     auto & a = dynamic_cast< const ExpressionVariable &>( eexpr );
 
-    auto variable = memory_->find_variable( a.variable_id );
+    auto variable = memory_.find_variable( a.variable_id );
 
-    if( variable == nullptr )
+    if( variable != nullptr )
     {
-        return "?";
+        return variable->get_name();
     }
 
-    return variable->get_name();
+    auto constant = memory_.find_constant( a.variable_id );
+
+    if( constant != nullptr )
+    {
+        return constant->get_name();
+    }
+
+    return "?";
 }
 
-std::string StrHelperExpr::to_string_ExpressionVariableName( const Expression & eexpr )
+std::string StrHelperExpr::to_string_ExpressionVariableName( const Expression & eexpr ) const
 {
     auto & a = dynamic_cast< const ExpressionVariableName &>( eexpr );
 
     return a.variable_name;
 }
 
-std::string StrHelperExpr::to_string_UnaryExpression( const Expression & eexpr )
+std::string StrHelperExpr::to_string_UnaryExpression( const Expression & eexpr ) const
 {
     auto & a = dynamic_cast< const UnaryExpression &>( eexpr );
 
-    Value temp;
-
-    evaluate_expression( & temp, a.op );
-
-    unary_operation( value, a.type, temp );
+    return StrHelper::to_string_short( a.type ) + " ( " + to_string( a.op ) + " )";
 }
 
-std::string StrHelperExpr::to_string_BinaryExpression( const Expression & eexpr )
+std::string StrHelperExpr::to_string_BinaryExpression( const Expression & eexpr ) const
 {
     auto & a = dynamic_cast< const BinaryExpression &>( eexpr );
 
-    Value lhs;
-    Value rhs;
-
-    evaluate_expression( & lhs, a.lhs );
-    evaluate_expression( & rhs, a.rhs );
-
-    binary_operation( value, a.type, lhs, rhs );
+    return "( " + to_string( a.lhs ) + StrHelper::to_string_short( a.type ) + to_string( a.rhs ) + " )";
 }
 
 } // namespace fsm

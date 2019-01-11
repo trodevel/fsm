@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10363 $ $Date:: 2018-12-31 #$ $Author: serge $
+// $Revision: 10460 $ $Date:: 2019-01-10 #$ $Author: serge $
 
 #include "str_helper.h"             // self
 
@@ -123,10 +123,56 @@ const std::string & StrHelper::to_string_short( const comparison_type_e s )
     return it->second;
 }
 
+const std::string & StrHelper::to_string_short( const unary_operation_type_e s )
+{
+    typedef unary_operation_type_e Type;
+    static const std::map< Type, std::string > m =
+    {
+        { Type:: UNDEF, "?"     },
+        { Type:: NEG,   "!"     },
+    };
+
+    auto it = m.find( s );
+
+    static const std::string undef( "undef" );
+
+    if( it == m.end() )
+        return undef;
+
+    return it->second;
+}
+
+const std::string & StrHelper::to_string_short( const binary_operation_type_e s )
+{
+    typedef binary_operation_type_e Type;
+    static const std::map< Type, std::string > m =
+    {
+        { Type:: UNDEF, "?"     },
+        { Type:: PLUS , "+"     },
+        { Type:: MINUS, "-"     },
+        { Type:: MUL,   "*"     },
+        { Type:: DIV,   "/"     },
+    };
+
+    auto it = m.find( s );
+
+    static const std::string undef( "undef" );
+
+    if( it == m.end() )
+        return undef;
+
+    return it->second;
+}
+
 std::ostream & StrHelper::write( std::ostream & os, const Value & l )
 {
     os << to_string_short( l.type ) << " ";
 
+    return write_short( os, l );
+}
+
+std::ostream & StrHelper::write_short( std::ostream & os, const Value & l )
+{
     switch( l.type )
     {
     case data_type_e::UNDEF:

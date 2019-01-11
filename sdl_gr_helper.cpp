@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10438 $ $Date:: 2019-01-09 #$ $Author: serge $
+// $Revision: 10464 $ $Date:: 2019-01-10 #$ $Author: serge $
 
 #include "sdl_gr_helper.h"             // self
 
@@ -33,6 +33,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include "process.h"                // Process
 
 #include "str_helper.h"             // StrHelper
+#include "str_helper_expr.h"        // StrHelperExpr
 
 namespace fsm {
 
@@ -149,7 +150,9 @@ std::ostream & SdlGrHelper::write_SendSignal( std::ostream & os, const Action & 
 
     write_name( os, ac );
 
-    os << " [ label=\"" << a.name << "\" shape=sdl_output_to_left fillcolor=orange ]" << "\n";
+    os << " [ label=\"" << a.name << "( "
+            << StrHelperExpr( process_->mem_ ).to_string( a.arguments ) << " )"
+            << "\" shape=sdl_output_to_left fillcolor=orange ]" << "\n";
 
     write_edge( os, ac.get_id(), ac.get_next_id() );
 
@@ -162,7 +165,9 @@ std::ostream & SdlGrHelper::write_SetTimer( std::ostream & os, const Action & aa
 
     write_name( os, ac );
 
-    os << " [ label=\"" << process_->names_.get_name( a.timer_id ) << "\" shape=sdl_set ]" << "\n";
+    os << " [ label=\"" << process_->names_.get_name( a.timer_id ) << "( "
+            << StrHelperExpr( process_->mem_ ).to_string( a.delay ) << " )"
+            << "\" shape=sdl_set ]" << "\n";
 
     write_edge( os, ac.get_id(), ac.get_next_id() );
 
@@ -201,7 +206,8 @@ std::ostream & SdlGrHelper::write_Task( std::ostream & os, const Action & aa, co
 
     write_name( os, ac );
 
-    os << " [ label=\"" << process_->names_.get_name( a.variable_id ) << " := \" shape=sdl_task ]" << "\n";
+    os << " [ label=\"" << process_->names_.get_name( a.variable_id ) << " := "
+            << StrHelperExpr( process_->mem_ ).to_string( a.expr ) << "\" shape=sdl_task ]" << "\n";
 
     write_edge( os, ac.get_id(), ac.get_next_id() );
 
@@ -214,7 +220,10 @@ std::ostream & SdlGrHelper::write_Condition( std::ostream & os, const Action & a
 
     write_name( os, ac );
 
-    os << " [ label=\"" << StrHelper::to_string_short( a.type ) << "\" shape=diamond peripheries=1 ]" << "\n";
+    os << " [ label=\"" << StrHelperExpr( process_->mem_ ).to_string( a.lhs ) << " "
+            << StrHelper::to_string_short( a.type ) << " "
+            << StrHelperExpr( process_->mem_ ).to_string( a.rhs )
+            << "\" shape=diamond peripheries=1 ]" << "\n";
 
     write_edge( os, ac.get_id(), ac.get_next_id(), "Y" );
     os << "\n";

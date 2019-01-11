@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10288 $ $Date:: 2018-12-20 #$ $Author: serge $
+// $Revision: 10456 $ $Date:: 2019-01-10 #$ $Author: serge $
 
 #ifndef LIB_FSM__MEMORY_H
 #define LIB_FSM__MEMORY_H
@@ -55,7 +55,10 @@ public:
     element_id_t create_temp_variable( const Value & v, unsigned n );
 
     Variable* find_variable( element_id_t id );
+    const Variable* find_variable( element_id_t id ) const;
     Variable* find_variable( const std::string & name );
+
+    const Constant* find_constant( element_id_t id ) const;
 
     void evaluate_expressions( std::vector<Value> * values, const std::vector<ExpressionPtr> & arguments );
     void evaluate_expressions( std::vector<Value> * values, const std::vector<std::pair<bool,ExpressionPtr>> & arguments );
