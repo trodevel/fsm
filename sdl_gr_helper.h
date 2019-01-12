@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10428 $ $Date:: 2019-01-09 #$ $Author: serge $
+// $Revision: 10471 $ $Date:: 2019-01-11 #$ $Author: serge $
 
 #ifndef LIB_FSM__SDL_GR_HELPER_H
 #define LIB_FSM__SDL_GR_HELPER_H
@@ -30,6 +30,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #include "value.h"              // Value
 #include "state.h"              // State
+#include "constant.h"           // Constant
 #include "action_connector.h"   // ActionConnector
 #include "signal_handler.h"     // SignalHandler
 
@@ -50,6 +51,8 @@ public:
     static std::ostream & write_signal_handler_def( std::ostream & os, element_id_t id, const std::string & signal_name );
     static std::ostream & write_name( std::ostream & os, const State & l );
     static std::ostream & write( std::ostream & os, const State & l );
+
+    static std::ostream & write( std::ostream & os, const Constant & l );
 
     std::ostream & write( std::ostream & os, const Action & l, const ActionConnector & ac );
 
@@ -85,6 +88,11 @@ private:
     typedef std::map<element_id_t,element_id_t> MapIdToId;
 
 private:
+
+    void write_states( std::ostream & os );
+    void write_action_connectors( std::ostream & os );
+    void write_signal_handlers( std::ostream & os );
+    void write_variables( std::ostream & os );
 
     std::ostream & write_edge( std::ostream & os, element_id_t action_connector_id_1, element_id_t action_connector_id_2, const std::string & comment = std::string() );
 

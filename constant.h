@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10369 $ $Date:: 2018-12-31 #$ $Author: serge $
+// $Revision: 10469 $ $Date:: 2019-01-11 #$ $Author: serge $
 
 #ifndef LIB_FSM__CONSTANT_H
 #define LIB_FSM__CONSTANT_H
@@ -33,6 +33,7 @@ class Constant: public NamedElement
 public:
     Constant( uint32_t log_id, element_id_t id, const std::string & name, data_type_e type, const Value & value );
 
+    data_type_e get_type() const;
     const Value & get() const;
 
 private:

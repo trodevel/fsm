@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10463 $ $Date:: 2019-01-10 #$ $Author: serge $
+// $Revision: 10466 $ $Date:: 2019-01-11 #$ $Author: serge $
 
 #ifndef LIB_FSM__STR_HELPER_EXPR_H
 #define LIB_FSM__STR_HELPER_EXPR_H
@@ -38,6 +38,7 @@ public:
     std::string to_string( const Expression & expr ) const;
 
     std::string to_string( const std::vector<ExpressionPtr> expr ) const;
+    std::string to_string( const std::vector<std::pair<bool,ExpressionPtr>> expr ) const;
 
 private:
     StrHelperExpr( const StrHelperExpr & )              = delete;

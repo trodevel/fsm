@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10465 $ $Date:: 2019-01-10 #$ $Author: serge $
+// $Revision: 10466 $ $Date:: 2019-01-11 #$ $Author: serge $
 
 #include "str_helper_expr.h"    // self
 
@@ -57,7 +57,6 @@ std::string StrHelperExpr::to_string( const std::vector<ExpressionPtr> expr ) co
         if( b )
         {
             os << ", ";
-
         }
         else
         {
@@ -65,6 +64,34 @@ std::string StrHelperExpr::to_string( const std::vector<ExpressionPtr> expr ) co
         }
 
         os << to_string( e );
+    }
+
+    return os.str();
+}
+
+std::string StrHelperExpr::to_string( const std::vector<std::pair<bool,ExpressionPtr>> expr ) const
+{
+    std::ostringstream os;
+
+    bool b = false;
+
+    for( auto & e : expr )
+    {
+        if( b )
+        {
+            os << ", ";
+        }
+        else
+        {
+            b = true;
+        }
+
+        if( e.first )
+        {
+            os << "& ";
+        }
+
+        os << to_string( e.second );
     }
 
     return os.str();

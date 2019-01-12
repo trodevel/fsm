@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10464 $ $Date:: 2019-01-10 #$ $Author: serge $
+// $Revision: 10471 $ $Date:: 2019-01-11 #$ $Author: serge $
 
 #include "sdl_gr_helper.h"             // self
 
@@ -101,6 +101,13 @@ std::ostream & SdlGrHelper::write( std::ostream & os, const State & l )
         write_signal_handler_name( os, e.second );
         os << "\n";
     }
+
+    return os;
+}
+
+std::ostream & SdlGrHelper::write( std::ostream & os, const Constant & l )
+{
+    os << "DCL " << l.get_name() << " " << StrHelper::to_string( l.get_type() ) << " := " << StrHelper::to_string_short( l.get() ) << ";" << "\n";
 
     return os;
 }
@@ -193,7 +200,9 @@ std::ostream & SdlGrHelper::write_FunctionCall( std::ostream & os, const Action 
 
     write_name( os, ac );
 
-    os << " [ label=\"" << a.name << "\" shape=sdl_call ]" << "\n";
+    os << " [ label=\"" << a.name << "( "
+       << StrHelperExpr( process_->mem_ ).to_string( a.arguments ) << " )"
+       << "\" shape=sdl_call ]" << "\n";
 
     write_edge( os, ac.get_id(), ac.get_next_id() );
 
@@ -312,27 +321,55 @@ std::ostream & SdlGrHelper::write( std::ostream & os )
     write_action_connector_name( os, process_->start_action_connector_ );
     os << "\n";
 
+    write_states( os );
+    write_action_connectors( os );
+    write_signal_handlers( os );
+    write_variables( os );
+
+    os << "}\n";
+
+    return os;
+}
+
+void SdlGrHelper::write_states( std::ostream & os )
+{
     for( auto & e : process_->map_id_to_state_ )
     {
         write( os, * e.second );
         os << "\n";
     }
+}
 
+void SdlGrHelper::write_action_connectors( std::ostream & os )
+{
     for( auto & e : process_->map_id_to_action_connector_ )
     {
         write( os, * e.second );
         os << "\n";
     }
+}
 
+void SdlGrHelper::write_signal_handlers( std::ostream & os )
+{
     for( auto & e : process_->map_id_to_signal_handler_ )
     {
         write( os, * e.second );
         os << "\n";
     }
+}
 
-    os << "}\n";
+void SdlGrHelper::write_variables( std::ostream & os )
+{
+    os << "VARIABLE_DECL";
+    os << " [ label=\"";
 
-    return os;
+
+    for( auto & e : process_->mem_.map_id_to_constant_ )
+    {
+        write( os, * e.second );
+    }
+
+    os << "\" shape=sdl_text ]" << "\n";
 }
 
 std::ostream & SdlGrHelper::write_edge( std::ostream & os, element_id_t action_connector_id_1, element_id_t action_connector_id_2, const std::string & comment )

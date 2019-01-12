@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10456 $ $Date:: 2019-01-10 #$ $Author: serge $
+// $Revision: 10470 $ $Date:: 2019-01-11 #$ $Author: serge $
 
 #ifndef LIB_FSM__MEMORY_H
 #define LIB_FSM__MEMORY_H
@@ -38,6 +38,8 @@ namespace fsm {
 
 class Memory
 {
+    friend class SdlGrHelper;
+
 public:
     Memory(
             uint32_t                id,

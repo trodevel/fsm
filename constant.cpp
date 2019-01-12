@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10369 $ $Date:: 2018-12-31 #$ $Author: serge $
+// $Revision: 10469 $ $Date:: 2019-01-11 #$ $Author: serge $
 
 #include "constant.h"           // self
 
@@ -39,6 +39,11 @@ Constant::Constant( uint32_t log_id, element_id_t id, const std::string & name, 
     value_.type = type;
 
     assign( & value_, value );
+}
+
+data_type_e Constant::get_type() const
+{
+    return type_;
 }
 
 const Value & Constant::get() const
