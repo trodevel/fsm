@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10483 $ $Date:: 2019-01-13 #$ $Author: serge $
+// $Revision: 10484 $ $Date:: 2019-01-13 #$ $Author: serge $
 
 #include "sdl_gr_helper.h"             // self
 
@@ -299,7 +299,7 @@ std::ostream & SdlGrHelper::write_Exit( std::ostream & os, const Action & aa, co
 {
     write_name( os, ac );
 
-    os << " [ label=\"\" shape=sdl_stop peripheries=1 ]" << "\n";
+    os << " [ label=\"\" shape=sdl_stop style=solid ]" << "\n";
 
     return os;
 }
