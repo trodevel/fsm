@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10470 $ $Date:: 2019-01-11 #$ $Author: serge $
+// $Revision: 10479 $ $Date:: 2019-01-13 #$ $Author: serge $
 
 #ifndef LIB_FSM__MEMORY_H
 #define LIB_FSM__MEMORY_H
@@ -79,6 +79,8 @@ private:
 private:
     Memory( const Memory & )              = delete;
     Memory & operator=( const Memory & )  = delete;
+
+    element_id_t create_add_variable_core( const std::string & name, data_type_e type, const Value & value, bool is_inited );
 
     void convert_variable_to_value( Value * value, element_id_t variable_id );
 

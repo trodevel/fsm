@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10471 $ $Date:: 2019-01-11 #$ $Author: serge $
+// $Revision: 10480 $ $Date:: 2019-01-13 #$ $Author: serge $
 
 #ifndef LIB_FSM__SDL_GR_HELPER_H
 #define LIB_FSM__SDL_GR_HELPER_H
@@ -31,6 +31,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include "value.h"              // Value
 #include "state.h"              // State
 #include "constant.h"           // Constant
+#include "variable.h"           // Variable
+#include "timer.h"              // Timer
 #include "action_connector.h"   // ActionConnector
 #include "signal_handler.h"     // SignalHandler
 
@@ -53,6 +55,8 @@ public:
     static std::ostream & write( std::ostream & os, const State & l );
 
     static std::ostream & write( std::ostream & os, const Constant & l );
+    static std::ostream & write( std::ostream & os, const Variable & l );
+    static std::ostream & write( std::ostream & os, const Timer & l );
 
     std::ostream & write( std::ostream & os, const Action & l, const ActionConnector & ac );
 
@@ -92,7 +96,10 @@ private:
     void write_states( std::ostream & os );
     void write_action_connectors( std::ostream & os );
     void write_signal_handlers( std::ostream & os );
+    void write_data_members( std::ostream & os );
+    void write_constants( std::ostream & os );
     void write_variables( std::ostream & os );
+    void write_timer( std::ostream & os );
 
     std::ostream & write_edge( std::ostream & os, element_id_t action_connector_id_1, element_id_t action_connector_id_2, const std::string & comment = std::string() );
 

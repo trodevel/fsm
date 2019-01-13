@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10368 $ $Date:: 2018-12-31 #$ $Author: serge $
+// $Revision: 10479 $ $Date:: 2019-01-13 #$ $Author: serge $
 
 #include "variable.h"           // self
 
@@ -32,7 +32,8 @@ namespace fsm {
 Variable::Variable( uint32_t log_id, element_id_t id, const std::string & name, data_type_e type ):
         NamedElement( id, name ),
         log_id_( log_id ),
-        type_( type )
+        type_( type ),
+        is_inited_( false )
 {
     assert( id );
 
@@ -42,13 +43,24 @@ Variable::Variable( uint32_t log_id, element_id_t id, const std::string & name, 
 Variable::Variable( uint32_t log_id, element_id_t id, const std::string & name, data_type_e type, const Value & value ):
         NamedElement( id, name ),
         log_id_( log_id ),
-        type_( type )
+        type_( type ),
+        is_inited_( true )
 {
     assert( id );
 
     value_.type = type;
 
     fsm::assign( & value_, value );
+}
+
+data_type_e Variable::get_type() const
+{
+    return type_;
+}
+
+bool Variable::is_inited() const
+{
+    return is_inited_;
 }
 
 const Value & Variable::get() const

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10456 $ $Date:: 2019-01-10 #$ $Author: serge $
+// $Revision: 10479 $ $Date:: 2019-01-13 #$ $Author: serge $
 
 #include "memory.h"            // self
 
@@ -57,16 +57,19 @@ element_id_t Memory::create_add_variable( const std::string & name, data_type_e 
 {
     Value dummy;
 
-    dummy.type  = type;
-
-    return create_add_variable( name, type, dummy );
+    return create_add_variable_core( name, type, dummy, false );
 }
 
 element_id_t Memory::create_add_variable( const std::string & name, data_type_e type, const Value & value )
 {
+    return create_add_variable_core( name, type, value, true );
+}
+
+element_id_t Memory::create_add_variable_core( const std::string & name, data_type_e type, const Value & value, bool is_inited )
+{
     auto id = get_next_id();
 
-    auto obj = new Variable( log_id_, id, name, type, value );
+    auto obj = is_inited ? new Variable( log_id_, id, name, type, value ) : new Variable( log_id_, id, name, type );
 
     auto b = map_id_to_variable_.insert( std::make_pair( id, obj ) ).second;
 

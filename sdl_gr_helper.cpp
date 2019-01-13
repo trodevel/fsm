@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10471 $ $Date:: 2019-01-11 #$ $Author: serge $
+// $Revision: 10480 $ $Date:: 2019-01-13 #$ $Author: serge $
 
 #include "sdl_gr_helper.h"             // self
 
@@ -107,7 +107,24 @@ std::ostream & SdlGrHelper::write( std::ostream & os, const State & l )
 
 std::ostream & SdlGrHelper::write( std::ostream & os, const Constant & l )
 {
-    os << "DCL " << l.get_name() << " " << StrHelper::to_string( l.get_type() ) << " := " << StrHelper::to_string_short( l.get() ) << ";" << "\n";
+    os << l.get_name() << " " << StrHelper::to_string( l.get_type() ) << " := " << StrHelper::to_string_short( l.get() );
+
+    return os;
+}
+
+std::ostream & SdlGrHelper::write( std::ostream & os, const Variable & l )
+{
+    os << l.get_name() << " " << StrHelper::to_string( l.get_type() );
+
+    if( l.is_inited() )
+        os << " := " << StrHelper::to_string_short( l.get() );
+
+    return os;
+}
+
+std::ostream & SdlGrHelper::write( std::ostream & os, const Timer & l )
+{
+    os << l.get_name();
 
     return os;
 }
@@ -324,7 +341,7 @@ std::ostream & SdlGrHelper::write( std::ostream & os )
     write_states( os );
     write_action_connectors( os );
     write_signal_handlers( os );
-    write_variables( os );
+    write_data_members( os );
 
     os << "}\n";
 
@@ -358,18 +375,109 @@ void SdlGrHelper::write_signal_handlers( std::ostream & os )
     }
 }
 
-void SdlGrHelper::write_variables( std::ostream & os )
+void SdlGrHelper::write_data_members( std::ostream & os )
 {
     os << "VARIABLE_DECL";
     os << " [ label=\"";
 
+    write_constants( os );
+    write_variables( os );
+    write_timer( os );
+
+    os << "\" shape=sdl_text]" << "\n";
+}
+
+void SdlGrHelper::write_constants( std::ostream & os )
+{
+    if( process_->mem_.map_id_to_constant_.empty() )
+        return;
+
+    os << "DCL";
+
+    if( process_->mem_.map_id_to_constant_.size() == 1 )
+        os << " ";
+    else
+        os << "\\l";
+
+    bool b = true;
 
     for( auto & e : process_->mem_.map_id_to_constant_ )
     {
+        if( !b )
+        {
+            os << ",\\l";
+        }
+        else
+        {
+            b   = false;
+        }
+
         write( os, * e.second );
     }
 
-    os << "\" shape=sdl_text ]" << "\n";
+    os << ";\\l";
+}
+
+void SdlGrHelper::write_variables( std::ostream & os )
+{
+    if( process_->mem_.map_id_to_variable_.empty() )
+        return;
+
+    os << "DCL";
+
+    if( process_->mem_.map_id_to_variable_.size() == 1 )
+        os << " ";
+    else
+        os << "\\l";
+
+    bool b = true;
+
+    for( auto & e : process_->mem_.map_id_to_variable_ )
+    {
+        if( !b )
+        {
+            os << ",\\l";
+        }
+        else
+        {
+            b   = false;
+        }
+
+        write( os, * e.second );
+    }
+
+    os << ";\\l";
+}
+
+void SdlGrHelper::write_timer( std::ostream & os )
+{
+    if( process_->map_id_to_timer_.empty() )
+        return;
+
+    os << "TIMER";
+
+    if( process_->map_id_to_timer_.size() == 1 )
+        os << " ";
+    else
+        os << "\\l";
+
+    bool b = true;
+
+    for( auto & e : process_->map_id_to_timer_ )
+    {
+        if( !b )
+        {
+            os << ",\\l";
+        }
+        else
+        {
+            b   = false;
+        }
+
+        write( os, * e.second );
+    }
+
+    os << ";\\l";
 }
 
 std::ostream & SdlGrHelper::write_edge( std::ostream & os, element_id_t action_connector_id_1, element_id_t action_connector_id_2, const std::string & comment )

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10368 $ $Date:: 2018-12-31 #$ $Author: serge $
+// $Revision: 10479 $ $Date:: 2019-01-13 #$ $Author: serge $
 
 #ifndef LIB_FSM__VARIABLE_H
 #define LIB_FSM__VARIABLE_H
@@ -34,6 +34,8 @@ public:
     Variable( uint32_t log_id, element_id_t id, const std::string & name, data_type_e type );
     Variable( uint32_t log_id, element_id_t id, const std::string & name, data_type_e type, const Value & value );
 
+    data_type_e get_type() const;
+    bool is_inited() const;
     const Value & get() const;
     void set( const Value & v );
     void assign( const Value & v );
@@ -46,6 +48,7 @@ protected:
 
     uint32_t                                log_id_;
     data_type_e                             type_;
+    bool                                    is_inited_;
     Value                                   value_;
 };
 
