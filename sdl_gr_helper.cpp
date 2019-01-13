@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10480 $ $Date:: 2019-01-13 #$ $Author: serge $
+// $Revision: 10483 $ $Date:: 2019-01-13 #$ $Author: serge $
 
 #include "sdl_gr_helper.h"             // self
 
@@ -264,17 +264,25 @@ std::ostream & SdlGrHelper::write_SwitchCondition( std::ostream & os, const Acti
 
     write_name( os, ac );
 
-    os << " [ label=\"" << "cond" << "\" shape=diamond peripheries=1 ]" << "\n";
+    os << " [ label=\"" << StrHelperExpr( process_->mem_ ).to_string( a.var ) << "\" shape=diamond peripheries=1 ]" << "\n";
 
     write_edge( os, ac.get_id(), ac.get_default_switch_action(), "default" );
     os << "\n";
 
     auto & actions = ac.get_switch_actions();
 
+    assert( actions.size() == a.values.size() );
+
+    unsigned i = 0;
+
     for( auto e : actions )
     {
-        write_edge( os, ac.get_id(), e );
+        auto val = StrHelperExpr( process_->mem_ ).to_string( a.values.at( i ) );
+
+        write_edge( os, ac.get_id(), e, "= " + val );
         os << "\n";
+
+        ++i;
     }
 
     return os;
@@ -423,7 +431,7 @@ void SdlGrHelper::write_variables( std::ostream & os )
     if( process_->mem_.map_id_to_variable_.empty() )
         return;
 
-    os << "DCL";
+    os << "\\nDCL";
 
     if( process_->mem_.map_id_to_variable_.size() == 1 )
         os << " ";
@@ -454,7 +462,7 @@ void SdlGrHelper::write_timer( std::ostream & os )
     if( process_->map_id_to_timer_.empty() )
         return;
 
-    os << "TIMER";
+    os << "\\nTIMER";
 
     if( process_->map_id_to_timer_.size() == 1 )
         os << " ";
