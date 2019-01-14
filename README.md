@@ -1,6 +1,6 @@
 # FSM - interpreter of SDL (Specification and Description Language) processes
 
-Create an executable finite state machine using the [SDL language] (https://en.wikipedia.org/wiki/Specification_and_Description_Language) and integrate it
+Create an executable finite state machine using the [SDL language](https://en.wikipedia.org/wiki/Specification_and_Description_Language) and integrate it
 into your code.
 
 
@@ -40,7 +40,7 @@ For generation of SDL/GR diagrams the following software is required:
 
 - graphviz
 - ps2pdf
-- [sdl.ps] (https://github.com/trodevel/Ruby-Graphviz/blob/master/examples/sdlshapes/sdl.ps)
+- [sdl.ps](https://github.com/trodevel/Ruby-Graphviz/blob/master/examples/sdlshapes/sdl.ps)
 
 ## Contact info
 
