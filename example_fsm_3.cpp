@@ -127,6 +127,24 @@ void init_fsm_3( fsm::Process * fsm )
 
     // WAITING_ACTION
 
+    auto WAITING_ACTION__Cancel         = fsm->create_add_signal_handler( WAITING_ACTION, "Cancel" );
+    auto WAITING_ACTION__Cancel__ac1    = fsm->create_set_first_action_connector( WAITING_ACTION__Cancel,
+            new fsm::SendSignal( "ScenExit",
+            {
+                    fsm::ExpressionPtr( new fsm::ExpressionVariable( E_CANCELLED ) ),
+                    fsm::ExpressionPtr( new fsm::ExpressionValue( fsm::Value( "cancelled during waiting" ) ) )
+            } ));
+    auto WAITING_ACTION__Cancel__ac2    = fsm->create_set_next_action_connector( WAITING_ACTION__Cancel__ac1, new fsm::Exit() );
+
+    auto WAITING_ACTION__ConnectionLost         = fsm->create_add_signal_handler( WAITING_ACTION, "ConnectionLost" );
+    auto WAITING_ACTION__ConnectionLost__ac1    = fsm->create_set_first_action_connector( WAITING_ACTION__ConnectionLost,
+            new fsm::SendSignal( "ScenExit",
+            {
+                    fsm::ExpressionPtr( new fsm::ExpressionVariable( E_ABORTED ) ),
+                    fsm::ExpressionPtr( new fsm::ExpressionValue( fsm::Value( "connection lost during waiting" ) ) )
+            } ));
+    fsm->set_next_action_connector( WAITING_ACTION__ConnectionLost__ac1, WAITING_ACTION__Cancel__ac2 );
+
     auto WAITING_ACTION__TONE           = fsm->create_add_signal_handler( WAITING_ACTION, "TONE" );
     auto WAITING_ACTION__TONE__ac1      = fsm->create_set_first_action_connector( WAITING_ACTION__TONE,
             new fsm::Task(
@@ -167,7 +185,7 @@ void init_fsm_3( fsm::Process * fsm )
                     fsm::ExpressionPtr( new fsm::ExpressionVariable( E_DONE ) ),
                     fsm::ExpressionPtr( new fsm::ExpressionValue( fsm::Value( "timeout" ) ) )
             } ));
-    fsm->create_set_next_action_connector( WAITING_ACTION__T__ac1, new fsm::Exit() );
+    fsm->set_next_action_connector( WAITING_ACTION__T__ac1, WAITING_ACTION__Cancel__ac2 );
 
     // PLAYING_MESSAGE_ACTION
 
@@ -188,4 +206,11 @@ void init_fsm_3( fsm::Process * fsm )
     // despite failed play we still proceed like it was a PlayFinished
     auto PLAYING_MESSAGE_ACTION__PlayFailed             = fsm->create_add_signal_handler( PLAYING_MESSAGE_ACTION, "PlayFailed" );
     fsm->set_first_action_connector( PLAYING_MESSAGE_ACTION__PlayFailed, PLAYING_MESSAGE_ACTION__PlayFinished__ac1 );
+
+    auto PLAYING_MESSAGE_ACTION__Cancel         = fsm->create_add_signal_handler( PLAYING_MESSAGE_ACTION, "Cancel" );
+    fsm->set_first_action_connector( PLAYING_MESSAGE_ACTION__Cancel, PLAYING_MESSAGE_ACTION__PlayFinished__ac1 );
+
+    auto PLAYING_MESSAGE_ACTION__ConnectionLost         = fsm->create_add_signal_handler( PLAYING_MESSAGE_ACTION, "ConnectionLost" );
+    fsm->set_first_action_connector( PLAYING_MESSAGE_ACTION__ConnectionLost, PLAYING_MESSAGE_ACTION__PlayFinished__ac1 );
+
 }

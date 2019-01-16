@@ -10,8 +10,6 @@ void init_fsm_2( fsm::Process * fsm )
     auto E_FAILED           = fsm->create_add_constant( "FAILED",   fsm::data_type_e::INT, fsm::Value( 2 ) );
     auto E_ABORTED          = fsm->create_add_constant( "ABORTED",  fsm::data_type_e::INT, fsm::Value( 3 ) );
 
-    auto A_NONE             = fsm->create_add_constant( "NONE",     fsm::data_type_e::INT, fsm::Value( 0 ) );
-    auto A_REPEAT           = fsm->create_add_constant( "REPEAT",   fsm::data_type_e::INT, fsm::Value( 1 ) );
     auto A_DROP             = fsm->create_add_constant( "DROP",     fsm::data_type_e::INT, fsm::Value( 2 ) );
 
     auto response           = fsm->create_add_variable( "response",         fsm::data_type_e::INT );

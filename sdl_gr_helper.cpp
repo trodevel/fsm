@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10484 $ $Date:: 2019-01-13 #$ $Author: serge $
+// $Revision: 10488 $ $Date:: 2019-01-16 #$ $Author: serge $
 
 #include "sdl_gr_helper.h"             // self
 
@@ -189,8 +189,9 @@ std::ostream & SdlGrHelper::write_SetTimer( std::ostream & os, const Action & aa
 
     write_name( os, ac );
 
-    os << " [ label=\"" << process_->names_.get_name( a.timer_id ) << "( "
-            << StrHelperExpr( process_->mem_ ).to_string( a.delay ) << " )"
+    os << " [ label=\"set ( "
+            << StrHelperExpr( process_->mem_ ).to_string( a.delay ) << ", "
+            << process_->names_.get_name( a.timer_id ) <<  " )"
             << "\" shape=sdl_set ]" << "\n";
 
     write_edge( os, ac.get_id(), ac.get_next_id() );
@@ -204,7 +205,7 @@ std::ostream & SdlGrHelper::write_ResetTimer( std::ostream & os, const Action & 
 
     write_name( os, ac );
 
-    os << " [ label=\"" << process_->names_.get_name( a.timer_id ) << "\" shape=sdl_reset ]" << "\n";
+    os << " [ label=\"reset( " << process_->names_.get_name( a.timer_id ) << " )\" shape=sdl_reset ]" << "\n";
 
     write_edge( os, ac.get_id(), ac.get_next_id() );
 
