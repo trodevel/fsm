@@ -2,13 +2,13 @@
 
 #include "process.h"        // Process
 
-void init_fsm_3( fsm::Process * fsm )
+void init_fsm_4( fsm::Process * fsm )
 {
     auto timer              = fsm->create_add_timer( "T" );
-    auto E_DONE             = fsm->create_add_constant( "DONE",     fsm::data_type_e::INT, fsm::Value( 0 ) );
-    auto E_CANCELLED        = fsm->create_add_constant( "CANCELLED", fsm::data_type_e::INT, fsm::Value( 1 ) );
-    auto E_FAILED           = fsm->create_add_constant( "FAILED",   fsm::data_type_e::INT, fsm::Value( 2 ) );
-    auto E_ABORTED          = fsm->create_add_constant( "ABORTED",  fsm::data_type_e::INT, fsm::Value( 3 ) );
+    auto E_DONE             = fsm->create_add_constant( "DONE",         fsm::data_type_e::INT, fsm::Value( 0 ) );
+    auto E_CANCELLED        = fsm->create_add_constant( "CANCELLED",    fsm::data_type_e::INT, fsm::Value( 1 ) );
+    auto E_IO_ERROR         = fsm->create_add_constant( "IO_ERROR",     fsm::data_type_e::INT, fsm::Value( 2 ) );
+    auto E_CONN_LOST        = fsm->create_add_constant( "CONN_LOST",    fsm::data_type_e::INT, fsm::Value( 3 ) );
 
     auto A_NONE             = fsm->create_add_constant( "NONE",     fsm::data_type_e::INT, fsm::Value( 0 ) );
     auto A_REPEAT           = fsm->create_add_constant( "REPEAT",   fsm::data_type_e::INT, fsm::Value( 1 ) );
@@ -46,7 +46,7 @@ void init_fsm_3( fsm::Process * fsm )
     auto IDLE_ConnectionLost__ac1   = fsm->create_set_first_action_connector( IDLE_ConnectionLost,
             new fsm::SendSignal( "ScenExit",
             {
-                    fsm::ExpressionPtr( new fsm::ExpressionVariable( E_ABORTED ) ),
+                    fsm::ExpressionPtr( new fsm::ExpressionVariable( E_CONN_LOST ) ),
                     fsm::ExpressionPtr( new fsm::ExpressionValue( fsm::Value( "connection lost before announcement" ) ) )
             } ));
     fsm->set_next_action_connector( IDLE_ConnectionLost__ac1, IDLE__Cancel__ac2 );
@@ -70,7 +70,7 @@ void init_fsm_3( fsm::Process * fsm )
     auto PLAYING_MESSAGE_1__PlayFailed__ac1        = fsm->create_set_first_action_connector( PLAYING_MESSAGE_1__PlayFailed,
             new fsm::SendSignal( "ScenExit",
             {
-                    fsm::ExpressionPtr( new fsm::ExpressionVariable( E_FAILED ) ),
+                    fsm::ExpressionPtr( new fsm::ExpressionVariable( E_IO_ERROR ) ),
                     fsm::ExpressionPtr( new fsm::ExpressionValue( fsm::Value( "cannot play sound file" ) ) )
             } ));
     fsm->set_next_action_connector( PLAYING_MESSAGE_1__PlayFailed__ac1, PLAYING_MESSAGE_1__Cancel__ac2 );
@@ -79,7 +79,7 @@ void init_fsm_3( fsm::Process * fsm )
     auto PLAYING_MESSAGE_1__ConnectionLost__ac1   = fsm->create_set_first_action_connector( PLAYING_MESSAGE_1__ConnectionLost,
             new fsm::SendSignal( "ScenExit",
             {
-                    fsm::ExpressionPtr( new fsm::ExpressionVariable( E_ABORTED ) ),
+                    fsm::ExpressionPtr( new fsm::ExpressionVariable( E_CONN_LOST ) ),
                     fsm::ExpressionPtr( new fsm::ExpressionValue( fsm::Value( "connection lost during announcement" ) ) )
             } ));
     fsm->set_next_action_connector( PLAYING_MESSAGE_1__ConnectionLost__ac1, PLAYING_MESSAGE_1__Cancel__ac2 );
@@ -107,7 +107,7 @@ void init_fsm_3( fsm::Process * fsm )
     auto PLAYING_MESSAGE_2__PlayFailed__ac1     = fsm->create_set_first_action_connector( PLAYING_MESSAGE_2__PlayFailed,
             new fsm::SendSignal( "ScenExit",
             {
-                    fsm::ExpressionPtr( new fsm::ExpressionVariable( E_FAILED ) ),
+                    fsm::ExpressionPtr( new fsm::ExpressionVariable( E_IO_ERROR ) ),
                     fsm::ExpressionPtr( new fsm::ExpressionValue( fsm::Value( "cannot play sound file" ) ) )
             } ));
     fsm->set_next_action_connector( PLAYING_MESSAGE_2__PlayFailed__ac1, PLAYING_MESSAGE_2__Cancel__ac2 );
@@ -116,7 +116,7 @@ void init_fsm_3( fsm::Process * fsm )
     auto PLAYING_MESSAGE_2__ConnectionLost__ac1 = fsm->create_set_first_action_connector( PLAYING_MESSAGE_2__ConnectionLost,
             new fsm::SendSignal( "ScenExit",
             {
-                    fsm::ExpressionPtr( new fsm::ExpressionVariable( E_ABORTED ) ),
+                    fsm::ExpressionPtr( new fsm::ExpressionVariable( E_CONN_LOST ) ),
                     fsm::ExpressionPtr( new fsm::ExpressionValue( fsm::Value( "connection lost during announcement" ) ) )
             } ));
     fsm->set_next_action_connector( PLAYING_MESSAGE_2__ConnectionLost__ac1, PLAYING_MESSAGE_2__Cancel__ac2 );
@@ -140,7 +140,7 @@ void init_fsm_3( fsm::Process * fsm )
     auto WAITING_ACTION__ConnectionLost__ac1    = fsm->create_set_first_action_connector( WAITING_ACTION__ConnectionLost,
             new fsm::SendSignal( "ScenExit",
             {
-                    fsm::ExpressionPtr( new fsm::ExpressionVariable( E_ABORTED ) ),
+                    fsm::ExpressionPtr( new fsm::ExpressionVariable( E_CONN_LOST ) ),
                     fsm::ExpressionPtr( new fsm::ExpressionValue( fsm::Value( "connection lost during waiting" ) ) )
             } ));
     fsm->set_next_action_connector( WAITING_ACTION__ConnectionLost__ac1, WAITING_ACTION__Cancel__ac2 );
