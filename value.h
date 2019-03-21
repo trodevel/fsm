@@ -19,12 +19,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10314 $ $Date:: 2018-12-21 #$ $Author: serge $
+// $Revision: 10572 $ $Date:: 2019-02-11 #$ $Author: serge $
 
 #ifndef LIB_FSM__VALUE_H
 #define LIB_FSM__VALUE_H
 
 #include "elements.h"           // Element
+#include "data_types.h"         // Int
 
 namespace fsm {
 
@@ -39,10 +40,10 @@ struct Value
 
     data_type_e     type;
 
-    bool            arg_b;
-    int             arg_i;
-    double          arg_d;
-    std::string     arg_s;
+    Bool            arg_b;
+    Int             arg_i;
+    Double          arg_d;
+    String          arg_s;
 };
 
 void harmonize( Value * v );
