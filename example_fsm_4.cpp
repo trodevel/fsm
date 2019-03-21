@@ -7,7 +7,7 @@ void init_fsm_4( fsm::Process * fsm )
     auto timer              = fsm->create_add_timer( "T" );
     auto E_DONE             = fsm->create_add_constant( "DONE",         fsm::data_type_e::INT, fsm::Value( 0 ) );
     auto E_CANCELLED        = fsm->create_add_constant( "CANCELLED",    fsm::data_type_e::INT, fsm::Value( 1 ) );
-    auto E_IO_ERROR         = fsm->create_add_constant( "IO_ERROR",     fsm::data_type_e::INT, fsm::Value( 2 ) );
+    auto E_PLAYER_ERROR     = fsm->create_add_constant( "PLAYER_ERROR", fsm::data_type_e::INT, fsm::Value( 2 ) );
     auto E_CONN_LOST        = fsm->create_add_constant( "CONN_LOST",    fsm::data_type_e::INT, fsm::Value( 3 ) );
 
     auto A_NONE             = fsm->create_add_constant( "NONE",     fsm::data_type_e::INT, fsm::Value( 0 ) );
@@ -70,7 +70,7 @@ void init_fsm_4( fsm::Process * fsm )
     auto PLAYING_MESSAGE_1__PlayFailed__ac1        = fsm->create_set_first_action_connector( PLAYING_MESSAGE_1__PlayFailed,
             new fsm::SendSignal( "ScenExit",
             {
-                    fsm::ExpressionPtr( new fsm::ExpressionVariable( E_IO_ERROR ) ),
+                    fsm::ExpressionPtr( new fsm::ExpressionVariable( E_PLAYER_ERROR ) ),
                     fsm::ExpressionPtr( new fsm::ExpressionValue( fsm::Value( "cannot play sound file" ) ) )
             } ));
     fsm->set_next_action_connector( PLAYING_MESSAGE_1__PlayFailed__ac1, PLAYING_MESSAGE_1__Cancel__ac2 );
@@ -107,7 +107,7 @@ void init_fsm_4( fsm::Process * fsm )
     auto PLAYING_MESSAGE_2__PlayFailed__ac1     = fsm->create_set_first_action_connector( PLAYING_MESSAGE_2__PlayFailed,
             new fsm::SendSignal( "ScenExit",
             {
-                    fsm::ExpressionPtr( new fsm::ExpressionVariable( E_IO_ERROR ) ),
+                    fsm::ExpressionPtr( new fsm::ExpressionVariable( E_PLAYER_ERROR ) ),
                     fsm::ExpressionPtr( new fsm::ExpressionValue( fsm::Value( "cannot play sound file" ) ) )
             } ));
     fsm->set_next_action_connector( PLAYING_MESSAGE_2__PlayFailed__ac1, PLAYING_MESSAGE_2__Cancel__ac2 );
