@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10371 $ $Date:: 2018-12-31 #$ $Author: serge $
+// $Revision: 10575 $ $Date:: 2019-02-11 #$ $Author: serge $
 
 #include "state.h"              // self
 
@@ -41,7 +41,7 @@ State::State( uint32_t log_id, element_id_t id, uint32_t process_id, const std::
 
 void State::add_signal_handler( const std::string & signal_name, element_id_t signal_handler_id )
 {
-    dummy_logi_trace( log_id_, process_id_, "add_signal_handler: id %u, %s", signal_handler_id );
+    dummy_logi_trace( log_id_, process_id_, "add_signal_handler: id %u, %s", signal_handler_id, signal_name.c_str() );
 
     auto b = map_signal_name_to_signal_handler_ids_.insert( std::make_pair( signal_name, signal_handler_id ) ).second;
 

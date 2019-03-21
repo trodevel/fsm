@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10388 $ $Date:: 2019-01-04 #$ $Author: serge $
+// $Revision: 10576 $ $Date:: 2019-02-11 #$ $Author: serge $
 
 #include "process.h"            // self
 
@@ -517,7 +517,7 @@ void Process::set_timer( Timer * timer, const Value & delay )
     }
     else
     {
-        dummy_logi_debug( log_id_, id_, "timer %s, scheduled execution in: %.2f sec", name.c_str(), delay.arg_d );
+        dummy_logi_debug( log_id_, id_, "timer %s, process %u, scheduled execution in: %.2f sec", name.c_str(), signal->process_id, delay.arg_d );
 
         timer->set_job_id( sched_job_id );
     }
