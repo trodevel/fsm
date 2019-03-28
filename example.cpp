@@ -192,6 +192,7 @@ void init_fsm_1( fsm::Process * fsm );
 void init_fsm_2( fsm::Process * fsm );
 void init_fsm_3( fsm::Process * fsm );
 void init_fsm_4( fsm::Process * fsm );
+void init_fsm_5( fsm::Process * fsm );
 
 bool init_fsm( fsm::Process * fsm, unsigned fsm_num )
 {
@@ -211,6 +212,10 @@ bool init_fsm( fsm::Process * fsm, unsigned fsm_num )
 
     case 4:
         init_fsm_4( fsm );
+        break;
+
+    case 5:
+        init_fsm_5( fsm );
         break;
 
     default:
