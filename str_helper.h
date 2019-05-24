@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10461 $ $Date:: 2019-01-10 #$ $Author: serge $
+// $Revision: 11612 $ $Date:: 2019-05-24 #$ $Author: serge $
 
 #ifndef LIB_FSM__STR_HELPER_H
 #define LIB_FSM__STR_HELPER_H
@@ -28,22 +28,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <sstream>              // std::ostringstream
 
-#include "value.h"              // Value
+#include "elements.h"           // Value
 
 namespace fsm {
 
 class StrHelper
 {
 public:
-    static const std::string & to_string( data_type_e l );
-    static const std::string & to_string_short( data_type_e l );
-    static const std::string & to_string( comparison_type_e l );
-    static const std::string & to_string_short( comparison_type_e l );
-    static const std::string & to_string_short( unary_operation_type_e l );
-    static const std::string & to_string_short( binary_operation_type_e l );
-
-    static std::ostream & write( std::ostream & os, const Value & l );
-    static std::ostream & write_short( std::ostream & os, const Value & l );
     static std::ostream & write( std::ostream & os, const std::vector<fsm::Value> & l );
     static std::ostream & write( std::ostream & os, const std::vector<fsm::Value*> & l );
 

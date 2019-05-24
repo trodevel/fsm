@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10488 $ $Date:: 2019-01-16 #$ $Author: serge $
+// $Revision: 11612 $ $Date:: 2019-05-24 #$ $Author: serge $
 
 #include "sdl_gr_helper.h"             // self
 
@@ -34,6 +34,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #include "str_helper.h"             // StrHelper
 #include "str_helper_expr.h"        // StrHelperExpr
+#include "anyvalue/str_helper.h"    // anyvalue::StrHelper
 
 namespace fsm {
 
@@ -107,17 +108,17 @@ std::ostream & SdlGrHelper::write( std::ostream & os, const State & l )
 
 std::ostream & SdlGrHelper::write( std::ostream & os, const Constant & l )
 {
-    os << l.get_name() << " " << StrHelper::to_string( l.get_type() ) << " := " << StrHelper::to_string_short( l.get() );
+    os << l.get_name() << " " << anyvalue::StrHelper::to_string( l.get_type() ) << " := " << anyvalue::StrHelper::to_string_short( l.get() );
 
     return os;
 }
 
 std::ostream & SdlGrHelper::write( std::ostream & os, const Variable & l )
 {
-    os << l.get_name() << " " << StrHelper::to_string( l.get_type() );
+    os << l.get_name() << " " << anyvalue::StrHelper::to_string( l.get_type() );
 
     if( l.is_inited() )
-        os << " := " << StrHelper::to_string_short( l.get() );
+        os << " := " << anyvalue::StrHelper::to_string_short( l.get() );
 
     return os;
 }
@@ -248,7 +249,7 @@ std::ostream & SdlGrHelper::write_Condition( std::ostream & os, const Action & a
     write_name( os, ac );
 
     os << " [ label=\"" << StrHelperExpr( process_->mem_ ).to_string( a.lhs ) << " "
-            << StrHelper::to_string_short( a.type ) << " "
+            << anyvalue::StrHelper::to_string_short( a.type ) << " "
             << StrHelperExpr( process_->mem_ ).to_string( a.rhs )
             << "\" shape=diamond peripheries=1 ]" << "\n";
 

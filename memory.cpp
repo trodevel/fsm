@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10479 $ $Date:: 2019-01-13 #$ $Author: serge $
+// $Revision: 11612 $ $Date:: 2019-05-24 #$ $Author: serge $
 
 #include "memory.h"            // self
 
@@ -29,7 +29,9 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include <unordered_map>
 
 #include "utils/dummy_logger.h"     // dummy_log_debug
-#include "value_operations.h"               // compare_values
+#include "anyvalue/value_operations.h"  // anyvalue::unary_operation
+#include "anyvalue/str_helper.h"    // anyvalue::StrHelper
+#include "elements.h"               // compare_values
 #include "syntax_error.h"           // SyntaxError
 #include "str_helper.h"             // StrHelper
 
@@ -349,7 +351,7 @@ void Memory::import_value_into_variable( element_id_t variable_id, const Value &
         throw SyntaxError( "import_values_into_variables: variable_id " + std::to_string( variable_id ) + " not found in the list of variables and temp variables" );
     }
 
-    dummy_logi_debug( log_id_, id_, "import_value_into_variable: %s (%i) = %s", variable->get_name().c_str(), variable->get_id(), StrHelper::to_string( value ).c_str() );
+    dummy_logi_debug( log_id_, id_, "import_value_into_variable: %s (%i) = %s", variable->get_name().c_str(), variable->get_id(), anyvalue::StrHelper::to_string( value ).c_str() );
 
     variable->set( value );
 }
@@ -423,7 +425,7 @@ void Memory::evaluate_expression_UnaryExpression( Value * value, const Expressio
 
     evaluate_expression( & temp, a.op );
 
-    unary_operation( value, a.type, temp );
+    anyvalue::unary_operation( value, a.type, temp );
 }
 
 void Memory::evaluate_expression_BinaryExpression( Value * value, const Expression & eexpr )
@@ -436,7 +438,7 @@ void Memory::evaluate_expression_BinaryExpression( Value * value, const Expressi
     evaluate_expression( & lhs, a.lhs );
     evaluate_expression( & rhs, a.rhs );
 
-    binary_operation( value, a.type, lhs, rhs );
+    anyvalue::binary_operation( value, a.type, lhs, rhs );
 }
 
 element_id_t Memory::get_next_id()

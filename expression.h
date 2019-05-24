@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10261 $ $Date:: 2018-12-18 #$ $Author: serge $
+// $Revision: 11611 $ $Date:: 2019-05-24 #$ $Author: serge $
 
 #ifndef LIB_FSM__EXPRESSION_H
 #define LIB_FSM__EXPRESSION_H
@@ -27,7 +27,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include <memory>               // std::shared_ptr
 
 #include "elements.h"           // element_id_t
-#include "value.h"              // Value
+#include "elements.h"              // Value
 
 namespace fsm {
 

@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10288 $ $Date:: 2018-12-20 #$ $Author: serge $
+// $Revision: 11611 $ $Date:: 2019-05-24 #$ $Author: serge $
 
 #ifndef LIB_FSM__SIGNAL_H
 #define LIB_FSM__SIGNAL_H
@@ -27,7 +27,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include <vector>               // std::vector
 
 #include "object.h"             // Object
-#include "value.h"              // Value
+#include "elements.h"              // Value
 
 namespace fsm {
 

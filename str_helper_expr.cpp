@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10466 $ $Date:: 2019-01-11 #$ $Author: serge $
+// $Revision: 11612 $ $Date:: 2019-05-24 #$ $Author: serge $
 
 #include "str_helper_expr.h"    // self
 
@@ -29,7 +29,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include <unordered_map>
 #include <sstream>              // std::ostringstream
 
-#include "value_operations.h"       // compare_values
+#include "anyvalue/value_operations.h"  // compare_values
+#include "anyvalue/str_helper.h"    // anyvalue::StrHelper
 #include "syntax_error.h"           // SyntaxError
 #include "str_helper.h"             // StrHelper
 
@@ -132,7 +133,7 @@ std::string StrHelperExpr::to_string_ExpressionValue( const Expression & eexpr )
 {
     auto & a = dynamic_cast< const ExpressionValue&>( eexpr );
 
-    auto res = StrHelper::to_string_short( a.value );
+    auto res = anyvalue::StrHelper::to_string_short( a.value );
 
     if( res.size() > 8 )
         return res.substr( 0, 8 ) + "...";
@@ -172,14 +173,14 @@ std::string StrHelperExpr::to_string_UnaryExpression( const Expression & eexpr )
 {
     auto & a = dynamic_cast< const UnaryExpression &>( eexpr );
 
-    return StrHelper::to_string_short( a.type ) + " ( " + to_string( a.op ) + " )";
+    return anyvalue::StrHelper::to_string_short( a.type ) + " ( " + to_string( a.op ) + " )";
 }
 
 std::string StrHelperExpr::to_string_BinaryExpression( const Expression & eexpr ) const
 {
     auto & a = dynamic_cast< const BinaryExpression &>( eexpr );
 
-    return "( " + to_string( a.lhs ) + StrHelper::to_string_short( a.type ) + to_string( a.rhs ) + " )";
+    return "( " + to_string( a.lhs ) + anyvalue::StrHelper::to_string_short( a.type ) + to_string( a.rhs ) + " )";
 }
 
 } // namespace fsm

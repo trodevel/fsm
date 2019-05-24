@@ -152,8 +152,8 @@ private:
 
         convert_tone_to_action( tone, & action, & action_message );
 
-        fsm::assign( arguments.at( 1 ), fsm::Value( action ) );
-        fsm::assign( arguments.at( 2 ), fsm::Value( action_message ) );
+        anyvalue::assign( arguments.at( 1 ), fsm::Value( action ) );
+        anyvalue::assign( arguments.at( 2 ), fsm::Value( action_message ) );
     }
 
     void convert_tone_to_action( int tone, int * action, int * action_message )
@@ -192,7 +192,6 @@ void init_fsm_1( fsm::Process * fsm );
 void init_fsm_2( fsm::Process * fsm );
 void init_fsm_3( fsm::Process * fsm );
 void init_fsm_4( fsm::Process * fsm );
-void init_fsm_5( fsm::Process * fsm );
 
 bool init_fsm( fsm::Process * fsm, unsigned fsm_num )
 {
@@ -212,10 +211,6 @@ bool init_fsm( fsm::Process * fsm, unsigned fsm_num )
 
     case 4:
         init_fsm_4( fsm );
-        break;
-
-    case 5:
-        init_fsm_5( fsm );
         break;
 
     default:

@@ -19,12 +19,12 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10479 $ $Date:: 2019-01-13 #$ $Author: serge $
+// $Revision: 11611 $ $Date:: 2019-05-24 #$ $Author: serge $
 
 #ifndef LIB_FSM__VARIABLE_H
 #define LIB_FSM__VARIABLE_H
 
-#include "value.h"      // Value
+#include "elements.h"      // Value
 
 namespace fsm {
 

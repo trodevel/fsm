@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10480 $ $Date:: 2019-01-13 #$ $Author: serge $
+// $Revision: 11611 $ $Date:: 2019-05-24 #$ $Author: serge $
 
 #ifndef LIB_FSM__SDL_GR_HELPER_H
 #define LIB_FSM__SDL_GR_HELPER_H
@@ -28,7 +28,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include <vector>
 #include <sstream>              // std::ostringstream
 
-#include "value.h"              // Value
+#include "elements.h"              // Value
 #include "state.h"              // State
 #include "constant.h"           // Constant
 #include "variable.h"           // Variable

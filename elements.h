@@ -19,13 +19,15 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10367 $ $Date:: 2018-12-31 #$ $Author: serge $
+// $Revision: 11611 $ $Date:: 2019-05-24 #$ $Author: serge $
 
 #ifndef LIB_FSM__ELEMENTS_H
 #define LIB_FSM__ELEMENTS_H
 
 #include <cstdint>              // uint32_t
 #include <string>               // std::string
+#include "anyvalue/value.h"     // Value
+#include "anyvalue/operations.h"    // comparison_type_e
 
 namespace fsm {
 
@@ -66,15 +68,6 @@ class Action: public Element
 {
 };
 
-enum class data_type_e
-{
-    UNDEF = 0,
-    BOOL,
-    INT,
-    DOUBLE,
-    STRING,
-};
-
 enum class argument_type_e
 {
     VALUE = 0,
@@ -82,31 +75,12 @@ enum class argument_type_e
     VARIABLE_OUT,
 };
 
-enum class comparison_type_e
-{
-    EQ = 0,
-    NEQ,
-    LT,
-    LE,
-    GT,
-    GE,
-    NOT
-};
+typedef anyvalue::data_type_e data_type_e;
+typedef anyvalue::comparison_type_e comparison_type_e;
+typedef anyvalue::unary_operation_type_e unary_operation_type_e;
+typedef anyvalue::binary_operation_type_e binary_operation_type_e;
 
-enum class unary_operation_type_e
-{
-    UNDEF   = 0,
-    NEG,
-};
-
-enum class binary_operation_type_e
-{
-    UNDEF   = 0,
-    PLUS,
-    MINUS,
-    MUL,
-    DIV
-};
+typedef anyvalue::Value Value;
 
 } // namespace fsm
 

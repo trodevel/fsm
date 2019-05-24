@@ -19,7 +19,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-// $Revision: 10576 $ $Date:: 2019-02-11 #$ $Author: serge $
+// $Revision: 11612 $ $Date:: 2019-05-24 #$ $Author: serge $
 
 #include "process.h"            // self
 
@@ -30,7 +30,8 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #include "utils/dummy_logger.h"     // dummy_logi_debug
 #include "scheduler/timeout_job_aux.h"      // create_and_insert_timeout_job
-#include "value_operations.h"               // compare_values
+#include "anyvalue/value_operations.h"      // compare_values
+#include "anyvalue/str_helper.h"    // anyvalue::StrHelper
 
 #include "str_helper.h"             // StrHelper
 #include "syntax_error.h"           // SyntaxError
@@ -764,7 +765,7 @@ Process::flow_control_e Process::handle_Task( const Action & aa )
     dummy_logi_debug( log_id_, id_, "task: %s (%i) = %s",
             variable->get_name().c_str(),
             variable->get_id(),
-            StrHelper::to_string( res ).c_str() );
+            anyvalue::StrHelper::to_string( res ).c_str() );
 
     return flow_control_e::NEXT;
 }
@@ -784,8 +785,8 @@ Process::flow_control_e Process::handle_Condition( const Action & aa )
         auto b = ! val.arg_b;
 
         dummy_logi_debug( log_id_, id_, "condition ( %s %s ) evaluated to %s",
-                StrHelper::to_string_short( a.type ).c_str(),
-                StrHelper::to_string( val ).c_str(),
+                anyvalue::StrHelper::to_string_short( a.type ).c_str(),
+                anyvalue::StrHelper::to_string( val ).c_str(),
                 b ? "TRUE" : "FALSE" );
 
         return b ? flow_control_e::NEXT : flow_control_e::ALT_NEXT;
@@ -797,12 +798,12 @@ Process::flow_control_e Process::handle_Condition( const Action & aa )
     Value rhs;
     mem_.evaluate_expression( & rhs, a.rhs );
 
-    auto b = compare_values( a.type, lhs, rhs );
+    auto b = anyvalue::compare_values( a.type, lhs, rhs );
 
     dummy_logi_debug( log_id_, id_, "condition ( %s %s %s ) evaluated to %s",
-            StrHelper::to_string( lhs ).c_str(),
-            StrHelper::to_string_short( a.type ).c_str(),
-            StrHelper::to_string( rhs ).c_str(),
+            anyvalue::StrHelper::to_string( lhs ).c_str(),
+            anyvalue::StrHelper::to_string_short( a.type ).c_str(),
+            anyvalue::StrHelper::to_string( rhs ).c_str(),
             b ? "TRUE" : "FALSE" );
 
     return b ? flow_control_e::NEXT : flow_control_e::ALT_NEXT;
@@ -826,15 +827,15 @@ Process::flow_control_e Process::handle_SwitchCondition( const Action & aa )
 
         mem_.evaluate_expression( & rhs, e );
 
-        auto b = compare_values( comparison_type_e::EQ, lhs, rhs );
+        auto b = anyvalue::compare_values( comparison_type_e::EQ, lhs, rhs );
 
         if( b == true )
         {
             set_matched_switch_condition( i );
 
             dummy_logi_debug( log_id_, id_, "switch variable %s matched %s, executing case %u",
-                    StrHelper::to_string( lhs ).c_str(),
-                    StrHelper::to_string( rhs ).c_str(),
+                    anyvalue::StrHelper::to_string( lhs ).c_str(),
+                    anyvalue::StrHelper::to_string( rhs ).c_str(),
                     i );
 
             return flow_control_e::CHECK_SWITCH;
@@ -844,7 +845,7 @@ Process::flow_control_e Process::handle_SwitchCondition( const Action & aa )
     set_matched_switch_condition( -1 );  // default
 
     dummy_logi_debug( log_id_, id_, "switch variable %s didn't match anything, executing default case",
-            StrHelper::to_string( lhs ).c_str() );
+            anyvalue::StrHelper::to_string( lhs ).c_str() );
 
     return flow_control_e::CHECK_SWITCH;
 }

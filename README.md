@@ -15,12 +15,13 @@ into your code.
 
 - C++11 compiler
 - boost system, date_time
-- own libraries: utils scheduler make_tools
+- own libraries: anyvalue utils scheduler make_tools
 
 ## Building an example
 
 
 ``` bash
+git clone https://github.com/trodevel/anyvalue.git
 git clone https://github.com/trodevel/make_tools.git
 git clone https://github.com/trodevel/scheduler.git
 git clone https://github.com/trodevel/utils.git
