@@ -242,7 +242,7 @@ int main( int argc, char **argv )
 {
     std::cout << "Hello, world" << std::endl;
 
-    dummy_logger::set_log_level( log_levels_log4j::DEBUG );
+    dummy_logger::set_log_level( log_levels_log4j::Debug );
 
     auto log_id     = dummy_logger::register_module( "fsm_man" );
     auto log_id_fsm = dummy_logger::register_module( "fsm" );
